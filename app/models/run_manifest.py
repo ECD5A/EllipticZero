@@ -50,6 +50,12 @@ class RunManifest(BaseModel):
     session_file_path: str
     trace_file_path: str | None = None
     comparative_report_path: str | None = None
+    approved_export_roots: list[str] = Field(default_factory=list)
+    export_policy_summary: list[str] = Field(default_factory=list)
+    filtered_artifact_count: int = 0
+    session_export_ready: bool = False
+    trace_export_ready: bool = False
+    comparative_export_ready: bool = False
     artifact_paths: list[str] = Field(default_factory=list)
     artifacts: list[RunArtifactReference] = Field(default_factory=list)
     artifact_count: int = 0

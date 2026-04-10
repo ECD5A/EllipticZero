@@ -9,6 +9,9 @@ explicitly covered by the repository license.
 No right to use the EllipticZero name, logo, product identity, trade dress, or
 branding is granted except as required for truthful reference to the project.
 
+Truthful reference does not imply endorsement, affiliation, certification, or
+official partnership.
+
 For branding, naming, OEM, white-label, or partnership inquiries, contact:
 
 - Email: `stelmak159@gmail.com`

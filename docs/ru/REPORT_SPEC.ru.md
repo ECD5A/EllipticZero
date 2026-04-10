@@ -85,6 +85,7 @@
 - короткую ECC benchmark-сводку, если ограниченные ECC testbed-наборы существенно влияли на порядок обзора
 - короткий блок ECC benchmark posture, если отчёт может показать, насколько текущая bounded-support база уже покрывает сильнейшие ECC review families
 - короткий блок ECC family coverage, если отчёт может кратко показать, какие ECC review families сейчас покрыты широко, частично или узко
+- короткий блок ECC coverage matrix, если отчёт может кратко показать текущую поддержку, baseline-статус и остаточный риск для сильнейших ECC review families
 - короткие ECC benchmark-case summary, если bounded ECC benchmark-пакеты существенно влияли на то, какие локальные family-specific кейсы mattered first
 - короткий ECC review-focus блок, если локальные сигналы по encoding, family transition, domain, subgroup, cofactor или twist сузили следующие защитные проверки
 - короткие строки с остаточным ECC-риском, если ограниченный ECC-обзор всё ещё оставляет нерешёнными family-specific предположения по encoding, subgroup, cofactor, twist, family transition или полноте domain metadata
@@ -106,6 +107,10 @@
 - явно говорящим о неопределённости
 - верным доказательной базе
 - ясным в отношении ограничений
+
+Если отчёт содержит много специализированных разделов, уже в первом экране
+чтения должно быть видно сильнейший bounded-вывод, главный блокирующий фактор и
+следующее bounded-действие.
 
 Отчёт не должен быть:
 

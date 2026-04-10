@@ -31,10 +31,14 @@ class ReproducibilityBundleStore:
         bundle_dir = self.path_for_session(session.session_id)
         bundle_dir.mkdir(parents=True, exist_ok=True)
 
-        if session.session_file_path:
+        copied_session = False
+        copied_trace = False
+        if manifest.session_export_ready and session.session_file_path:
             copy2(session.session_file_path, bundle_dir / "session.json")
-        if session.trace_file_path and Path(session.trace_file_path).exists():
+            copied_session = True
+        if manifest.trace_export_ready and session.trace_file_path and Path(session.trace_file_path).exists():
             copy2(session.trace_file_path, bundle_dir / "trace.jsonl")
+            copied_trace = True
 
         self._copy_artifacts(manifest=manifest, bundle_dir=bundle_dir)
 
@@ -49,11 +53,25 @@ class ReproducibilityBundleStore:
                 encoding="utf-8",
             )
         self.overview_path_for_session(session.session_id).write_text(
-            json.dumps(self._bundle_overview(session=session, manifest=manifest), indent=2, ensure_ascii=False),
+            json.dumps(
+                self._bundle_overview(
+                    session=session,
+                    manifest=manifest,
+                    copied_session=copied_session,
+                    copied_trace=copied_trace,
+                ),
+                indent=2,
+                ensure_ascii=False,
+            ),
             encoding="utf-8",
         )
         (bundle_dir / "README.txt").write_text(
-            self._bundle_notes(session=session, manifest=manifest),
+            self._bundle_notes(
+                session=session,
+                manifest=manifest,
+                copied_session=copied_session,
+                copied_trace=copied_trace,
+            ),
             encoding="utf-8",
         )
         return bundle_dir
@@ -70,7 +88,14 @@ class ReproducibilityBundleStore:
             target_name = f"{artifact.workspace_id or 'artifact'}_{index}_{source.name}"
             copy2(source, artifacts_dir / target_name)
 
-    def _bundle_notes(self, *, session: ResearchSession, manifest: RunManifest) -> str:
+    def _bundle_notes(
+        self,
+        *,
+        session: ResearchSession,
+        manifest: RunManifest,
+        copied_session: bool,
+        copied_trace: bool,
+    ) -> str:
         lines = [
             "EllipticZero Reproducibility Bundle",
             f"Session ID: {session.session_id}",
@@ -80,15 +105,32 @@ class ReproducibilityBundleStore:
             "",
             "Contents:",
             "- overview.json: concise export overview with focus, confidence, comparison status, and quality/hardening counts",
-            "- session.json: saved session snapshot",
-            "- trace.jsonl: append-only execution trace when available",
+            "- session.json: saved session snapshot when the source path stays inside approved local export roots",
+            "- trace.jsonl: append-only execution trace when the source path stays inside approved local export roots",
             "- manifest.json: reproducibility manifest",
             "- comparative_report.json: machine-readable comparative reporting snapshot when available",
-            "- artifacts/: copied local research artifacts when available",
+            "- artifacts/: copied local research artifacts when available and inside approved local export roots",
+            "",
+            "Export policy summary:",
         ]
+        lines.extend(f"- {item}" for item in manifest.export_policy_summary)
+        lines.extend(
+            [
+                "",
+                f"Copied session snapshot: {'yes' if copied_session else 'no'}",
+                f"Copied trace snapshot: {'yes' if copied_trace else 'no'}",
+            ]
+        )
         return "\n".join(lines) + "\n"
 
-    def _bundle_overview(self, *, session: ResearchSession, manifest: RunManifest) -> dict[str, object]:
+    def _bundle_overview(
+        self,
+        *,
+        session: ResearchSession,
+        manifest: RunManifest,
+        copied_session: bool,
+        copied_trace: bool,
+    ) -> dict[str, object]:
         return {
             "session_id": session.session_id,
             "confidence": manifest.confidence,
@@ -100,16 +142,19 @@ class ReproducibilityBundleStore:
             "comparison_ready": manifest.comparison_ready,
             "comparison_baseline_session_id": manifest.comparison_baseline_session_id,
             "artifact_count": manifest.artifact_count,
+            "filtered_artifact_count": manifest.filtered_artifact_count,
             "tool_count": len(manifest.tool_names),
             "focus_summary": list(manifest.report_focus_summary),
+            "export_policy_summary": list(manifest.export_policy_summary),
+            "approved_export_roots": list(manifest.approved_export_roots),
             "quality_gate_count": manifest.quality_gate_count,
             "hardening_summary_count": manifest.hardening_summary_count,
             "quality_gate_summary": list(manifest.quality_gate_summary),
             "hardening_summary": list(manifest.hardening_summary),
             "outputs": {
-                "session_json": bool(session.session_file_path),
-                "trace_jsonl": bool(session.trace_file_path),
-                "comparative_report_json": bool(session.comparative_report is not None),
-                "artifacts_dir": True,
+                "session_json": copied_session,
+                "trace_jsonl": copied_trace,
+                "comparative_report_json": manifest.comparative_export_ready,
+                "artifacts_dir": bool(manifest.artifacts),
             },
         }

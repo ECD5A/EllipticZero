@@ -81,6 +81,7 @@ from app.core.reporting_helpers import (
     build_ecc_benchmark_posture,
     build_ecc_benchmark_summary,
     build_ecc_comparison_focus,
+    build_ecc_coverage_matrix,
     build_ecc_exit_criteria,
     build_ecc_family_coverage,
     build_ecc_regression_summary,
@@ -418,6 +419,7 @@ class ResearchOrchestrator:
         session.report.ecc_benchmark_summary = build_ecc_benchmark_summary(session)
         session.report.ecc_benchmark_posture = build_ecc_benchmark_posture(session)
         session.report.ecc_family_coverage = build_ecc_family_coverage(session)
+        session.report.ecc_coverage_matrix = build_ecc_coverage_matrix(session)
         session.report.ecc_benchmark_case_summaries = build_ecc_benchmark_case_summaries(session)
         session.report.ecc_review_focus = build_ecc_review_focus(session)
         session.report.ecc_residual_risk = build_ecc_residual_risk(session)

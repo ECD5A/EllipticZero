@@ -224,6 +224,7 @@ class InteractiveRenderer:
         self.print_list_block(self.t("block.ecc_benchmark_summary"), session.report.ecc_benchmark_summary, color=CYAN)
         self.print_list_block(self.t("block.ecc_benchmark_posture"), session.report.ecc_benchmark_posture, color=GREEN)
         self.print_list_block(self.t("block.ecc_family_coverage"), session.report.ecc_family_coverage, color=CYAN)
+        self.print_list_block(self.t("block.ecc_coverage_matrix"), session.report.ecc_coverage_matrix, color=CYAN)
         self.print_list_block(self.t("block.ecc_benchmark_case_summaries"), session.report.ecc_benchmark_case_summaries, color=CYAN)
         self.print_list_block(self.t("block.ecc_review_focus"), session.report.ecc_review_focus, color=CYAN)
         self.print_list_block(self.t("block.ecc_residual_risk"), session.report.ecc_residual_risk, color=AMBER)

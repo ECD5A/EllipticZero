@@ -13,7 +13,7 @@ This policy covers security issues that matter most for the repository, especial
 
 This repository is not intended for public exploit release workflows.
 
-Unsafe local plugin path layouts, symlinks, or out-of-root plugin files are expected to fail bounded local safety checks rather than load into the registry. Reproducibility manifests and bundles are also expected to filter artifact references that resolve outside the approved local storage roots.
+Unsafe local plugin path layouts, symlinks, or out-of-root plugin files are expected to fail bounded local safety checks rather than load into the registry. Reproducibility manifests and bundles are also expected to filter artifact references that resolve outside the approved local storage roots, and session/trace copies should stay inside those same approved roots before they are exported.
 
 ## Reporting
 

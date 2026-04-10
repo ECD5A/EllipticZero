@@ -13,7 +13,7 @@
 
 Этот репозиторий не предназначен для публичной публикации эксплуатационных сценариев.
 
-Unsafe local plugin path layouts, symlinks или plugin files вне корневого каталога не должны загружаться в реестр, а ссылки на артефакты в manifest и bundle должны фильтроваться, если они разрешаются вне approved local storage roots.
+Unsafe local plugin path layouts, symlinks или plugin files вне корневого каталога не должны загружаться в реестр, а ссылки на артефакты в manifest и bundle должны фильтроваться, если они разрешаются вне approved local storage roots. Session/trace copies тоже должны оставаться внутри этих же approved roots перед экспортом.
 
 ## Как Сообщать
 

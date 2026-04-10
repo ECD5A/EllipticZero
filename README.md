@@ -7,6 +7,11 @@ EllipticZero is a source-available local lab for bounded defensive research in t
 
 The user flow stays simple: choose a language, choose a domain, optionally choose a curve or provide contract input, enter a research idea, run a bounded local session, and review the recorded evidence and cautious report.
 
+The repository is public and source-available under `FSL-1.1-ALv2`. Current
+versions are not offered under an OSI open-source license, and competing
+commercial use, hosted deployment, OEM distribution, or white-label use require
+a separate agreement.
+
 ## Screenshots
 
 ![EllipticZero interactive home screen](docs/assets/console-home.png)
@@ -113,7 +118,7 @@ Additional CLI utilities:
 python -m app.main --list-synthetic-targets
 python -m app.main --list-packs
 python -m app.main --live-provider-smoke openai --live-smoke-model gpt-4.1-mini
-python -m app.main --live-provider-smoke openrouter --live-smoke-model <openrouter-model-id>
+python -m app.main --live-provider-smoke openrouter --live-smoke-model openrouter/auto
 python -m app.main --replay-session .\artifacts\sessions\session_id.json
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
 ```
@@ -123,9 +128,9 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Configuration is resolved from defaults, `configs/settings.yaml`, environment variables, and optional `.env`.
 - Supported providers: `mock`, `openai`, `openrouter`, `gemini`, `anthropic`.
 - The normal setup is one shared provider/model for all roles. Per-agent overrides are optional.
-- OpenRouter is useful as a bounded live-smoke path because it exposes OpenAI-compatible hosted models behind one API key. If you use `:free` model variants there, treat them as convenience validation paths rather than guaranteed runtime capacity because OpenRouter applies its own rate and daily limits.
+- OpenRouter is useful as a bounded live-smoke path because it exposes OpenAI-compatible hosted models behind one API key, and the direct smoke path now defaults to `openrouter/auto` unless you explicitly pin another model.
 - Optional local tooling can include `SymPy`, `Hypothesis`, `z3-solver`, built-in bounded mutation probes, ECC testbeds, smart-contract audit checks, and `SageMath` when available.
-- ECC reporting can now include a short benchmark summary, benchmark posture, family-coverage lines, compact benchmark-case summaries, bounded ECC review focus, residual-risk lines, ECC signal-consensus notes, a short ECC validation matrix, cautious ECC comparison-focus lines, ECC benchmark-delta notes, and ECC regression-watch lines when local encoding, family transitions, twist hygiene, subgroup/cofactor, or domain-completeness signals justify them.
+- ECC reporting can now include a short benchmark summary, benchmark posture, family-coverage lines, an ECC coverage matrix, compact benchmark-case summaries, bounded ECC review focus, residual-risk lines, ECC signal-consensus notes, a short ECC validation matrix, cautious ECC comparison-focus lines, ECC benchmark-delta notes, and ECC regression-watch lines when local encoding, family transitions, twist hygiene, subgroup/cofactor, or domain-completeness signals justify them.
 - The setup profiles can provision a project-managed Solidity compiler under `.ellipticzero/tooling/solcx` so compile checks and compiler-aware adapters do not depend on a global `solc` install.
 - Solidity analysis is version-aware: the contract pragma is read first, then the runtime picks a compatible locally available managed compiler instead of assuming one fixed `solc` version.
 - Smart-contract sessions can use pasted code, inline code, or a local `.sol` / `.vy` file as input.
@@ -141,7 +146,9 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - When local signals justify it, smart-contract reporting can also include a short review queue, residual-risk lines for the strongest lane set, exit criteria for the strongest lane, compile status, contract surface summary, built-in pattern findings, protocol-style review focus, remediation-validation notes, remediation follow-up priorities, cautious defensive remediation guidance, external static findings, bounded testbed or repo-casebook comparisons, confidence-calibration notes explaining why the current evidence is still bounded, and before/after comparison lines with regression flags when a saved baseline session is attached.
 - Completed runs can write session, trace, comparative, and bundle artifacts under `artifacts/`, and reproducibility bundles now include an `overview.json` snapshot with focus summary, comparison readiness, export-level counts, plus quality-gate and hardening-summary counts.
 - Cross-domain reporting can also preserve quality gates and hardening summaries so bounded evidence depth, comparison readiness, export posture, plugin-safety posture, and residual manual-review lanes remain legible in one place.
-- Reproducibility manifests and bundles now filter out artifact references that resolve outside the approved local storage roots, and unsafe local plugin path layouts are blocked before registry loading.
+- Reproducibility manifests and bundles now filter out artifact references that resolve outside the approved local storage roots, and session/trace copies are exported only when their source paths stay inside those approved roots.
+- Unsafe local plugin path layouts are blocked before registry loading.
+- GitHub Actions now include a dedicated CodeQL workflow for bounded code-scanning coverage on the Python codebase, and Dependabot can keep Python/github-actions dependencies under review.
 
 See `.env.example` for local configuration options.
 
@@ -182,7 +189,7 @@ Use EllipticZero only for authorized local research. Keep experiments bounded, r
 EllipticZero is licensed under **FSL-1.1-ALv2**.
 
 The public repository is source-available for evaluation, research, internal
-use, and other permitted purposes under the license.
+use, and other permitted purposes defined by the license.
 
 Each version becomes available under Apache License 2.0 on the second
 anniversary of the date that version was made available.
@@ -190,6 +197,9 @@ anniversary of the date that version was made available.
 If you need rights beyond the public license, including competing commercial
 use, hosted or managed service use, OEM, white-label, or resale, see
 [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md).
+
+This repository is public, but current versions should not be described as
+OSI-approved open-source releases.
 
 Branding rights are not granted under the code license. See
 [TRADEMARKS.md](TRADEMARKS.md).
@@ -200,7 +210,10 @@ If your use case involves a competing commercial product, commercial hosted
 service, OEM distribution, white-label usage, or resale, you should obtain a
 separate commercial license.
 
-See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md).
+If you are unsure whether your deployment or product plan crosses that line,
+contact before shipping or selling it.
+
+See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for the short policy.
 
 ## Contact
 

@@ -1,33 +1,43 @@
 # Commercial Licensing for EllipticZero
 
-EllipticZero is available under the Functional Source License 1.1
-(`FSL-1.1-ALv2`) for the public repository version.
+This repository is publicly visible and source-available under
+`FSL-1.1-ALv2`.
 
-If you need rights beyond the public license, including any of the following, a
-separate commercial license is required:
+The public license is the controlling document for ordinary repository use.
+This file is a short practical guide for situations that should be discussed
+under a separate commercial agreement.
+
+## When To Contact For A Commercial License
+
+If your plan involves rights beyond the public repository license, contact
+before shipping, selling, or deploying. Common examples include:
 
 - competing commercial use
-- hosted or managed service offering
-- SaaS offering based on EllipticZero
-- white-label use
+- hosted or managed service use
+- SaaS or platform use based on EllipticZero
 - OEM or embedded commercial distribution
+- white-label use
 - resale
-- commercial security platform integration where EllipticZero or substantially
-  similar functionality is offered as part of a paid product or service
+- commercial security platform integration where EllipticZero or
+  substantially similar functionality is part of a paid product or service
 
-Commercial licensing may also include:
+If you are unsure whether your use is competing, hosted, OEM, or resale-like,
+ask before deployment rather than guessing from the short summary here.
 
-- custom terms
+## Typical Commercial Topics
+
+A commercial agreement may include:
+
+- custom rights or restrictions
 - private support
 - integration assistance
-- private roadmap collaboration
+- private roadmap coordination
 - enterprise deployment guidance
 
-For commercial licensing inquiries, contact:
+## Contact
 
 - Email: `stelmak159@gmail.com`
 - Telegram: `@ECDS4`
 - Repository: `https://github.com/ECD5A/EllipticZero`
 
-Nothing in this file replaces the repository `LICENSE`. This file explains when
-a separate commercial agreement is required.
+Nothing in this file replaces the repository `LICENSE`.

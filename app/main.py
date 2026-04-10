@@ -47,6 +47,7 @@ from app.core.research_targets import ResearchTargetRegistry
 from app.core.sandbox_executor import SandboxExecutor
 from app.core.seed_parsing import build_smart_contract_seed
 from app.llm.gateway import LLMGateway
+from app.llm.live_smoke import resolve_live_smoke_model
 from app.llm.providers import HOSTED_PROVIDER_NAMES, SUPPORTED_PROVIDER_NAMES
 from app.logger import configure_logging
 from app.models.replay_request import ReplayRequest
@@ -351,7 +352,11 @@ def run_live_provider_smoke(
 ) -> str:
     gateway = LLMGateway.from_config(config)
     provider = gateway.providers[provider_name]
-    model = model_name or config.llm.default_model
+    model = resolve_live_smoke_model(
+        provider_name=provider_name,
+        configured_default_model=config.llm.default_model,
+        explicit_model=model_name,
+    )
     timeout_seconds = min(config.llm.timeout_seconds, 30)
     max_request_tokens = min(config.llm.max_request_tokens, 512)
     output = provider.generate(
@@ -679,6 +684,7 @@ def main() -> int:
             ecc_benchmark_summary=session.report.ecc_benchmark_summary,
             ecc_benchmark_posture=session.report.ecc_benchmark_posture,
             ecc_family_coverage=session.report.ecc_family_coverage,
+            ecc_coverage_matrix=session.report.ecc_coverage_matrix,
             ecc_benchmark_case_summaries=session.report.ecc_benchmark_case_summaries,
             ecc_review_focus=session.report.ecc_review_focus,
             ecc_residual_risk=session.report.ecc_residual_risk,

@@ -74,6 +74,12 @@ def test_manifest_and_bundle_export_without_advanced_artifacts() -> None:
     assert manifest["session_file_path"] == session.session_file_path
     assert manifest["trace_file_path"] == session.trace_file_path
     assert manifest["comparative_report_path"] == session.comparative_report_file_path
+    assert manifest["approved_export_roots"]
+    assert manifest["export_policy_summary"]
+    assert manifest["filtered_artifact_count"] == 0
+    assert manifest["session_export_ready"] is True
+    assert manifest["trace_export_ready"] is True
+    assert manifest["comparative_export_ready"] is True
     assert manifest["artifact_count"] == len(manifest["artifacts"])
     assert manifest["comparison_ready"] is False
     assert manifest["report_focus_summary"]
@@ -89,6 +95,12 @@ def test_manifest_and_bundle_export_without_advanced_artifacts() -> None:
     assert overview["tool_count"] == len(manifest["tool_names"])
     assert overview["comparison_ready"] is False
     assert overview["focus_summary"]
+    assert overview["filtered_artifact_count"] == 0
+    assert overview["export_policy_summary"]
+    assert overview["approved_export_roots"]
+    assert overview["outputs"]["session_json"] is True
+    assert overview["outputs"]["trace_jsonl"] is True
+    assert overview["outputs"]["comparative_report_json"] is True
     assert overview["quality_gate_count"] == manifest["quality_gate_count"]
     assert overview["hardening_summary_count"] == manifest["hardening_summary_count"]
     assert overview["quality_gate_summary"]
@@ -219,7 +231,91 @@ def test_manifest_filters_artifacts_outside_local_storage_roots() -> None:
 
     assert manifest_payload["artifact_count"] == 1
     assert len(manifest_payload["artifacts"]) == 1
+    assert manifest_payload["filtered_artifact_count"] == 1
+    assert manifest_payload["session_export_ready"] is True
+    assert manifest_payload["trace_export_ready"] is True
     assert manifest_payload["artifacts"][0]["artifact_path"] == str(allowed_artifact)
     copied_files = list((bundle_dir / "artifacts").iterdir())
     assert len(copied_files) == 1
     assert copied_files[0].name.endswith("allowed.json")
+    overview = json.loads((bundle_dir / "overview.json").read_text(encoding="utf-8"))
+    assert overview["filtered_artifact_count"] == 1
+    assert overview["outputs"]["session_json"] is True
+    assert overview["outputs"]["trace_jsonl"] is True
+
+
+def test_bundle_skips_session_and_trace_outside_approved_roots() -> None:
+    run_root = Path(".test_runs") / make_id("bundleunsafe")
+    external_root = Path(".test_runs") / make_id("bundleunsafeexternal")
+    allowed_root = run_root / "math"
+    allowed_root.mkdir(parents=True, exist_ok=True)
+    external_root.mkdir(parents=True, exist_ok=True)
+    allowed_artifact = allowed_root / "allowed.json"
+    allowed_artifact.write_text('{"ok": true}', encoding="utf-8")
+    external_session = external_root / "session.json"
+    external_trace = external_root / "trace.jsonl"
+    external_session.write_text("{}", encoding="utf-8")
+    external_trace.write_text("", encoding="utf-8")
+
+    config = AppConfig.model_validate(
+        {
+            "llm": {
+                "default_provider": "mock",
+                "default_model": "mock-default",
+                "timeout_seconds": 30,
+                "max_request_tokens": 2048,
+                "max_total_requests_per_session": 16,
+            },
+            "storage": {
+                "artifacts_dir": str(run_root),
+                "sessions_dir": str(run_root / "sessions"),
+                "traces_dir": str(run_root / "traces"),
+                "math_artifacts_dir": str(allowed_root),
+                "bundles_dir": str(run_root / "bundles"),
+            },
+            "log_level": "INFO",
+            "max_hypotheses": 2,
+            "tool_timeout_seconds": 15,
+        }
+    )
+    session = ResearchSession(
+        seed=ResearchSeed(raw_text="Check bundle export safety for session and trace paths."),
+        evidence=[
+            Evidence(
+                hypothesis_id="hyp_export",
+                source="finite_field_check_tool",
+                summary="A safe local artifact was recorded.",
+                tool_name="finite_field_check_tool",
+                experiment_type="finite_field_check",
+                workspace_id="workspace_export",
+                artifact_paths=[str(allowed_artifact)],
+                raw_result={"result": {"status": "ok", "result_data": {}}},
+            )
+        ],
+    )
+    session.report = ResearchReport(
+        session_id=session.session_id,
+        seed_text=session.seed.raw_text,
+        summary="Bundle export safety.",
+        confidence=ConfidenceLevel.LOW,
+    )
+    session.session_file_path = str(external_session)
+    session.trace_file_path = str(external_trace)
+
+    manifest = build_run_manifest(
+        session=session,
+        config=config,
+        plugin_metadata=[],
+        session_path_fallback=external_session,
+    )
+    bundle_store = ReproducibilityBundleStore(config.storage.bundles_dir)
+    bundle_dir = bundle_store.export(session=session, manifest=manifest)
+    overview = json.loads((bundle_dir / "overview.json").read_text(encoding="utf-8"))
+
+    assert manifest.session_export_ready is False
+    assert manifest.trace_export_ready is False
+    assert not (bundle_dir / "session.json").exists()
+    assert not (bundle_dir / "trace.jsonl").exists()
+    assert overview["outputs"]["session_json"] is False
+    assert overview["outputs"]["trace_jsonl"] is False
+    assert overview["outputs"]["artifacts_dir"] is True

@@ -106,7 +106,9 @@ def test_openrouter_provider_builds_chat_completions_request(monkeypatch) -> Non
         captured["url"] = request.full_url
         captured["timeout"] = timeout
         captured["auth"] = request.get_header("Authorization")
-        captured["title"] = request.get_header("X-openrouter-title")
+        header_items = dict(request.header_items())
+        captured["referer"] = header_items.get("Http-referer")
+        captured["title"] = header_items.get("X-title")
         captured["body"] = json.loads(request.data.decode("utf-8"))
         return _FakeResponse(
             {
@@ -136,6 +138,7 @@ def test_openrouter_provider_builds_chat_completions_request(monkeypatch) -> Non
     assert captured["url"] == "https://openrouter.ai/api/v1/chat/completions"
     assert captured["timeout"] == 21
     assert captured["auth"] == "Bearer openrouter-test-key"
+    assert captured["referer"] == "https://github.com/ECD5A/EllipticZero"
     assert captured["title"] == "EllipticZero"
     assert captured["body"] == {
         "model": "openai/gpt-4.1-mini",

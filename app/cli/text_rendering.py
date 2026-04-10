@@ -57,6 +57,7 @@ def render_report(
     ecc_benchmark_summary: list[str],
     ecc_benchmark_posture: list[str],
     ecc_family_coverage: list[str],
+    ecc_coverage_matrix: list[str],
     ecc_benchmark_case_summaries: list[str],
     ecc_review_focus: list[str],
     ecc_residual_risk: list[str],
@@ -177,6 +178,9 @@ def render_report(
     if ecc_family_coverage:
         lines.extend(["", f"{t(lang, 'report.ecc_family_coverage')}:"])
         lines.extend(f"- {item}" for item in ecc_family_coverage)
+    if ecc_coverage_matrix:
+        lines.extend(["", f"{t(lang, 'report.ecc_coverage_matrix')}:"])
+        lines.extend(f"- {item}" for item in ecc_coverage_matrix)
     if ecc_benchmark_case_summaries:
         lines.extend(["", f"{t(lang, 'report.ecc_benchmark_case_summaries')}:"])
         lines.extend(f"- {item}" for item in ecc_benchmark_case_summaries)

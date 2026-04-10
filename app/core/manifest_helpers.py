@@ -26,18 +26,29 @@ def build_run_manifest(
     session_path_fallback: Path,
 ) -> RunManifest:
     raw_artifact_references = collect_artifact_references(session)
-    allowed_artifact_roots = [
+    allowed_export_roots = [
         Path(config.storage.artifacts_dir),
         Path(config.storage.math_artifacts_dir),
         Path(config.storage.sessions_dir),
         Path(config.storage.traces_dir),
     ]
+    normalized_export_roots = _normalized_export_roots(allowed_export_roots)
     artifact_references = _filter_safe_artifact_references(
         raw_artifact_references,
-        allowed_roots=allowed_artifact_roots,
+        allowed_roots=allowed_export_roots,
     )
     session_path = Path(session.session_file_path or session_path_fallback)
     trace_path = Path(session.trace_file_path) if session.trace_file_path else None
+    safe_session_export = _is_safe_export_file(
+        session_path,
+        allowed_roots=normalized_export_roots,
+    )
+    safe_trace_export = _is_safe_export_file(
+        trace_path,
+        allowed_roots=normalized_export_roots,
+    )
+    filtered_artifact_count = max(0, len(raw_artifact_references) - len(artifact_references))
+    comparative_export_ready = bool(session.comparative_report is not None)
 
     return RunManifest(
         session_id=session.session_id,
@@ -46,6 +57,18 @@ def build_run_manifest(
         session_file_path=str(session_path),
         trace_file_path=str(trace_path) if trace_path is not None else None,
         comparative_report_path=session.comparative_report_file_path,
+        approved_export_roots=[str(root) for root in normalized_export_roots],
+        export_policy_summary=[
+            "Export policy: only approved local storage roots are eligible for bundle copy operations.",
+            f"Session export readiness: {'ready' if safe_session_export else 'skipped'}",
+            f"Trace export readiness: {'ready' if safe_trace_export else 'skipped'}",
+            f"Artifact export filtering: kept={len(artifact_references)} filtered={filtered_artifact_count}",
+            f"Comparative export readiness: {'ready' if comparative_export_ready else 'not available'}",
+        ],
+        filtered_artifact_count=filtered_artifact_count,
+        session_export_ready=safe_session_export,
+        trace_export_ready=safe_trace_export,
+        comparative_export_ready=comparative_export_ready,
         artifact_paths=[item.artifact_path for item in artifact_references],
         artifacts=artifact_references,
         artifact_count=len(artifact_references),
@@ -120,7 +143,10 @@ def build_run_manifest(
             f"workspace_count={len(session.math_workspaces)}",
             f"plugin_count={len(plugin_metadata)}",
             f"artifact_reference_count={len(artifact_references)}",
-            f"filtered_artifact_reference_count={max(0, len(raw_artifact_references) - len(artifact_references))}",
+            f"filtered_artifact_reference_count={filtered_artifact_count}",
+            f"session_export_ready={str(safe_session_export).lower()}",
+            f"trace_export_ready={str(safe_trace_export).lower()}",
+            f"comparative_export_ready={str(comparative_export_ready).lower()}",
             f"explored_branch_count={len(session.explored_hypothesis_ids)}",
             f"exploratory_round_count={session.exploratory_rounds_executed}",
             (
@@ -149,7 +175,7 @@ def _filter_safe_artifact_references(
     *,
     allowed_roots: list[Path],
 ) -> list[RunArtifactReference]:
-    normalized_roots = [_safe_resolve(root) for root in allowed_roots if root]
+    normalized_roots = _normalized_export_roots(allowed_roots)
     if not normalized_roots:
         return []
 
@@ -163,6 +189,19 @@ def _filter_safe_artifact_references(
             continue
         safe_references.append(item)
     return safe_references
+
+
+def _normalized_export_roots(roots: list[Path]) -> list[Path]:
+    return [resolved for root in roots if root for resolved in [_safe_resolve(root)] if resolved is not None]
+
+
+def _is_safe_export_file(path: Path | None, *, allowed_roots: list[Path]) -> bool:
+    if path is None or not allowed_roots or not path.exists() or not path.is_file():
+        return False
+    resolved = _safe_resolve(path)
+    if resolved is None:
+        return False
+    return any(_is_relative_to(resolved, root) for root in allowed_roots)
 
 
 def _safe_resolve(path: Path) -> Path | None:

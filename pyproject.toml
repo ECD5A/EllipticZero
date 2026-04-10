@@ -23,6 +23,12 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
 
+[project.urls]
+Repository = "https://github.com/ECD5A/EllipticZero"
+Documentation = "https://github.com/ECD5A/EllipticZero#readme"
+Security = "https://github.com/ECD5A/EllipticZero/blob/main/SECURITY.md"
+Commercial = "https://github.com/ECD5A/EllipticZero/blob/main/COMMERCIAL_LICENSE.md"
+
 [project.optional-dependencies]
 research = [
     "hypothesis>=6.112,<7.0",

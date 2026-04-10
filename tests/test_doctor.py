@@ -87,7 +87,7 @@ def test_system_doctor_reports_ok_for_mock_runtime() -> None:
     storage_check = next(check for check in report.checks if check.title == "Storage and Reproducibility Paths")
     assert any("bounded local safety gate" in item.lower() for item in plugin_check.details)
     assert any("approved export roots" in item.lower() for item in storage_check.details)
-    assert any("bundle export copies only artifact references" in item.lower() for item in storage_check.details)
+    assert any("bundle export copies only session snapshots, traces, and artifact references" in item.lower() for item in storage_check.details)
     assert any(check.title == "Advanced Math / Sage" and check.status == "info" for check in report.checks)
     assert any(check.title == "Smart-Contract Compiler" and check.status == "info" for check in report.checks)
     assert any(check.title == "Smart-Contract Static Analyzer" and check.status == "info" for check in report.checks)
@@ -215,6 +215,7 @@ def test_system_doctor_reports_ready_for_openrouter_with_key(monkeypatch) -> Non
     assert "openrouter" in provider_check.summary
     assert smoke_check.status == "ok"
     assert "openrouter" in smoke_check.summary
+    assert any("openrouter/auto" in item for item in smoke_check.details)
 
 
 def test_system_doctor_reports_ready_local_contract_compiler(monkeypatch) -> None:

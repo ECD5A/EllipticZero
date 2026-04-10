@@ -248,6 +248,27 @@ def build_ecc_family_coverage(session: ResearchSession) -> list[str]:
     return ordered_unique(items)[:5]
 
 
+def build_ecc_coverage_matrix(session: ResearchSession) -> list[str]:
+    if not _is_ecc_session(session):
+        return []
+
+    support_map = _collect_ecc_family_support(session)
+    if not support_map:
+        return []
+
+    residual_labels = _collect_ecc_residual_labels(session)
+    comparison_state = _collect_ecc_comparison_state(session)
+    items: list[str] = []
+    for family in sorted(support_map):
+        labels = sorted(support_map[family])
+        coverage = _ecc_support_coverage_label(labels, family in residual_labels)
+        items.append(
+            f"ECC coverage matrix for {family}: coverage={coverage}; support={', '.join(labels)}; "
+            f"baseline={comparison_state.get(family, 'unchanged')}; residual-risk={'yes' if family in residual_labels else 'no'}."
+        )
+    return ordered_unique(items)[:5]
+
+
 def build_ecc_benchmark_case_summaries(session: ResearchSession) -> list[str]:
     if not _is_ecc_session(session):
         return []
@@ -693,6 +714,10 @@ def build_reproducibility_summary(session: ResearchSession) -> list[str]:
     artifact_count = sum(len(evidence.artifact_paths) for evidence in session.evidence)
     if artifact_count:
         items.append(f"Local evidence artifacts referenced for export: {artifact_count}.")
+    if outputs:
+        items.append(
+            "Approved-root export policy keeps session, trace, and artifact copies bounded to the local storage directories."
+        )
     if session.selected_pack_name:
         items.append(
             f"Pack and step provenance preserved for replay: {session.selected_pack_name}; steps={len(session.executed_pack_steps)}."
@@ -733,6 +758,8 @@ def build_quality_gates(session: ResearchSession) -> list[str]:
     elif _is_ecc_session(session):
         if session.report.ecc_benchmark_posture:
             items.append("Quality gate ECC benchmark: " + session.report.ecc_benchmark_posture[0])
+        if session.report.ecc_coverage_matrix:
+            items.append("Quality gate ECC coverage: " + session.report.ecc_coverage_matrix[0])
     items.append(
         "Quality gate comparison: "
         + ("ready" if comparison_ready else "pending")
@@ -770,7 +797,7 @@ def build_hardening_summary(session: ResearchSession) -> list[str]:
         f"loaded={len(loaded_plugins)}; blocked={len(blocked_plugins)}."
     ]
     items.append(
-        "Hardening posture: exportable artifacts stay bounded to approved local roots for artifacts, math workspaces, sessions, and traces."
+        "Hardening posture: exportable session snapshots, traces, and artifacts stay bounded to approved local roots for artifacts, math workspaces, sessions, and traces."
     )
     if session.bundle_dir:
         items.append(
@@ -810,6 +837,8 @@ def build_validation_posture(session: ResearchSession) -> list[str]:
     elif _is_ecc_session(session):
         if session.report.ecc_validation_matrix:
             items.append("ECC validation posture: " + session.report.ecc_validation_matrix[0])
+        if session.report.ecc_coverage_matrix:
+            items.append("ECC coverage posture: " + session.report.ecc_coverage_matrix[0])
         if session.report.ecc_benchmark_delta:
             items.append("ECC baseline posture: " + session.report.ecc_benchmark_delta[0])
     if session.report.calibration_blockers:
@@ -832,6 +861,8 @@ def build_shared_follow_up(session: ResearchSession) -> list[str]:
     elif _is_ecc_session(session):
         if session.report.ecc_review_queue:
             items.append("ECC follow-up: " + session.report.ecc_review_queue[0])
+        if session.report.ecc_exit_criteria:
+            items.append("ECC exit check: " + session.report.ecc_exit_criteria[0])
     if session.report.reproducibility_summary:
         items.append("Preserve the current reproducibility bundle and manifest focus summary before the next bounded replay.")
     return ordered_unique(items)[:4]
@@ -847,7 +878,9 @@ def build_manifest_focus_summary(session: ResearchSession) -> list[str]:
         focus.extend(session.report.contract_review_focus[:1])
     elif _is_ecc_session(session):
         focus.extend(session.report.ecc_benchmark_posture[:1])
+        focus.extend(session.report.ecc_coverage_matrix[:1])
         focus.extend(session.report.ecc_validation_matrix[:1])
+        focus.extend(session.report.ecc_review_queue[:1])
         focus.extend(session.report.ecc_review_focus[:1])
     else:
         focus.extend(session.report.recommendations[:2])

@@ -17,6 +17,7 @@ from app.compute.runners import (
 )
 from app.config import AppConfig
 from app.core.orchestrator import ResearchOrchestrator
+from app.llm.live_smoke import resolve_live_smoke_model
 from app.llm.providers import SUPPORTED_PROVIDER_NAMES
 from app.models.doctor import DoctorCheck, DoctorReport
 
@@ -146,7 +147,10 @@ class SystemDoctor:
 
     def _check_provider_smoke_path(self) -> DoctorCheck:
         provider = self.config.llm.default_provider.strip().lower()
-        model = self.config.llm.default_model
+        model = resolve_live_smoke_model(
+            provider_name=provider,
+            configured_default_model=self.config.llm.default_model,
+        )
         timeout_cap = min(self.config.llm.timeout_seconds, 30)
         token_cap = min(self.config.llm.max_request_tokens, 512)
         provider_settings = getattr(self.config.providers, provider, None)

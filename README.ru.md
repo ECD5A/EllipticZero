@@ -7,6 +7,11 @@ EllipticZero — локальная лаборатория с доступным
 
 Пользовательский цикл остаётся простым: выбрать язык, выбрать домен, при необходимости выбрать кривую или передать код контракта, ввести исследовательскую идею, запустить ограниченную локальную сессию и посмотреть собранную доказательную базу с итоговым отчётом.
 
+Репозиторий остаётся публичным и source-available по `FSL-1.1-ALv2`. Текущие
+версии не предлагаются как OSI-approved open-source release, а конкурирующее
+коммерческое использование, hosted-развёртывание, OEM и white-label сценарии
+требуют отдельного соглашения.
+
 ## Скриншоты
 
 ![Стартовый экран EllipticZero](docs/assets/console-home-ru.png)
@@ -113,7 +118,7 @@ python -m app.main --show-routing
 python -m app.main --list-synthetic-targets
 python -m app.main --list-packs
 python -m app.main --live-provider-smoke openai --live-smoke-model gpt-4.1-mini
-python -m app.main --live-provider-smoke openrouter --live-smoke-model <openrouter-model-id>
+python -m app.main --live-provider-smoke openrouter --live-smoke-model openrouter/auto
 python -m app.main --replay-session .\artifacts\sessions\session_id.json
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Повторно прогнать bounded-аудит и записать различия до/после относительно сохранённой baseline-сессии."
 ```
@@ -141,7 +146,8 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Когда локальные сигналы это оправдывают, отчёт по смарт-контракту может также включать короткую очередь проверки, строки с остаточным риском для сильнейших маршрутов обзора, критерии завершения для сильнейшего маршрута обзора, статус компиляции, сводку по поверхности контракта, встроенные результаты проверок риск-паттернов, протокольный фокус, заметки по ограниченной проверке защитной доработки, приоритеты повторной проверки после доработки, осторожные рекомендации по защитной доработке, внешние результаты статического анализа и сравнение с ограниченными проверочными корпусами или repo-casebook-сценариями, где replay-путь может идти сразу по нескольким совпавшим семействам, если маршрут обзора действительно их объединяет, а также строки сравнения до/после и флаги возможных регрессий, когда к запуску привязана сохранённая baseline-сессия.
 - Завершённые запуски могут сохранять файл сессии, трассировку, сравнительный отчёт и пакет воспроизводимости в `artifacts/`, а пакет воспроизводимости теперь включает `overview.json` со сводкой фокуса, готовностью к сравнению, экспортными счётчиками и сводками по quality gates / hardening.
 - Кросс-доменный отчёт теперь тоже может сохранять quality gates и hardening summary, чтобы глубина доказательной базы, готовность к сравнению, export posture и остаточные manual-review lanes были видны в одном месте.
-- Manifest и bundle теперь фильтруют ссылки на артефакты, которые разрешаются вне approved local storage roots, а unsafe local plugin path layouts блокируются ещё до загрузки в реестр.
+- Manifest и bundle теперь фильтруют ссылки на артефакты, которые разрешаются вне approved local storage roots, а session/trace copies экспортируются только если исходные пути остаются внутри этих разрешённых корней.
+- Unsafe local plugin path layouts блокируются ещё до загрузки в реестр.
 
 Локальные настройки смотри в `.env.example`.
 
@@ -194,11 +200,17 @@ pytest -q
 Права на бренд и название не передаются вместе с лицензией на код. См.
 [TRADEMARKS.ru.md](docs/ru/TRADEMARKS.ru.md).
 
+Публичный репозиторий остаётся source-available, но текущие версии не стоит
+описывать как OSI-approved open-source release.
+
 ## Коммерческое Использование
 
 Если ваш сценарий включает конкурирующий коммерческий продукт, коммерческий
 hosted-сервис, OEM-дистрибуцию, white-label использование или перепродажу,
 нужно получать отдельную коммерческую лицензию.
+
+Если не уверены, попадает ли ваш сценарий в эту категорию, лучше уточнить это
+до запуска или продажи.
 
 См. [COMMERCIAL_LICENSE.ru.md](docs/ru/COMMERCIAL_LICENSE.ru.md).
 

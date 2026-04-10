@@ -98,6 +98,8 @@ When EllipticZero exports a reproducibility bundle, the bundle should preserve:
 
 Artifact references that resolve outside the approved local storage roots should be filtered from exported manifests and bundles instead of being copied implicitly.
 
+Session snapshots and trace files should also be copied into reproducibility bundles only when their source paths remain inside the same approved local storage roots.
+
 ## 5. Rerun Rules
 
 Reruns are required in any situation where evidence affects a meaningful conclusion and stability has not yet been established.

@@ -85,6 +85,7 @@ For ECC-focused sessions, the report should preserve ECC-specific detail when it
 - a short ECC benchmark summary when bounded ECC testbed packs materially shaped review order
 - a short ECC benchmark-posture block when the report can state how much bounded support currently backs the strongest ECC families
 - a short ECC family-coverage block when the report can summarize which ECC review families are currently covered broadly, partially, or narrowly
+- a short ECC coverage-matrix block when the report can summarize the current support, baseline state, and residual-risk posture for the strongest ECC review families
 - short ECC benchmark-case summaries when bounded ECC packs materially shaped which local family-specific cases mattered first
 - a short ECC review-focus block when local encoding, family-transition, domain, subgroup, cofactor, or twist-style signals narrowed the next defensive checks
 - short residual-risk lines when bounded ECC review still leaves family-specific encoding, subgroup, cofactor, twist, family-transition, or domain-completeness assumptions unresolved
@@ -106,6 +107,10 @@ The report must be:
 - explicit about uncertainty
 - faithful to evidence
 - clear about limitations
+
+When the report contains many specialist sections, the first screenful should
+still let a careful reader identify the strongest bounded takeaway, the primary
+blocker, and the next bounded follow-up action.
 
 The report must not be:
 

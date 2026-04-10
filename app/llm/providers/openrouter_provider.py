@@ -12,6 +12,8 @@ class OpenRouterProvider(BaseLLMProvider):
 
     provider_name = "openrouter"
     endpoint = "https://openrouter.ai/api/v1/chat/completions"
+    referer = "https://github.com/ECD5A/EllipticZero"
+    title = "EllipticZero"
 
     def __init__(self, *, api_key: str | None) -> None:
         self.api_key = api_key
@@ -43,7 +45,8 @@ class OpenRouterProvider(BaseLLMProvider):
             },
             headers={
                 "Authorization": f"Bearer {self.api_key}",
-                "X-OpenRouter-Title": "EllipticZero",
+                "HTTP-Referer": self.referer,
+                "X-Title": self.title,
             },
             timeout_seconds=timeout_seconds,
         )

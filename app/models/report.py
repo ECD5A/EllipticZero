@@ -33,6 +33,7 @@ class ResearchReport(BaseModel):
     ecc_benchmark_summary: list[str] = Field(default_factory=list)
     ecc_benchmark_posture: list[str] = Field(default_factory=list)
     ecc_family_coverage: list[str] = Field(default_factory=list)
+    ecc_coverage_matrix: list[str] = Field(default_factory=list)
     ecc_benchmark_case_summaries: list[str] = Field(default_factory=list)
     ecc_review_focus: list[str] = Field(default_factory=list)
     ecc_residual_risk: list[str] = Field(default_factory=list)
