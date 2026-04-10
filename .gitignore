@@ -1,0 +1,27 @@
+# Local Python environment
+.venv/
+
+# Python cache and build outputs
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+pytest-cache-files-*/
+
+# Local temporary runs
+.tmp/
+.pytest_tmp/
+.test_runs/
+.manual_smoke_sessions/
+
+# Local runtime state
+.ellipticzero/
+artifacts/
+.local_notes/
+
+# Editor / OS noise
+.vscode/
+.DS_Store
+Thumbs.db

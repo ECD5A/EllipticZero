@@ -1,0 +1,105 @@
+llm:
+  # The runtime can route different agent roles to different configured providers/models.
+  # The simplest real-world hosted setup is usually one API key plus one shared
+  # provider/model for all roles.
+  default_provider: mock
+  default_model: mock-default
+  fallback_provider: null
+  fallback_model: null
+  timeout_seconds: 60
+  max_request_tokens: 2048
+  max_total_requests_per_session: 16
+
+providers:
+  openai:
+    api_key_env: OPENAI_API_KEY
+  openrouter:
+    api_key_env: OPENROUTER_API_KEY
+  gemini:
+    api_key_env: GEMINI_API_KEY
+  anthropic:
+    api_key_env: ANTHROPIC_API_KEY
+
+agents:
+  # Leave per-agent routes null to keep one shared default provider/model.
+  # Override only when you intentionally want a mixed advanced setup.
+  math_agent:
+    provider: null
+    model: null
+  cryptography_agent:
+    provider: null
+    model: null
+  strategy_agent:
+    provider: null
+    model: null
+  hypothesis_agent:
+    provider: null
+    model: null
+  critic_agent:
+    provider: null
+    model: null
+  report_agent:
+    provider: null
+    model: null
+
+storage:
+  artifacts_dir: artifacts
+  sessions_dir: artifacts/sessions
+  traces_dir: artifacts/traces
+  math_artifacts_dir: artifacts/math
+  bundles_dir: artifacts/bundles
+
+sage:
+  enabled: true
+  binary: sage
+  timeout_seconds: 30
+
+plugins:
+  enabled: true
+  directory: plugins
+  allow_local_plugins: true
+
+research:
+  default_mode: standard
+  default_exploration_profile: cautious
+  max_exploratory_branches: 2
+  max_exploratory_rounds: 2
+  max_jobs_per_session: 4
+  aggressive_max_exploratory_branches: 3
+  aggressive_max_exploratory_rounds: 3
+  aggressive_max_jobs_per_session: 6
+  require_manual_review_for_exploratory: true
+
+local_research:
+  sympy_enabled: true
+  property_enabled: true
+  property_max_examples: 24
+  fuzz_enabled: true
+  fuzz_max_mutations: 12
+  fuzz_seed: 1337
+  formal_enabled: true
+  formal_backend: z3
+  formal_timeout_seconds: 5
+  ecc_testbeds_enabled: true
+  smart_contract_testbeds_enabled: true
+  smart_contract_compile_enabled: true
+  managed_solc_dir: .ellipticzero/tooling/solcx
+  managed_solc_version: "0.8.20"
+  solc_binary: solc
+  solcjs_binary: solcjs
+  smart_contract_compile_timeout_seconds: 12
+  slither_enabled: true
+  slither_binary: slither
+  slither_timeout_seconds: 45
+  echidna_enabled: true
+  echidna_binary: echidna
+  echidna_timeout_seconds: 45
+  echidna_test_limit: 128
+  echidna_seq_len: 16
+  foundry_enabled: true
+  forge_binary: forge
+  foundry_timeout_seconds: 45
+
+ui_language: en
+log_level: WARNING
+advanced_math_enabled: true

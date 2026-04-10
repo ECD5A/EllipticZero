@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose a bounded improvement to EllipticZero
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or need
+      description: What real problem would this change solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the bounded change you want to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Sandbox or architecture impact
+      description: Note any impact on sandbox boundaries, reproducibility, local runners, or reports.
+    validations:
+      required: false

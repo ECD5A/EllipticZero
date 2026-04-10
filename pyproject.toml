@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ellipticzero"
+version = "0.1.0"
+description = "A source-available sandboxed local research lab for ECC analysis, smart-contract audit, and reproducible evidence-driven computation."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+    "pydantic>=2.7,<3.0",
+    "packaging>=24.0,<26.0",
+    "python-dotenv>=1.0,<2.0",
+    "PyYAML>=6.0,<7.0",
+    "sympy>=1.13,<2.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+[project.optional-dependencies]
+research = [
+    "hypothesis>=6.112,<7.0",
+    "z3-solver>=4.13,<5.0",
+]
+smart_contract_basic = [
+    "pytest>=8.0,<9.0",
+    "ruff>=0.11,<0.12",
+    "hypothesis>=6.112,<7.0",
+    "z3-solver>=4.13,<5.0",
+    "py-solc-x>=2.0,<3.0",
+]
+smart_contract_static = [
+    "pytest>=8.0,<9.0",
+    "ruff>=0.11,<0.12",
+    "hypothesis>=6.112,<7.0",
+    "z3-solver>=4.13,<5.0",
+    "py-solc-x>=2.0,<3.0",
+    "slither-analyzer>=0.11,<0.12",
+]
+test = [
+    "pytest>=8.0,<9.0",
+    "ruff>=0.11,<0.12",
+    "hypothesis>=6.112,<7.0",
+    "z3-solver>=4.13,<5.0",
+]
+lab = [
+    "pytest>=8.0,<9.0",
+    "ruff>=0.11,<0.12",
+    "hypothesis>=6.112,<7.0",
+    "z3-solver>=4.13,<5.0",
+    "py-solc-x>=2.0,<3.0",
+    "slither-analyzer>=0.11,<0.12",
+]
+
+[project.scripts]
+ellipticzero = "app.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [
+    ".venv",
+    ".pytest_cache",
+    ".test_runs",
+    "artifacts",
+    ".ellipticzero",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
