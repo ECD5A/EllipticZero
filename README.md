@@ -40,6 +40,17 @@ EllipticZero is designed around:
 - cautious confidence calibration with manual-review lanes preserved
 - source-available evaluation with a commercial licensing path
 
+## Evaluate Quickly
+
+If you are reviewing EllipticZero as a researcher, security team, or potential
+commercial partner, start with:
+
+- [EVALUATION.md](EVALUATION.md) for the evaluation path and benchmark scorecard
+- [examples/golden_cases/README.md](examples/golden_cases/README.md) for stable
+  ECC and smart-contract smoke cases
+- [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) if your use case involves a
+  product, hosted service, OEM, white-label, resale, or similar commercial path
+
 ## Screenshots
 
 ![EllipticZero interactive home screen](docs/assets/console-home.png)

@@ -42,6 +42,19 @@ EllipticZero построен вокруг:
 - осторожной оценки уверенности с сохранением ручных review lanes
 - source-available оценки проекта с отдельным путем коммерческого лицензирования
 
+## Быстрая оценка проекта
+
+Если ты смотришь EllipticZero как исследователь, команда безопасности или
+потенциальный коммерческий партнер, начни отсюда:
+
+- [EVALUATION.ru.md](docs/ru/EVALUATION.ru.md) - путь оценки проекта и
+  проверочная benchmark-таблица
+- [examples/golden_cases/README.ru.md](examples/golden_cases/README.ru.md) -
+  стабильные ECC и smart-contract smoke-сценарии
+- [COMMERCIAL_LICENSE.ru.md](docs/ru/COMMERCIAL_LICENSE.ru.md) - если сценарий
+  связан с продуктом, hosted-сервисом, OEM, white-label, перепродажей или
+  похожим коммерческим использованием
+
 ## Скриншоты
 
 ![Стартовый экран EllipticZero](docs/assets/console-home-ru.png)
