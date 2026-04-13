@@ -64,6 +64,25 @@ Run a repo-scale smart-contract golden case:
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
+## Benchmark Scorecard
+
+Use the benchmark layer as a review checklist, not as a claim that the tool has
+fully audited a target by itself.
+
+| Area | What To Check | Stronger Signal |
+| --- | --- | --- |
+| Golden cases | Built-in ECC and smart-contract cases run cleanly and produce expected report shapes. | Stable smoke output across repeated local runs. |
+| ECC coverage | Point formats, curve metadata, subgroup/cofactor checks, twist hygiene, curve-family transitions, and domain-completeness surfaces are visible in the report. | Local compute evidence and report interpretation agree without overstating confidence. |
+| Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, and residual-risk lanes appear when the input justifies them. | The report separates confirmed local signals from manual-review priorities. |
+| Comparison | A saved baseline can be attached with `--compare-session`, `--compare-manifest`, or `--compare-bundle`. | Before/after lines show cautious deltas and possible regression flags. |
+| Export quality | Session, trace, manifest, and bundle artifacts stay inside approved local export roots. | A reviewer can reproduce what was run and inspect the evidence trail. |
+| Hosted path | Optional live smoke works only when the evaluator provides valid provider credentials. | Provider output is treated as interpretation, not proof. |
+
+Scorecard misses are useful. If a lane is absent, the reviewer should check
+whether the input did not justify that lane, the local toolchain was not
+installed, the prompt was too narrow, or the project needs deeper coverage in
+that area.
+
 ## Smart-Contract Repo-Scale Path
 
 For a local contract repository, start with a bounded run:
