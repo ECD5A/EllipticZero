@@ -46,6 +46,12 @@ Check the local environment:
 python -m app.main --doctor
 ```
 
+Print the compact evaluator summary:
+
+```powershell
+python -m app.main --evaluation-summary
+```
+
 List built-in golden cases:
 
 ```powershell

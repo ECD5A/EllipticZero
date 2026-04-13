@@ -16,6 +16,7 @@ from app.cli import InteractiveConsole, should_launch_interactive
 from app.cli.i18n import normalize_language, t
 from app.cli.text_rendering import (
     render_doctor_report,
+    render_evaluation_summary,
     render_experiment_packs,
     render_live_smoke_result,
     render_replay_result,
@@ -40,7 +41,12 @@ from app.compute.runners import (
 from app.config import AppConfig
 from app.core.doctor import SystemDoctor
 from app.core.experiment_packs import ExperimentPackRegistry
-from app.core.golden_cases import GoldenCaseError, prepare_golden_case_run, render_golden_cases
+from app.core.golden_cases import (
+    GoldenCaseError,
+    list_golden_cases,
+    prepare_golden_case_run,
+    render_golden_cases,
+)
 from app.core.orchestrator import ResearchOrchestrator
 from app.core.replay_loader import ReplayLoader
 from app.core.replay_planner import ReplayPlanner
@@ -315,6 +321,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="List safe built-in golden evaluator cases and exit",
     )
     parser.add_argument(
+        "--evaluation-summary",
+        action="store_true",
+        help="Show a compact no-key evaluator summary and exit",
+    )
+    parser.add_argument(
         "--golden-case",
         help="Run a safe built-in golden evaluator case by case id",
     )
@@ -446,6 +457,39 @@ def main() -> int:
 
     if args.show_routing:
         print(render_routing_summary(config, language=language))
+        return 0
+
+    if args.evaluation_summary:
+        if (
+            args.idea
+            or args.interactive
+            or selected_replay
+            or selected_comparison
+            or args.doctor
+            or args.live_provider_smoke
+            or args.golden_case
+            or args.list_golden_cases
+            or args.list_packs
+            or args.list_synthetic_targets
+            or args.synthetic_target
+            or args.pack
+            or args.contract_file
+            or args.contract_code
+            or args.contract_root
+            or args.contract_language
+        ):
+            parser.exit(
+                status=2,
+                message="Evaluation summary is a direct no-key CLI path and cannot be combined with run, replay, provider, contract, pack, or listing arguments.\n",
+            )
+        print(
+            render_evaluation_summary(
+                language=language,
+                golden_cases=list_golden_cases(),
+                pack_names=ExperimentPackRegistry().names(),
+                provider_names=SUPPORTED_PROVIDER_NAMES,
+            )
+        )
         return 0
 
     if args.live_provider_smoke and args.interactive:

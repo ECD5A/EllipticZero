@@ -10,6 +10,8 @@
 
 ### Добавлено
 
+- Компактная CLI-команда `--evaluation-summary` для быстрой оценки проекта без
+  API-ключей.
 - Короткие case-study snapshots для оценки ECC point-format review,
   vault-permission review и repo-scale lending-protocol triage.
 

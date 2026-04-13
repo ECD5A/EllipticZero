@@ -46,6 +46,12 @@ pip install -e .[lab]
 python -m app.main --doctor
 ```
 
+Вывести компактную сводку для оценки проекта:
+
+```powershell
+python -m app.main --evaluation-summary
+```
+
 Посмотреть встроенные golden cases:
 
 ```powershell

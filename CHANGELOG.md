@@ -10,6 +10,7 @@ introduced.
 
 ### Added
 
+- Compact `--evaluation-summary` CLI path for no-key evaluator orientation.
 - Evaluator-facing case-study snapshots for ECC point-format review,
   vault-permission review, and repo-scale lending-protocol triage.
 

@@ -8,6 +8,99 @@ from app.models.doctor import DoctorReport
 from app.models.replay_result import ReplayResult
 
 
+def render_evaluation_summary(
+    *,
+    language: str,
+    golden_cases: list[dict[str, object]],
+    pack_names: list[str],
+    provider_names: list[str],
+) -> str:
+    lang = normalize_language(language)
+    domain_counts: dict[str, int] = {}
+    for case in golden_cases:
+        domain = str(case.get("domain", "unknown") or "unknown")
+        domain_counts[domain] = domain_counts.get(domain, 0) + 1
+    domain_summary = ", ".join(
+        f"{domain}={count}" for domain, count in sorted(domain_counts.items())
+    )
+    providers = ", ".join(provider_names)
+
+    if lang == "ru":
+        return "\n".join(
+            [
+                "Сводка оценки EllipticZero",
+                "",
+                "Назначение:",
+                "- Source-available локальная лаборатория для ограниченных ECC-исследований и аудита смарт-контрактов.",
+                "- Основной фокус: воспроизводимая доказательная база, осторожные отчеты и явные границы ручной проверки.",
+                "",
+                "Покрытие:",
+                "- Домены: ECC / защитная криптография; аудит смарт-контрактов.",
+                f"- Golden cases: {len(golden_cases)} безопасных синтетических кейсов ({domain_summary}).",
+                f"- Experiment packs: {len(pack_names)} встроенных benchmark/review-пакетов.",
+                f"- Пути провайдеров: {providers}.",
+                "",
+                "Быстрая проверка без ключей:",
+                "- python -m app.main --doctor",
+                "- python -m app.main --list-golden-cases",
+                "- python -m app.main --golden-case ecc-secp256k1-point-format-edge",
+                "- python -m app.main --golden-case contract-repo-scale-lending-protocol",
+                "",
+                "Что оценивать:",
+                "- ECC: форматы точек, метаданные кривых, subgroup/cofactor, twist hygiene, family transitions, domain completeness.",
+                "- Смарт-контракты: parser, compile, inventory, repo map, casebook, benchmark, comparison и manual-review lanes.",
+                "- Граница доказательств: вывод модели является интерпретацией; локальные tool outputs и artifacts несут доказательную базу.",
+                "",
+                "Документы:",
+                "- README.ru.md",
+                "- docs/ru/EVALUATION.ru.md",
+                "- examples/SAMPLE_OUTPUTS.ru.md",
+                "- docs/ru/COMMERCIAL_LICENSE.ru.md",
+                "",
+                "Коммерческая граница:",
+                "- Оценка, исследование, внутренний review и локальное тестирование доступны по условиям публичной лицензии.",
+                "- Продукт, hosted-сервис, OEM, white-label, resale или похожие коммерческие сценарии лучше согласовать заранее.",
+            ]
+        )
+
+    return "\n".join(
+        [
+            "EllipticZero Evaluation Summary",
+            "",
+            "Purpose:",
+            "- Source-available local lab for bounded ECC and smart-contract audit research.",
+            "- Main focus: reproducible evidence, cautious reporting, and explicit manual-review boundaries.",
+            "",
+            "Coverage:",
+            "- Domains: ECC / defensive cryptography research; smart-contract audit.",
+            f"- Golden cases: {len(golden_cases)} safe synthetic cases ({domain_summary}).",
+            f"- Experiment packs: {len(pack_names)} built-in benchmark/review packs.",
+            f"- Provider paths: {providers}.",
+            "",
+            "Fast no-key checks:",
+            "- python -m app.main --doctor",
+            "- python -m app.main --list-golden-cases",
+            "- python -m app.main --golden-case ecc-secp256k1-point-format-edge",
+            "- python -m app.main --golden-case contract-repo-scale-lending-protocol",
+            "",
+            "What to evaluate:",
+            "- ECC: point formats, curve metadata, subgroup/cofactor, twist hygiene, family transitions, domain completeness.",
+            "- Smart contracts: parser, compile, inventory, repo map, casebook, benchmark, comparison, manual-review lanes.",
+            "- Evidence boundary: model output is interpretation; local tool outputs and artifacts carry the evidence trail.",
+            "",
+            "Docs:",
+            "- README.md",
+            "- EVALUATION.md",
+            "- examples/SAMPLE_OUTPUTS.md",
+            "- COMMERCIAL_LICENSE.md",
+            "",
+            "Commercial boundary:",
+            "- Evaluation, research, internal review, and local testing are available under the public license terms.",
+            "- Product, hosted service, OEM, white-label, resale, or similar commercial paths should be discussed before deployment.",
+        ]
+    )
+
+
 def render_live_smoke_result(
     *,
     language: str,

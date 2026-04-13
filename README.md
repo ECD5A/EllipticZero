@@ -162,6 +162,7 @@ python -m app.main --golden-case contract-repo-scale-lending-protocol
 Additional CLI utilities:
 
 ```powershell
+python -m app.main --evaluation-summary
 python -m app.main --list-synthetic-targets
 python -m app.main --list-packs
 python -m app.main --live-provider-smoke openai --live-smoke-model gpt-4.1-mini

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from app.cli.text_rendering import render_evaluation_summary
 from app.config import AppConfig
 from app.core.experiment_packs import ExperimentPackRegistry
 from app.core.golden_cases import list_golden_cases, prepare_golden_case_run, render_golden_cases
@@ -106,6 +107,36 @@ def test_golden_cli_parser_and_renderer_expose_cases() -> None:
     assert "contract-repo-scale-lending-protocol" in rendered_en
     assert "Golden cases EllipticZero" in rendered_ru
     assert "contract-repo-scale-lending-protocol" in rendered_ru
+
+
+def test_evaluation_summary_cli_parser_and_renderer_expose_eval_paths() -> None:
+    parser = build_parser()
+    args = parser.parse_args(["--evaluation-summary"])
+    pack_names = ExperimentPackRegistry().names()
+    cases = list_golden_cases()
+
+    rendered_en = render_evaluation_summary(
+        language="en",
+        golden_cases=cases,
+        pack_names=pack_names,
+        provider_names=["mock", "openai", "openrouter"],
+    )
+    rendered_ru = render_evaluation_summary(
+        language="ru",
+        golden_cases=cases,
+        pack_names=pack_names,
+        provider_names=["mock", "openai", "openrouter"],
+    )
+
+    assert args.evaluation_summary is True
+    assert "EllipticZero Evaluation Summary" in rendered_en
+    assert f"Golden cases: {len(cases)}" in rendered_en
+    assert f"Experiment packs: {len(pack_names)}" in rendered_en
+    assert "python -m app.main --doctor" in rendered_en
+    assert "contract-repo-scale-lending-protocol" in rendered_en
+    assert "Сводка оценки EllipticZero" in rendered_ru
+    assert "Быстрая проверка без ключей" in rendered_ru
+    assert "docs/ru/EVALUATION.ru.md" in rendered_ru
 
 
 def test_prepare_golden_case_run_builds_ecc_and_contract_sessions() -> None:
