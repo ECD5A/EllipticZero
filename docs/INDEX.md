@@ -5,6 +5,8 @@ Start here if you need to understand the project quickly.
 ## Core
 
 - [README](../README.md)
+- [Evaluation Guide](../EVALUATION.md)
+- [Changelog](../CHANGELOG.md)
 - [Architecture](../ARCHITECTURE.md)
 - [Agent System](../AGENTS.md)
 - [Examples](../examples/README.md)
@@ -36,6 +38,8 @@ Start here if you need to understand the project quickly.
 
 - [Russian README](../README.ru.md)
 - [Russian documentation index](ru/INDEX.ru.md)
+- [Russian evaluation guide](ru/EVALUATION.ru.md)
+- [Russian changelog](ru/CHANGELOG.ru.md)
 - [Russian examples](../examples/README.ru.md)
 - [Russian sample report shapes](../examples/SAMPLE_OUTPUTS.ru.md)
 - [Russian golden synthetic cases](../examples/golden_cases/README.ru.md)

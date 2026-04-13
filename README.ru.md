@@ -192,6 +192,8 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 ## Документация проекта
 
 - [INDEX.ru.md](docs/ru/INDEX.ru.md)
+- [EVALUATION.ru.md](docs/ru/EVALUATION.ru.md)
+- [CHANGELOG.ru.md](docs/ru/CHANGELOG.ru.md)
 - [USE_CASES.ru.md](docs/ru/USE_CASES.ru.md)
 - [ENVIRONMENT_PROFILES.ru.md](docs/ru/ENVIRONMENT_PROFILES.ru.md)
 - [ARCHITECTURE.ru.md](docs/ru/ARCHITECTURE.ru.md)

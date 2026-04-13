@@ -191,6 +191,8 @@ See `.env.example` for local configuration options.
 ## Project Docs
 
 - [docs/INDEX.md](docs/INDEX.md)
+- [EVALUATION.md](EVALUATION.md)
+- [CHANGELOG.md](CHANGELOG.md)
 - [docs/USE_CASES.md](docs/USE_CASES.md)
 - [docs/ENVIRONMENT_PROFILES.md](docs/ENVIRONMENT_PROFILES.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)

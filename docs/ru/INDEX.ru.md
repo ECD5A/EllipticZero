@@ -5,6 +5,8 @@
 ## Основа
 
 - [README на русском](../../README.ru.md)
+- [Оценка проекта](EVALUATION.ru.md)
+- [Журнал изменений](CHANGELOG.ru.md)
 - [Архитектура](ARCHITECTURE.ru.md)
 - [Агентная система](AGENTS.ru.md)
 - [Примеры запуска](../../examples/README.ru.md)
@@ -36,6 +38,8 @@
 
 - [English README](../../README.md)
 - [English documentation index](../INDEX.md)
+- [English evaluation guide](../../EVALUATION.md)
+- [English changelog](../../CHANGELOG.md)
 - [English examples](../../examples/README.md)
 - [English sample report shapes](../../examples/SAMPLE_OUTPUTS.md)
 - [English golden synthetic cases](../../examples/golden_cases/README.md)
