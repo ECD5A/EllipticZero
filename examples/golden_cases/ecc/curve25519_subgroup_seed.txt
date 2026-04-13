@@ -1,0 +1,5 @@
+Review subgroup, cofactor, twist, and encoding assumptions for 25519-family defensive analysis.
+
+Focus on how the report handles coordinate-shape caveats, cofactor or twist-sensitive language, and whether it avoids claiming a production finding without implementation-specific evidence.
+
+Recommended pack: ecc_subgroup_hygiene_benchmark_pack

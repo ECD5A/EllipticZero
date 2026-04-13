@@ -1,5 +1,13 @@
 # EllipticZero
 
+[![tests](https://github.com/ECD5A/EllipticZero/actions/workflows/tests.yml/badge.svg)](https://github.com/ECD5A/EllipticZero/actions/workflows/tests.yml)
+[![codeql](https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml/badge.svg)](https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml)
+![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![License](https://img.shields.io/badge/license-FSL--1.1--ALv2-f0b429)
+![Source Available](https://img.shields.io/badge/source--available-FSL--1.1--ALv2-2ea44f)
+![Domains](https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2)
+![Local First](https://img.shields.io/badge/local--first-reproducible%20evidence-5b5fc7)
+
 EllipticZero is a source-available local lab for bounded defensive research in two domains:
 
 - ECC / defensive cryptography research
@@ -11,6 +19,26 @@ The repository is public and source-available under `FSL-1.1-ALv2`. Current
 versions are not offered under an OSI open-source license, and competing
 commercial use, hosted deployment, OEM distribution, or white-label use require
 a separate agreement.
+
+## Why EllipticZero
+
+EllipticZero is built for evidence-first local research, not unchecked agent
+autonomy. The system keeps agent reasoning, local computation, artifacts,
+replay, confidence, and manual-review boundaries visible in one workflow.
+
+Its goal is to help a careful reviewer narrow what should be checked next, what
+the local evidence actually supports, and what still requires human judgment.
+
+## Core Strengths
+
+EllipticZero is designed around:
+
+- local-first defensive research and audit workflows
+- bounded orchestration for ECC and smart-contract review
+- reproducible evidence, traces, manifests, bundles, and reports
+- benchmark packs for repeatable comparison and hardening validation
+- cautious confidence calibration with manual-review lanes preserved
+- source-available evaluation with a commercial licensing path
 
 ## Screenshots
 
@@ -28,6 +56,7 @@ a separate agreement.
 - built-in smart-contract corpora for asset-flow, vault/share, oracle freshness, collateral/liquidation and liquidation-fee review, protocol-fee/reserve-buffer/debt accounting, bad-debt socialization, and related protocol-style review families
 - bounded repo-scale casebooks for upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, and vault/permit lanes, plus optional `Slither`, `Foundry`, and `Echidna` adapters when installed locally
 - built-in smart-contract benchmark packs for static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, upgrade/control benchmarking, governance/timelock benchmarking, rewards/distribution benchmarking, stablecoin/collateral benchmarking, AMM/liquidity benchmarking, bridge/custody benchmarking, staking/rebase benchmarking, keeper/auction benchmarking, treasury/vesting benchmarking, insurance/recovery benchmarking, vault/permission benchmarking, and lending-style protocol benchmarking
+- golden/synthetic example cases with expected report shapes for evaluator-facing ECC and smart-contract smoke checks
 - traces, manifests, bundles, replay, and doctor/self-check
 - `mock` by default, plus `openai`, `openrouter`, `gemini`, and `anthropic` when configured
 
@@ -112,6 +141,13 @@ Routing overview:
 python -m app.main --show-routing
 ```
 
+Built-in golden evaluator cases:
+
+```powershell
+python -m app.main --list-golden-cases
+python -m app.main --golden-case contract-repo-scale-lending-protocol
+```
+
 Additional CLI utilities:
 
 ```powershell
@@ -154,8 +190,12 @@ See `.env.example` for local configuration options.
 
 ## Project Docs
 
+- [docs/INDEX.md](docs/INDEX.md)
+- [docs/USE_CASES.md](docs/USE_CASES.md)
+- [docs/ENVIRONMENT_PROFILES.md](docs/ENVIRONMENT_PROFILES.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [AGENTS.md](AGENTS.md)
+- [LICENSE_FAQ.md](LICENSE_FAQ.md)
 - [LICENSE_TRANSITION.md](LICENSE_TRANSITION.md)
 - [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md)
 - [TRADEMARKS.md](TRADEMARKS.md)
@@ -163,6 +203,11 @@ See `.env.example` for local configuration options.
 - [REPORT_SPEC.md](REPORT_SPEC.md)
 - [SECURITY.md](SECURITY.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
+- [examples/README.md](examples/README.md)
+- [examples/SAMPLE_OUTPUTS.md](examples/SAMPLE_OUTPUTS.md)
+- [examples/golden_cases/README.md](examples/golden_cases/README.md)
+- [examples/golden_cases/RUNBOOK.md](examples/golden_cases/RUNBOOK.md)
+- [examples/golden_cases/EXPECTED_REPORT_SHAPES.md](examples/golden_cases/EXPECTED_REPORT_SHAPES.md)
 
 ## Verification
 
@@ -205,6 +250,9 @@ Branding rights are not granted under the code license. See
 [TRADEMARKS.md](TRADEMARKS.md).
 
 ## Commercial Use
+
+Evaluation, research, internal review, and local testing are welcome under the
+public license terms.
 
 If your use case involves a competing commercial product, commercial hosted
 service, OEM distribution, white-label usage, or resale, you should obtain a

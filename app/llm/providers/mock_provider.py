@@ -347,21 +347,23 @@ class MockLLMProvider(BaseLLMProvider):
 
     def _is_smart_contract_seed(self, seed: str) -> bool:
         lowered = seed.lower()
-        return any(
+        if any(
             token in lowered
             for token in (
                 "[ez_domain: smart_contract_audit]",
                 "pragma solidity",
-                "contract ",
-                "interface ",
-                "library ",
                 "delegatecall",
                 "tx.origin",
                 "selfdestruct",
                 "solidity",
                 "vyper",
             )
-        )
+        ):
+            return True
+        return re.search(
+            r"\b(?:contract|interface|library)\s+[a-z_][a-z0-9_]*(?:\s+is\s+[^{]+)?\s*\{",
+            lowered,
+        ) is not None
 
     def _smart_contract_focus(self, seed: str) -> str:
         lowered = seed.lower()

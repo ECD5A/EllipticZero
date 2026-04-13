@@ -7,7 +7,13 @@ The public license is the controlling document for ordinary repository use.
 This file is a short practical guide for situations that should be discussed
 under a separate commercial agreement.
 
+For a practical explanation of common license questions, see
+[LICENSE_FAQ.md](LICENSE_FAQ.md).
+
 ## When To Contact For A Commercial License
+
+Evaluation, research, internal review, and local testing are welcome under the
+public license terms.
 
 If your plan involves rights beyond the public repository license, contact
 before shipping, selling, or deploying. Common examples include:

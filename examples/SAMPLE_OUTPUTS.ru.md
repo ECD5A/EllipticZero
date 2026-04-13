@@ -1,0 +1,152 @@
+# Примеры форм отчета
+
+Это сокращенные примеры структуры отчета для безопасной оценки проекта. Они
+показывают форму полезного вывода без заявлений о реальной цели. Реальные отчеты
+зависят от локального входа, выбранного pack, настроенных инструментов и
+доступной доказательной базы.
+
+## ECC benchmark-отчет
+
+Команда:
+
+```powershell
+python -m app.main --pack ecc_family_depth_benchmark_pack "Review curve-family transitions, parameter labels, and encoding assumptions for defensive ECC analysis."
+```
+
+Типичные области отчета:
+
+```text
+Research target:
+- ECC curve/domain metadata, family transitions, and encoding assumptions.
+
+Experiment pack:
+- ecc_family_depth_benchmark_pack.
+
+Evidence:
+- curve parameter and metadata checks
+- family transition benchmark steps
+- point or encoding format review where applicable
+
+Report focus:
+- labels and aliases that require manual confirmation
+- family-limited encoding assumptions
+- missing or incomplete domain fields
+- cautious comparison notes if a baseline is attached
+
+Confidence:
+- bounded by local tool evidence
+- no cryptographic break claimed
+- manual review required for production conclusions
+```
+
+Хороший вывод в этой линии показывает неопределенность. Полезный запуск сужает
+следующий маршрут проверки и отделяет слабые сигналы по метаданным от
+подтвержденной доказательной базы.
+
+## Smart-contract static benchmark-отчет
+
+Команда:
+
+```powershell
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --pack contract_static_benchmark_pack "Benchmark the contract with bounded static analysis and parser-to-surface cross-checks."
+```
+
+Типичные области отчета:
+
+```text
+Contract surface:
+- parsed contract names, functions, modifiers, events, and visible state.
+
+Static review lanes:
+- externally reachable value flow
+- low-level calls
+- access-control surfaces
+- upgrade or admin paths where present
+- compiler or parser constraints
+
+Benchmark pack summary:
+- parse outline
+- compile attempt
+- surface mapping
+- built-in pattern review
+- optional external analyzer result if installed
+
+Review queue:
+- strongest lanes first
+- residual risk lines
+- exit criteria for follow-up review
+
+Confidence:
+- bounded first-pass static review
+- manual audit, tests, invariants, and formal verification remain follow-up lanes
+```
+
+Хороший вывод в этой линии помогает аудитору расставить приоритеты. Он должен
+сохранять, что было проверено, что не было проверено и что требует ручного
+подтверждения.
+
+## Repo-casebook отчет
+
+Команда:
+
+```powershell
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --pack repo_casebook_benchmark_pack "Compare the bounded repo inventory against supported protocol-style review lanes."
+```
+
+Типичные области отчета:
+
+```text
+Repo inventory:
+- first-party contract files
+- dependency or vendor scope
+- entrypoint candidates
+- function-family priorities
+
+Casebook matches:
+- asset-flow, vault/share, oracle/liquidation, governance/timelock, rewards,
+  stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, or
+  related lanes when supported by local evidence.
+
+Triage:
+- strongest matched case families
+- unmatched or weakly matched lanes
+- suggested manual review order
+
+Confidence:
+- casebook similarity is a prioritization signal
+- it is not proof of a bug by itself
+```
+
+## Before/after validation отчет
+
+Команда:
+
+```powershell
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
+```
+
+Типичные области отчета:
+
+```text
+Comparison source:
+- baseline session, manifest, or bundle path
+
+Delta summary:
+- changed review lanes
+- added or removed pattern signals
+- compile or parser posture changes
+- benchmark pack differences where available
+
+Regression watch:
+- new unresolved lanes
+- weaker evidence coverage
+- missing artifacts or incomplete baseline context
+
+Confidence:
+- comparison is only as strong as the saved baseline and current run
+- manual review remains required before release decisions
+```
+
+Эта линия полезна для проверки защитных доработок. Она помогает понять, стал ли
+новый запуск лучше, хуже или просто отличается в рамках той же ограниченной
+модели проверки.

@@ -40,6 +40,7 @@ from app.compute.runners import (
 from app.config import AppConfig
 from app.core.doctor import SystemDoctor
 from app.core.experiment_packs import ExperimentPackRegistry
+from app.core.golden_cases import GoldenCaseError, prepare_golden_case_run, render_golden_cases
 from app.core.orchestrator import ResearchOrchestrator
 from app.core.replay_loader import ReplayLoader
 from app.core.replay_planner import ReplayPlanner
@@ -309,6 +310,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="List built-in experiment packs and exit",
     )
     parser.add_argument(
+        "--list-golden-cases",
+        action="store_true",
+        help="List safe built-in golden evaluator cases and exit",
+    )
+    parser.add_argument(
+        "--golden-case",
+        help="Run a safe built-in golden evaluator case by case id",
+    )
+    parser.add_argument(
         "--live-provider-smoke",
         choices=HOSTED_PROVIDER_NAMES,
         help="Run a bounded live hosted-provider smoke test and exit.",
@@ -448,9 +458,15 @@ def main() -> int:
         parser.exit(status=2, message="Hosted smoke test cannot be combined with --doctor.\n")
     if args.live_provider_smoke and selected_comparison:
         parser.exit(status=2, message="Hosted smoke test cannot be combined with baseline comparison arguments.\n")
+    if args.live_provider_smoke and (args.list_golden_cases or args.golden_case):
+        parser.exit(status=2, message="Hosted smoke test cannot be combined with golden case arguments.\n")
 
     configure_logging(config.log_level)
     orchestrator = build_orchestrator(config)
+
+    if args.list_golden_cases:
+        print(render_golden_cases(language=language))
+        return 0
 
     if args.list_packs:
         print(render_experiment_packs(orchestrator, language=language))
@@ -472,6 +488,8 @@ def main() -> int:
         parser.exit(status=2, message="Synthetic target selection is available only for new sessions.\n")
     if selected_replay and args.pack:
         parser.exit(status=2, message="Experiment pack selection is available only for new sessions.\n")
+    if selected_replay and args.golden_case:
+        parser.exit(status=2, message="Golden case selection is available only for new sessions.\n")
     if selected_replay and args.contract_file:
         parser.exit(status=2, message="Smart-contract source selection is available only for new sessions.\n")
     if selected_replay and args.contract_code:
@@ -486,6 +504,8 @@ def main() -> int:
         parser.exit(status=2, message="Synthetic target selection is not used with --doctor.\n")
     if args.doctor and args.pack:
         parser.exit(status=2, message="Experiment pack selection is not used with --doctor.\n")
+    if args.doctor and args.golden_case:
+        parser.exit(status=2, message="Golden case selection is not used with --doctor.\n")
     if args.doctor and args.contract_file:
         parser.exit(status=2, message="Smart-contract source selection is not used with --doctor.\n")
     if args.doctor and args.contract_code:
@@ -519,9 +539,31 @@ def main() -> int:
                 ),
             )
         return 0
+
+    golden_run = None
+    if args.golden_case:
+        if args.idea:
+            parser.exit(status=2, message="Golden case selection cannot be combined with a free-form research idea.\n")
+        if args.domain:
+            parser.exit(status=2, message="Golden case selection already defines the research domain.\n")
+        if args.contract_file or args.contract_code or args.contract_root or args.contract_language:
+            parser.exit(status=2, message="Golden case selection cannot be combined with smart-contract source arguments.\n")
+        if args.synthetic_target:
+            parser.exit(status=2, message="Golden case selection already defines any required synthetic target.\n")
+        if args.pack:
+            parser.exit(status=2, message="Golden case selection already defines the experiment pack.\n")
+        if selected_comparison:
+            parser.exit(status=2, message="Golden case selection cannot be combined with baseline comparison arguments.\n")
+        if args.interactive:
+            parser.exit(status=2, message="Golden case selection is a direct CLI path and cannot be combined with --interactive.\n")
+        try:
+            golden_run = prepare_golden_case_run(args.golden_case)
+        except GoldenCaseError as exc:
+            parser.exit(status=2, message=f"Golden case rejected: {exc}\n")
+
     if should_launch_interactive(
         interactive_flag=args.interactive,
-        has_idea=bool(args.idea) or bool(selected_comparison),
+        has_idea=bool(args.idea) or bool(selected_comparison) or bool(golden_run),
         has_replay_source=bool(selected_replay),
         stdin_isatty=sys.stdin.isatty(),
         stdout_isatty=sys.stdout.isatty(),
@@ -587,9 +629,16 @@ def main() -> int:
                 ),
             )
 
-    idea = args.idea or input(t(language, "cli.enter_idea")).strip()
-    prepared_seed = idea
-    if args.domain == "smart_contract_audit":
+    selected_pack_name = args.pack
+    selected_synthetic_target_name = args.synthetic_target
+    if golden_run is not None:
+        prepared_seed = golden_run.seed_text
+        selected_pack_name = golden_run.experiment_pack_name
+        selected_synthetic_target_name = golden_run.synthetic_target_name
+    else:
+        idea = args.idea or input(t(language, "cli.enter_idea")).strip()
+        prepared_seed = idea
+    if golden_run is None and args.domain == "smart_contract_audit":
         if args.contract_file and args.contract_code:
             parser.exit(status=2, message="SMART CONTRACT AUDIT accepts either --contract-file or --contract-code, not both.\n")
         contract_source_label: str | None = None
@@ -637,8 +686,8 @@ def main() -> int:
             seed_text=prepared_seed,
             author=args.author,
             research_mode=args.research_mode,
-            synthetic_target_name=args.synthetic_target,
-            experiment_pack_name=args.pack,
+            synthetic_target_name=selected_synthetic_target_name,
+            experiment_pack_name=selected_pack_name,
             comparison_baseline=comparison_baseline,
             comparison_baseline_source_type=comparison_source_type,
             comparison_baseline_source_path=comparison_source_path,

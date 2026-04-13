@@ -1,0 +1,5 @@
+Inspect a compressed secp256k1 public-key encoding edge and keep format evidence separate from stronger cryptographic claims.
+
+Use a bounded point-format lane, preserve any prefix or coordinate caveat as local evidence, and avoid claiming private-key recovery or a production library vulnerability without implementation-specific evidence.
+
+Recommended pack: point_format_inspection_pack

@@ -1,5 +1,13 @@
 # EllipticZero
 
+[![tests](https://github.com/ECD5A/EllipticZero/actions/workflows/tests.yml/badge.svg)](https://github.com/ECD5A/EllipticZero/actions/workflows/tests.yml)
+[![codeql](https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml/badge.svg)](https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml)
+![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![License](https://img.shields.io/badge/license-FSL--1.1--ALv2-f0b429)
+![Source Available](https://img.shields.io/badge/source--available-FSL--1.1--ALv2-2ea44f)
+![Domains](https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2)
+![Local First](https://img.shields.io/badge/local--first-reproducible%20evidence-5b5fc7)
+
 EllipticZero — локальная лаборатория с доступным исходным кодом по модели source-available для ограниченных защитных исследований в двух доменах:
 
 - ECC / защитная криптография
@@ -12,13 +20,35 @@ EllipticZero — локальная лаборатория с доступным
 коммерческое использование, hosted-развёртывание, OEM и white-label сценарии
 требуют отдельного соглашения.
 
+## Почему EllipticZero
+
+EllipticZero сделан для локальных исследований, где на первом месте стоит
+доказательная база, а не неконтролируемая автономия агентов. В одном рабочем
+цикле остаются видны рассуждения агентов, локальные вычисления, артефакты,
+повторный запуск, уровень уверенности и границы ручной проверки.
+
+Цель проекта - помочь аккуратному исследователю понять, что проверять дальше,
+что действительно подтверждается локальными артефактами, а что все еще требует
+решения специалиста.
+
+## Сильные стороны
+
+EllipticZero построен вокруг:
+
+- локальных защитных исследований и аудиторских workflow
+- ограниченной оркестрации для ECC и smart-contract review
+- воспроизводимых доказательств, трассировок, манифестов, bundle-пакетов и отчетов
+- benchmark-пакетов для повторяемого сравнения и проверки защитных доработок
+- осторожной оценки уверенности с сохранением ручных review lanes
+- source-available оценки проекта с отдельным путем коммерческого лицензирования
+
 ## Скриншоты
 
 ![Стартовый экран EllipticZero](docs/assets/console-home-ru.png)
 
 ![Экран итогового отчёта EllipticZero](docs/assets/session-report-ru.png)
 
-## Что Есть В Проекте
+## Что входит в проект
 
 - исследовательские сессии с оркестратором в центре цикла
 - агенты Math, Cryptography, Strategy, Hypothesis, Critic и Report
@@ -28,10 +58,11 @@ EllipticZero — локальная лаборатория с доступным
 - встроенные проверочные корпуса для asset-flow, vault/share, oracle freshness, collateral/liquidation и liquidation-fee review, protocol-fee/reserve-buffer/debt accounting, bad-debt socialization и смежных protocol-style семейств обзора
 - ограниченные repo-casebook сценарии для upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery и vault/permit, а также опциональные адаптеры `Slither`, `Foundry` и `Echidna`, если они установлены локально
 - встроенные smart-contract benchmark-пакеты для static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, а также для governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style проходов
+- golden/synthetic примеры с ожидаемыми формами отчетов для быстрой оценки ECC и smart-contract smoke checks
 - трассировки, манифесты, пакеты воспроизводимости, повторный запуск и `doctor`
 - `mock` по умолчанию, а также `openai`, `openrouter`, `gemini` и `anthropic` при корректной настройке
 
-## Быстрый Старт
+## Быстрый старт
 
 Требования:
 
@@ -74,7 +105,7 @@ python -m app.main --doctor
 
 В интерактивной консоли язык можно переключать без перезапуска клавишами `F2` или `L`.
 
-## Полезные Команды
+## Полезные команды
 
 Прямая исследовательская сессия:
 
@@ -112,6 +143,13 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 python -m app.main --show-routing
 ```
 
+Встроенные golden evaluator cases:
+
+```powershell
+python -m app.main --list-golden-cases
+python -m app.main --golden-case contract-repo-scale-lending-protocol
+```
+
 Дополнительные CLI-утилиты:
 
 ```powershell
@@ -123,7 +161,7 @@ python -m app.main --replay-session .\artifacts\sessions\session_id.json
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Повторно прогнать bounded-аудит и записать различия до/после относительно сохранённой baseline-сессии."
 ```
 
-## Конфигурация И Runtime
+## Конфигурация и runtime
 
 - Конфигурация читается из базовых значений, `configs/settings.yaml`, переменных окружения и необязательного `.env`.
 - Поддерживаемые провайдеры: `mock`, `openai`, `openrouter`, `gemini`, `anthropic`.
@@ -151,10 +189,14 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 
 Локальные настройки смотри в `.env.example`.
 
-## Документация Проекта
+## Документация проекта
 
+- [INDEX.ru.md](docs/ru/INDEX.ru.md)
+- [USE_CASES.ru.md](docs/ru/USE_CASES.ru.md)
+- [ENVIRONMENT_PROFILES.ru.md](docs/ru/ENVIRONMENT_PROFILES.ru.md)
 - [ARCHITECTURE.ru.md](docs/ru/ARCHITECTURE.ru.md)
 - [AGENTS.ru.md](docs/ru/AGENTS.ru.md)
+- [LICENSE_FAQ.ru.md](docs/ru/LICENSE_FAQ.ru.md)
 - [LICENSE_TRANSITION.ru.md](docs/ru/LICENSE_TRANSITION.ru.md)
 - [COMMERCIAL_LICENSE.ru.md](docs/ru/COMMERCIAL_LICENSE.ru.md)
 - [TRADEMARKS.ru.md](docs/ru/TRADEMARKS.ru.md)
@@ -162,6 +204,11 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - [REPORT_SPEC.ru.md](docs/ru/REPORT_SPEC.ru.md)
 - [SECURITY.ru.md](docs/ru/SECURITY.ru.md)
 - [CONTRIBUTING.ru.md](docs/ru/CONTRIBUTING.ru.md)
+- [examples/README.ru.md](examples/README.ru.md)
+- [examples/SAMPLE_OUTPUTS.ru.md](examples/SAMPLE_OUTPUTS.ru.md)
+- [examples/golden_cases/README.ru.md](examples/golden_cases/README.ru.md)
+- [examples/golden_cases/RUNBOOK.ru.md](examples/golden_cases/RUNBOOK.ru.md)
+- [examples/golden_cases/EXPECTED_REPORT_SHAPES.ru.md](examples/golden_cases/EXPECTED_REPORT_SHAPES.ru.md)
 
 ## Проверка
 
@@ -174,12 +221,12 @@ pytest -q
 
 Сейчас проект проходит тесты в `mock`-режиме.
 
-## Поддержка Проекта
+## Поддержка проекта
 
 - Bitcoin (BTC): `1ECDSA1b4d5TcZHtqNpcxmY8pBH1GgHntN`
 - USDT (TRC20): `TSWcFVfqCp4WCXrUkkzdCkcLnhtFLNN3Ba`
 
-## Ответственное Использование
+## Ответственное использование
 
 Используй EllipticZero только для авторизованного локального исследования. Держи эксперименты ограниченными, обратимыми и проверяемыми.
 
@@ -203,7 +250,10 @@ pytest -q
 Публичный репозиторий остаётся source-available, но текущие версии не стоит
 описывать как OSI-approved open-source release.
 
-## Коммерческое Использование
+## Коммерческое использование
+
+Оценка проекта, исследование, внутренний review и локальное тестирование
+доступны по условиям публичной лицензии.
 
 Если ваш сценарий включает конкурирующий коммерческий продукт, коммерческий
 hosted-сервис, OEM-дистрибуцию, white-label использование или перепродажу,

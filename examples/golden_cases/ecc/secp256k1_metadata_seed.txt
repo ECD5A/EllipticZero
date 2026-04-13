@@ -1,0 +1,5 @@
+Review whether secp256k1 curve-domain assumptions are complete enough for cautious defensive reporting.
+
+Focus on aliases, family classification, generator/order/cofactor exposure, and whether the final report clearly separates local metadata evidence from any stronger cryptographic claim.
+
+Recommended pack: ecc_domain_completeness_benchmark_pack

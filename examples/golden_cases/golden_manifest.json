@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "purpose": "Safe synthetic golden cases for evaluating EllipticZero report shape, pack routing, and bounded evidence expectations.",
+  "cases": [
+    {
+      "case_id": "ecc-secp256k1-domain-completeness",
+      "domain": "ecc_research",
+      "input_file": "ecc/secp256k1_metadata_seed.txt",
+      "synthetic_target": "toy_curve_secp256k1",
+      "recommended_pack": "ecc_domain_completeness_benchmark_pack",
+      "expected_report_shape": {
+        "must_include": [
+          "selected benchmark pack",
+          "executed pack steps",
+          "curve-domain metadata",
+          "bounded confidence",
+          "manual-review boundaries"
+        ],
+        "must_not_claim": [
+          "new cryptographic break",
+          "proof of implementation vulnerability",
+          "unbounded coverage"
+        ]
+      },
+      "sample_command": "python -m app.main --pack ecc_domain_completeness_benchmark_pack \"Review whether secp256k1 curve-domain assumptions are complete enough for cautious defensive reporting.\""
+    },
+    {
+      "case_id": "ecc-25519-subgroup-hygiene",
+      "domain": "ecc_research",
+      "input_file": "ecc/curve25519_subgroup_seed.txt",
+      "synthetic_target": "toy_coordinate_length_mismatch",
+      "recommended_pack": "ecc_subgroup_hygiene_benchmark_pack",
+      "expected_report_shape": {
+        "must_include": [
+          "subgroup or cofactor review lane",
+          "twist-hygiene boundary",
+          "encoding or coordinate caveat",
+          "bounded confidence",
+          "manual-review boundaries"
+        ],
+        "must_not_claim": [
+          "validated exploit",
+          "complete 25519-family verification",
+          "production implementation finding without local source evidence"
+        ]
+      },
+      "sample_command": "python -m app.main --pack ecc_subgroup_hygiene_benchmark_pack \"Review subgroup, cofactor, twist, and encoding assumptions for 25519-family defensive analysis.\""
+    },
+    {
+      "case_id": "ecc-secp256k1-point-format-edge",
+      "domain": "ecc_research",
+      "input_file": "ecc/secp256k1_point_format_edge_seed.txt",
+      "synthetic_target": "toy_secp256k1_bad_prefix_compressed",
+      "recommended_pack": "point_format_inspection_pack",
+      "expected_report_shape": {
+        "must_include": [
+          "point-format inspection",
+          "bounded consistency result",
+          "format or prefix caveat",
+          "manual-review boundary",
+          "bounded confidence"
+        ],
+        "must_not_claim": [
+          "private-key recovery",
+          "validated cryptographic exploit",
+          "production library vulnerability without implementation evidence"
+        ]
+      },
+      "sample_command": "python -m app.main --pack point_format_inspection_pack \"Inspect a compressed secp256k1 public-key encoding edge and keep format evidence separate from stronger cryptographic claims.\""
+    },
+    {
+      "case_id": "contract-vault-permission-lane",
+      "domain": "smart_contract_audit",
+      "input_file": "contracts/SyntheticVault.sol",
+      "recommended_pack": "vault_permission_benchmark_pack",
+      "fallback_pack": "contract_static_benchmark_pack",
+      "expected_report_shape": {
+        "must_include": [
+          "contract parser outline",
+          "external and payable surface summary",
+          "vault or permission review lane",
+          "manual review queue",
+          "bounded confidence"
+        ],
+        "must_not_claim": [
+          "confirmed reentrancy exploit",
+          "production loss scenario",
+          "complete formal verification"
+        ]
+      },
+      "sample_command": "python -m app.main --domain smart_contract_audit --contract-file .\\examples\\golden_cases\\contracts\\SyntheticVault.sol --pack vault_permission_benchmark_pack \"Benchmark vault share-accounting, permission, and externally reachable value-flow review lanes.\""
+    },
+    {
+      "case_id": "contract-governance-timelock-lane",
+      "domain": "smart_contract_audit",
+      "input_file": "contracts/SyntheticGovernanceTimelock.sol",
+      "recommended_pack": "governance_timelock_benchmark_pack",
+      "fallback_pack": "contract_static_benchmark_pack",
+      "expected_report_shape": {
+        "must_include": [
+          "governance or timelock review lane",
+          "delegatecall or upgrade-control surface",
+          "timestamp or delay boundary",
+          "manual review queue",
+          "bounded confidence"
+        ],
+        "must_not_claim": [
+          "confirmed governance takeover",
+          "complete upgrade safety proof",
+          "unbounded protocol coverage"
+        ]
+      },
+      "sample_command": "python -m app.main --domain smart_contract_audit --contract-file .\\examples\\golden_cases\\contracts\\SyntheticGovernanceTimelock.sol --pack governance_timelock_benchmark_pack \"Benchmark governance timelock, upgrade-control, and emergency-lane review surfaces.\""
+    },
+    {
+      "case_id": "contract-repo-scale-lending-protocol",
+      "domain": "smart_contract_audit",
+      "input_file": "protocols/SyntheticLendingProtocol/contracts/LendingPool.sol",
+      "contract_root": "protocols/SyntheticLendingProtocol/contracts",
+      "recommended_pack": "lending_protocol_benchmark_pack",
+      "fallback_pack": "repo_casebook_benchmark_pack",
+      "expected_report_shape": {
+        "must_include": [
+          "bounded contract inventory",
+          "local import graph",
+          "entrypoint review lanes",
+          "collateral or liquidation lane",
+          "reserve, fee, or debt-accounting lane",
+          "manual review queue",
+          "bounded confidence"
+        ],
+        "must_not_claim": [
+          "complete protocol audit",
+          "confirmed insolvency exploit",
+          "production liquidation failure without implementation-specific evidence"
+        ]
+      },
+      "sample_command": "python -m app.main --domain smart_contract_audit --contract-file .\\examples\\golden_cases\\protocols\\SyntheticLendingProtocol\\contracts\\LendingPool.sol --pack lending_protocol_benchmark_pack \"Benchmark the scoped lending protocol for collateral, liquidation, reserve, fee, and debt-accounting review lanes.\""
+    }
+  ]
+}
