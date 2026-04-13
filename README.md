@@ -13,7 +13,21 @@ EllipticZero is a source-available local lab for bounded defensive research in t
 - ECC / defensive cryptography research
 - smart-contract audit
 
-The user flow stays simple: choose a language, choose a domain, optionally choose a curve or provide contract input, enter a research idea, run a bounded local session, and review the recorded evidence and cautious report.
+Simple outside, strict inside: load a contract or choose an ECC target, write the
+research idea, let bounded agents select local checks, then review evidence,
+risk lanes, confidence, and follow-up guidance.
+
+![EllipticZero interactive home screen](docs/assets/console-home.png)
+
+![EllipticZero session report screen](docs/assets/session-report.png)
+
+## What You Get
+
+- a local-first agent workflow for ECC and smart-contract audit research
+- tool-backed evidence instead of model-only claims
+- reproducible sessions, traces, manifests, bundles, and replay
+- benchmark and golden cases for evaluator-facing smoke checks
+- cautious reports with manual-review boundaries and remediation direction
 
 The repository is public and source-available under `FSL-1.1-ALv2`. Current
 versions are not offered under an OSI open-source license, and competing
@@ -51,13 +65,7 @@ commercial partner, start with:
 - [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) if your use case involves a
   product, hosted service, OEM, white-label, resale, or similar commercial path
 
-## Screenshots
-
-![EllipticZero interactive home screen](docs/assets/console-home.png)
-
-![EllipticZero session report screen](docs/assets/session-report.png)
-
-## What It Includes
+## Detailed Capabilities
 
 - orchestrator-centered research sessions
 - Math, Cryptography, Strategy, Hypothesis, Critic, and Report agents
