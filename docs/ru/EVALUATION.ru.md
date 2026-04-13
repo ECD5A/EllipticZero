@@ -52,6 +52,12 @@ python -m app.main --doctor
 python -m app.main --evaluation-summary
 ```
 
+Machine-readable сводка для автоматической проверки:
+
+```powershell
+python -m app.main --evaluation-summary --evaluation-summary-format json
+```
+
 Посмотреть встроенные golden cases:
 
 ```powershell

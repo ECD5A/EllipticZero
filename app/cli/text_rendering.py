@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from typing import Any
+
 from app.cli.i18n import normalize_language, t
 from app.config import AppConfig
 from app.core.orchestrator import ResearchOrchestrator
@@ -8,22 +11,121 @@ from app.models.doctor import DoctorReport
 from app.models.replay_result import ReplayResult
 
 
+def build_evaluation_summary_payload(
+    *,
+    golden_cases: list[dict[str, object]],
+    pack_names: list[str],
+    provider_names: list[str],
+) -> dict[str, Any]:
+    domain_counts: dict[str, int] = {}
+    for case in golden_cases:
+        domain = str(case.get("domain", "unknown") or "unknown")
+        domain_counts[domain] = domain_counts.get(domain, 0) + 1
+    return {
+        "project": "EllipticZero",
+        "summary_type": "evaluation_summary",
+        "license": {
+            "current": "FSL-1.1-ALv2",
+            "future_license": "Apache-2.0",
+            "future_license_trigger": "second anniversary of the date each published version was made available",
+            "commercial_boundary": [
+                "competing commercial use",
+                "hosted or managed service use",
+                "SaaS or platform deployment",
+                "OEM distribution",
+                "white-label usage",
+                "resale",
+            ],
+        },
+        "purpose": [
+            "Source-available local lab for bounded ECC and smart-contract audit research.",
+            "Main focus: reproducible evidence, cautious reporting, and explicit manual-review boundaries.",
+        ],
+        "domains": ["ecc_research", "smart_contract_audit"],
+        "golden_cases": {
+            "count": len(golden_cases),
+            "domain_counts": dict(sorted(domain_counts.items())),
+            "case_ids": [
+                str(case.get("case_id", "")).strip()
+                for case in golden_cases
+                if str(case.get("case_id", "")).strip()
+            ],
+        },
+        "experiment_packs": {
+            "count": len(pack_names),
+            "pack_names": list(pack_names),
+        },
+        "provider_paths": list(provider_names),
+        "fast_no_key_checks": [
+            "python -m app.main --doctor",
+            "python -m app.main --list-golden-cases",
+            "python -m app.main --golden-case ecc-secp256k1-point-format-edge",
+            "python -m app.main --golden-case contract-repo-scale-lending-protocol",
+        ],
+        "evaluation_focus": {
+            "ecc": [
+                "point formats",
+                "curve metadata",
+                "subgroup/cofactor",
+                "twist hygiene",
+                "family transitions",
+                "domain completeness",
+            ],
+            "smart_contracts": [
+                "parser",
+                "compile",
+                "inventory",
+                "repo map",
+                "casebook",
+                "benchmark",
+                "comparison",
+                "manual-review lanes",
+            ],
+            "evidence_boundary": (
+                "Model output is interpretation; local tool outputs and artifacts carry the evidence trail."
+            ),
+        },
+        "docs": {
+            "en": [
+                "README.md",
+                "EVALUATION.md",
+                "examples/SAMPLE_OUTPUTS.md",
+                "COMMERCIAL_LICENSE.md",
+            ],
+            "ru": [
+                "README.ru.md",
+                "docs/ru/EVALUATION.ru.md",
+                "examples/SAMPLE_OUTPUTS.ru.md",
+                "docs/ru/COMMERCIAL_LICENSE.ru.md",
+            ],
+        },
+    }
+
+
 def render_evaluation_summary(
     *,
     language: str,
     golden_cases: list[dict[str, object]],
     pack_names: list[str],
     provider_names: list[str],
+    output_format: str = "text",
 ) -> str:
     lang = normalize_language(language)
-    domain_counts: dict[str, int] = {}
-    for case in golden_cases:
-        domain = str(case.get("domain", "unknown") or "unknown")
-        domain_counts[domain] = domain_counts.get(domain, 0) + 1
-    domain_summary = ", ".join(
-        f"{domain}={count}" for domain, count in sorted(domain_counts.items())
+    payload = build_evaluation_summary_payload(
+        golden_cases=golden_cases,
+        pack_names=pack_names,
+        provider_names=provider_names,
     )
-    providers = ", ".join(provider_names)
+    if output_format == "json":
+        return json.dumps(payload, ensure_ascii=False, indent=2)
+    if output_format != "text":
+        raise ValueError(f"Unsupported evaluation summary format: {output_format}")
+
+    domain_summary = ", ".join(
+        f"{domain}={count}"
+        for domain, count in payload["golden_cases"]["domain_counts"].items()
+    )
+    providers = ", ".join(payload["provider_paths"])
 
     if lang == "ru":
         return "\n".join(

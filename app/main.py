@@ -326,6 +326,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show a compact no-key evaluator summary and exit",
     )
     parser.add_argument(
+        "--evaluation-summary-format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format for --evaluation-summary.",
+    )
+    parser.add_argument(
         "--golden-case",
         help="Run a safe built-in golden evaluator case by case id",
     )
@@ -488,6 +494,7 @@ def main() -> int:
                 golden_cases=list_golden_cases(),
                 pack_names=ExperimentPackRegistry().names(),
                 provider_names=SUPPORTED_PROVIDER_NAMES,
+                output_format=args.evaluation_summary_format,
             )
         )
         return 0

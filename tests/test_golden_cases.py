@@ -112,6 +112,7 @@ def test_golden_cli_parser_and_renderer_expose_cases() -> None:
 def test_evaluation_summary_cli_parser_and_renderer_expose_eval_paths() -> None:
     parser = build_parser()
     args = parser.parse_args(["--evaluation-summary"])
+    json_args = parser.parse_args(["--evaluation-summary", "--evaluation-summary-format", "json"])
     pack_names = ExperimentPackRegistry().names()
     cases = list_golden_cases()
 
@@ -127,8 +128,17 @@ def test_evaluation_summary_cli_parser_and_renderer_expose_eval_paths() -> None:
         pack_names=pack_names,
         provider_names=["mock", "openai", "openrouter"],
     )
+    rendered_json = render_evaluation_summary(
+        language="en",
+        golden_cases=cases,
+        pack_names=pack_names,
+        provider_names=["mock", "openai", "openrouter"],
+        output_format="json",
+    )
+    payload = json.loads(rendered_json)
 
     assert args.evaluation_summary is True
+    assert json_args.evaluation_summary_format == "json"
     assert "EllipticZero Evaluation Summary" in rendered_en
     assert f"Golden cases: {len(cases)}" in rendered_en
     assert f"Experiment packs: {len(pack_names)}" in rendered_en
@@ -137,6 +147,11 @@ def test_evaluation_summary_cli_parser_and_renderer_expose_eval_paths() -> None:
     assert "Сводка оценки EllipticZero" in rendered_ru
     assert "Быстрая проверка без ключей" in rendered_ru
     assert "docs/ru/EVALUATION.ru.md" in rendered_ru
+    assert payload["project"] == "EllipticZero"
+    assert payload["golden_cases"]["count"] == len(cases)
+    assert payload["experiment_packs"]["count"] == len(pack_names)
+    assert "contract-repo-scale-lending-protocol" in payload["golden_cases"]["case_ids"]
+    assert payload["license"]["current"] == "FSL-1.1-ALv2"
 
 
 def test_prepare_golden_case_run_builds_ecc_and_contract_sessions() -> None:

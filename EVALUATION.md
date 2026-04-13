@@ -52,6 +52,12 @@ Print the compact evaluator summary:
 python -m app.main --evaluation-summary
 ```
 
+Machine-readable evaluator summary:
+
+```powershell
+python -m app.main --evaluation-summary --evaluation-summary-format json
+```
+
 List built-in golden cases:
 
 ```powershell
