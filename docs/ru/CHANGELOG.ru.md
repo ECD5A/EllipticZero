@@ -10,8 +10,8 @@
 
 ### Добавлено
 
-- Machine-readable вывод `--evaluation-summary --evaluation-summary-format json`
-  для evaluator и integration workflow.
+- JSON-вывод `--evaluation-summary --evaluation-summary-format json` для
+  автоматической оценки и интеграционных сценариев.
 - Компактная CLI-команда `--evaluation-summary` для быстрой оценки проекта без
   API-ключей.
 - Короткие case-study snapshots для оценки ECC point-format review,

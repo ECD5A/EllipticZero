@@ -1,6 +1,6 @@
 # Оценка EllipticZero
 
-Этот документ помогает исследователям, security-командам, интеграторам и
+Этот документ помогает исследователям, командам безопасности, интеграторам и
 потенциальным коммерческим партнерам понять, как оценивать EllipticZero без
 догадок и лишней возни.
 
@@ -52,7 +52,7 @@ python -m app.main --doctor
 python -m app.main --evaluation-summary
 ```
 
-Machine-readable сводка для автоматической проверки:
+Сводка в JSON для автоматической проверки:
 
 ```powershell
 python -m app.main --evaluation-summary --evaluation-summary-format json
@@ -88,7 +88,7 @@ Benchmark-слой стоит воспринимать как проверочн
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue и residual-risk lanes появляются, когда входные данные это оправдывают. | Отчет отделяет подтвержденные локальные сигналы от приоритетов ручной проверки. |
 | Comparison | Сохраненную baseline можно подключить через `--compare-session`, `--compare-manifest` или `--compare-bundle`. | Before/after строки показывают осторожные изменения и возможные regression flags. |
 | Export quality | Session, trace, manifest и bundle artifacts остаются внутри разрешенных локальных export roots. | Проверяющий может воспроизвести запуск и посмотреть evidence trail. |
-| Hosted path | Optional live smoke работает только когда evaluator передает валидные provider credentials. | Provider output воспринимается как интерпретация, а не как доказательство. |
+| Hosted path | Optional live smoke работает только когда проверяющий передает валидные provider credentials. | Provider output воспринимается как интерпретация, а не как доказательство. |
 
 Пропуски в scorecard тоже полезны. Если какой-то lane отсутствует, стоит
 проверить: входные данные не оправдывали этот lane, локальный toolchain не был
