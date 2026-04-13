@@ -5,6 +5,56 @@ the structure of useful output without claiming results for a real target. Real
 reports depend on the local input, selected pack, configured tools, and available
 evidence.
 
+## Case-Study Snapshots
+
+These snapshots are compact evaluator-facing examples. They describe what a
+reviewer should expect to learn from a run, not a finding against a real target.
+
+### ECC: Point-Format Edge Review
+
+Input shape:
+
+- a secp256k1-focused seed about point prefixes, compressed/uncompressed
+  encodings, and local consistency checks
+- expected route: `point_format_inspection_pack`
+
+What the reviewer should see:
+
+- point-format evidence is listed as local evidence
+- malformed or edge-format observations remain review signals
+- confidence stays bounded and avoids claims about key recovery or production
+  library compromise
+
+### Smart Contract: Vault Permission Lane
+
+Input shape:
+
+- a single vault-style contract with externally reachable value-flow,
+  permission, share/accounting, or signature-adjacent surfaces
+- expected route: `vault_permission_benchmark_pack`
+
+What the reviewer should see:
+
+- parsed functions, state, modifiers, and value-flow surfaces
+- a short review queue with strongest lanes first
+- residual-risk and exit-criteria lines for manual follow-up
+- pattern evidence kept separate from confirmed exploit claims
+
+### Smart Contract: Repo-Scale Lending Protocol
+
+Input shape:
+
+- a small protocol repository with pool, oracle, and reserve/vault components
+- expected route: `lending_protocol_benchmark_pack`
+
+What the reviewer should see:
+
+- scoped contract inventory and import graph
+- collateral, liquidation, reserve, fee, oracle, or debt-accounting review lanes
+  when supported by local evidence
+- casebook/benchmark posture and first manual-review priorities
+- no claim of a complete protocol audit or confirmed insolvency exploit
+
 ## ECC Benchmark Report
 
 Command:

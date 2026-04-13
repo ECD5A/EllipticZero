@@ -6,6 +6,13 @@ The project currently follows a source-available release track under
 `FSL-1.1-ALv2`. The package version is `0.1.0` until a tagged release line is
 introduced.
 
+## Unreleased
+
+### Added
+
+- Evaluator-facing case-study snapshots for ECC point-format review,
+  vault-permission review, and repo-scale lending-protocol triage.
+
 ## 0.1.0 - 2026-04-13
 
 Initial public FSL release track.

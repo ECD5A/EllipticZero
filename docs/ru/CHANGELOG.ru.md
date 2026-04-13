@@ -6,6 +6,13 @@
 Версия пакета остается `0.1.0`, пока не будет введена отдельная tagged release
 линия.
 
+## Не выпущено
+
+### Добавлено
+
+- Короткие case-study snapshots для оценки ECC point-format review,
+  vault-permission review и repo-scale lending-protocol triage.
+
 ## 0.1.0 - 2026-04-13
 
 Первый публичный release track под FSL.

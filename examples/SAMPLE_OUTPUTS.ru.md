@@ -5,6 +5,56 @@
 зависят от локального входа, выбранного pack, настроенных инструментов и
 доступной доказательной базы.
 
+## Короткие case-study snapshots
+
+Это короткие примеры для оценки проекта. Они описывают, что проверяющий должен
+увидеть в результате запуска, а не заявляют находку в реальной цели.
+
+### ECC: проверка пограничных форматов точки
+
+Форма входа:
+
+- secp256k1-focused seed про префикс точки, compressed/uncompressed encoding и
+  локальные проверки согласованности
+- ожидаемый маршрут: `point_format_inspection_pack`
+
+Что должен увидеть проверяющий:
+
+- point-format evidence показана как локальная доказательная база
+- malformed или edge-format наблюдения остаются сигналами для review
+- уверенность остается ограниченной, без заявлений о key recovery или взломе
+  промышленной библиотеки
+
+### Смарт-контракт: vault permission lane
+
+Форма входа:
+
+- один vault-style контракт с externally reachable value-flow, permission,
+  share/accounting или signature-adjacent поверхностями
+- ожидаемый маршрут: `vault_permission_benchmark_pack`
+
+Что должен увидеть проверяющий:
+
+- разобранные функции, состояние, модификаторы и value-flow поверхности
+- короткая review queue с самыми сильными lanes в начале
+- residual-risk и exit-criteria строки для ручной проверки
+- pattern evidence отделена от заявлений о подтвержденной эксплуатации
+
+### Смарт-контракт: repo-scale lending protocol
+
+Форма входа:
+
+- небольшой протокольный репозиторий с pool, oracle и reserve/vault компонентами
+- ожидаемый маршрут: `lending_protocol_benchmark_pack`
+
+Что должен увидеть проверяющий:
+
+- scoped contract inventory и import graph
+- collateral, liquidation, reserve, fee, oracle или debt-accounting review lanes,
+  если они поддержаны локальной доказательной базой
+- casebook/benchmark posture и первые приоритеты ручной проверки
+- нет заявления о полном аудите протокола или подтвержденной insolvency-уязвимости
+
 ## ECC benchmark-отчет
 
 Команда:
