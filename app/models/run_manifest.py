@@ -68,6 +68,9 @@ class RunManifest(BaseModel):
     quality_gate_count: int = 0
     hardening_summary: list[str] = Field(default_factory=list)
     hardening_summary_count: int = 0
+    evidence_coverage_summary: dict[str, Any] = Field(default_factory=dict)
+    toolchain_fingerprint: dict[str, Any] = Field(default_factory=dict)
+    secret_redaction_summary: list[str] = Field(default_factory=list)
     research_mode: str | None = None
     exploration_profile: str | None = None
     sandbox_id: str | None = None

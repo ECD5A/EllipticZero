@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from app.models.trace import TraceEvent
+from app.storage.redaction import redact_sensitive_data
 
 
 class TraceWriter:
@@ -19,6 +20,7 @@ class TraceWriter:
     def append(self, event: TraceEvent) -> Path:
         path = self.path_for_session(event.session_id)
         with path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(event.model_dump(mode="json"), ensure_ascii=False))
+            payload = redact_sensitive_data(event.model_dump(mode="json"))
+            handle.write(json.dumps(payload, ensure_ascii=False))
             handle.write("\n")
         return path

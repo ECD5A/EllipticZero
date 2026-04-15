@@ -97,6 +97,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "block.contract_compile": "COMPILE STATUS",
         "block.contract_surface": "CONTRACT SURFACE",
         "block.contract_priority_findings": "PRIORITY FINDINGS",
+        "block.contract_finding_cards": "FINDING CARDS",
         "block.contract_static_findings": "STATIC FINDINGS",
         "block.contract_testbeds": "CONTRACT TESTBEDS",
         "block.contract_remediation_validation": "REMEDIATION VALIDATION",
@@ -242,6 +243,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "report.contract_compile": "Compile Status",
         "report.contract_surface": "Contract Surface",
         "report.contract_priority_findings": "Priority Findings",
+        "report.contract_finding_cards": "Finding Cards",
         "report.contract_static_findings": "Static Findings",
         "report.contract_testbeds": "Contract Testbeds",
         "report.contract_remediation_validation": "Remediation Validation",
@@ -520,6 +522,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "block.contract_compile": "СТАТУС КОМПИЛЯЦИИ",
         "block.contract_surface": "ПОВЕРХНОСТЬ КОНТРАКТА",
         "block.contract_priority_findings": "ПРИОРИТЕТНЫЕ СИГНАЛЫ",
+        "block.contract_finding_cards": "КАРТОЧКИ НАХОДОК",
         "block.contract_static_findings": "СТАТИЧЕСКИЕ НАХОДКИ",
         "block.contract_testbeds": "ТЕСТОВЫЕ КОНТРАКТЫ",
         "block.contract_remediation_validation": "ПРОВЕРКА ЗАЩИТНОЙ ДОРАБОТКИ",
@@ -658,6 +661,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "report.contract_compile": "Статус компиляции",
         "report.contract_surface": "Поверхность контракта",
         "report.contract_priority_findings": "Приоритетные сигналы",
+        "report.contract_finding_cards": "Карточки находок",
         "report.contract_static_findings": "Статические находки",
         "report.contract_testbeds": "Тестовые контракты",
         "report.contract_remediation_validation": "Проверка защитной доработки",
@@ -996,6 +1000,20 @@ TRANSLATIONS["en"]["block.ecc_coverage_matrix"] = "ECC COVERAGE MATRIX"
 TRANSLATIONS["en"]["report.ecc_coverage_matrix"] = "ECC Coverage Matrix"
 TRANSLATIONS["ru"]["block.ecc_coverage_matrix"] = "ECC-МАТРИЦА ПОКРЫТИЯ"
 TRANSLATIONS["ru"]["report.ecc_coverage_matrix"] = "ECC-матрица покрытия"
+
+
+TRANSLATIONS["en"]["block.evidence_coverage_summary"] = "EVIDENCE COVERAGE"
+TRANSLATIONS["en"]["block.toolchain_fingerprint"] = "TOOLCHAIN FINGERPRINT"
+TRANSLATIONS["en"]["block.secret_redaction_summary"] = "SECRET REDACTION"
+TRANSLATIONS["en"]["report.evidence_coverage_summary"] = "Evidence Coverage"
+TRANSLATIONS["en"]["report.toolchain_fingerprint"] = "Toolchain Fingerprint"
+TRANSLATIONS["en"]["report.secret_redaction_summary"] = "Secret Redaction"
+TRANSLATIONS["ru"]["block.evidence_coverage_summary"] = "ДОКАЗАТЕЛЬНОЕ ПОКРЫТИЕ"
+TRANSLATIONS["ru"]["block.toolchain_fingerprint"] = "ОТПЕЧАТОК TOOLCHAIN"
+TRANSLATIONS["ru"]["block.secret_redaction_summary"] = "РЕДАКТИРОВАНИЕ СЕКРЕТОВ"
+TRANSLATIONS["ru"]["report.evidence_coverage_summary"] = "Доказательное покрытие"
+TRANSLATIONS["ru"]["report.toolchain_fingerprint"] = "Отпечаток toolchain"
+TRANSLATIONS["ru"]["report.secret_redaction_summary"] = "Редактирование секретов"
 
 
 def normalize_language(language: str | None) -> str:

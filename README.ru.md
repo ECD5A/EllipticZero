@@ -26,7 +26,9 @@ EllipticZero — локальная лаборатория с доступным
 
 - локальный агентный workflow для ECC и аудита смарт-контрактов
 - выводы, опирающиеся на инструменты и артефакты, а не только на модель
+- компактные карточки smart-contract находок: риск, доказательства, направление исправления и путь перепроверки
 - воспроизводимые сессии, трассировки, манифесты, bundle-пакеты и replay
+- evidence coverage, toolchain fingerprints и JSON-экспорт с редактированием секретов
 - benchmark и golden cases для быстрой оценки проекта
 - осторожные отчеты с границами ручной проверки и направлением исправлений
 
@@ -34,6 +36,13 @@ EllipticZero — локальная лаборатория с доступным
 версии не предлагаются как OSI-approved open-source release, а конкурирующее
 коммерческое использование, hosted-развёртывание, OEM и white-label сценарии
 требуют отдельного соглашения.
+
+**Коротко о лицензии:** можно читать код, оценивать проект, запускать локально
+и использовать для исследований или внутреннего review по `FSL-1.1-ALv2`.
+Конкурирующий коммерческий продукт, hosted/SaaS-сервис, OEM-интеграция,
+white-label продукт, перепродажа или платная security-платформа на базе
+EllipticZero требуют отдельной коммерческой лицензии. Каждая опубликованная
+версия переходит на Apache-2.0 через два года.
 
 ## Почему EllipticZero
 
@@ -82,6 +91,7 @@ EllipticZero построен вокруг:
 - встроенные smart-contract benchmark-пакеты для static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, а также для governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style проходов
 - golden/synthetic примеры с ожидаемыми формами отчетов для быстрой оценки ECC и smart-contract smoke checks
 - трассировки, манифесты, пакеты воспроизводимости, повторный запуск и `doctor`
+- сводки evidence coverage, toolchain fingerprints и session/trace/bundle JSON-снимки с редактированием секретов
 - `mock` по умолчанию, а также `openai`, `openrouter`, `gemini` и `anthropic` при корректной настройке
 
 ## Быстрый старт
@@ -202,6 +212,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Smart-contract experiment packs теперь могут структурировать bounded static benchmarking, repo-casebook benchmarking, protocol-style benchmark passes, а также более узкие governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style benchmark passes; их выполненные шаги сохраняются в сессии, replay-артефактах и итоговом отчёте.
 - Прямые CLI-аргументы `--compare-session`, `--compare-manifest` и `--compare-bundle` теперь позволяют привязать сохранённую baseline-сессию к новому bounded-запуску, чтобы итоговый отчёт мог показать осторожные различия до/после и флаги возможных регрессий.
 - Отчёт по смарт-контракту может включать инвентаризацию контрактов, карту протокольных модулей, инварианты протокола, сводку по согласованности сигналов, матрицу валидации, benchmark-статус, сильнейшие приоритеты по обзору репозитория, триаж первого ограниченного прохода, маршруты обзора по entrypoint-файлам, приоритеты семейств функций и сводки по семействам рисков.
+- Отчёт по смарт-контракту может показывать компактные карточки находок, где bounded потенциальный issue связан с локальной доказательной базой, причиной важности, направлением защитной доработки и путём повторной проверки.
 - Отчёт по смарт-контракту также может включать сводку по ограниченному покрытию repo-casebook, компактные сводки по совпавшим сценариям, archetype-style подписи для governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery и похожих protocol-style case-study линий, короткие строки с ключевыми совпавшими кейсами, короткий блок с оставшимися пробелами, benchmark-сводки, casebook-triage и блок связки инструментов для сильнейших маршрутов обзора по репозиторию.
 - Отчёт по смарт-контракту также может включать сводки по benchmark-пакетам и короткие benchmark-case summary, если bounded contract benchmark pack материально влиял на сессию.
 - Отчёт по смарт-контракту также может включать матрицу покрытия casebook, benchmark-статус и более жёсткий validation posture для сильнейших маршрутов обзора по репозиторию, включая bounded repo-casebook-сценарии, которые поддерживают сразу несколько семейств рисков в одном проходе.

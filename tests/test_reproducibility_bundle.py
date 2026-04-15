@@ -7,8 +7,11 @@ from app.config import AppConfig
 from app.core.manifest_helpers import build_run_manifest
 from app.main import build_orchestrator
 from app.models import Evidence, ResearchReport, ResearchSeed, ResearchSession
+from app.models.trace import TraceEvent
 from app.storage.fingerprints import hash_text
+from app.storage.redaction import REDACTED, redact_sensitive_data
 from app.storage.reproducibility_bundle import ReproducibilityBundleStore
+from app.storage.trace_writer import TraceWriter
 from app.types import ConfidenceLevel, make_id
 
 
@@ -87,6 +90,9 @@ def test_manifest_and_bundle_export_without_advanced_artifacts() -> None:
     assert manifest["hardening_summary_count"] == len(manifest["hardening_summary"])
     assert manifest["quality_gate_summary"]
     assert manifest["hardening_summary"]
+    assert manifest["evidence_coverage_summary"]["evidence_count"] == len(session.evidence)
+    assert manifest["toolchain_fingerprint"]["python_version"]
+    assert manifest["secret_redaction_summary"]
     assert "curve_metadata_tool" in manifest["tool_names"]
     assert manifest["local_experiment_summary"]
 
@@ -105,6 +111,9 @@ def test_manifest_and_bundle_export_without_advanced_artifacts() -> None:
     assert overview["hardening_summary_count"] == manifest["hardening_summary_count"]
     assert overview["quality_gate_summary"]
     assert overview["hardening_summary"]
+    assert overview["evidence_coverage_summary"]["evidence_count"] == len(session.evidence)
+    assert overview["toolchain_fingerprint"]["python_version"]
+    assert overview["secret_redaction_summary"]
 
 
 def test_bundle_includes_advanced_math_artifact_references() -> None:
@@ -319,3 +328,96 @@ def test_bundle_skips_session_and_trace_outside_approved_roots() -> None:
     assert overview["outputs"]["session_json"] is False
     assert overview["outputs"]["trace_jsonl"] is False
     assert overview["outputs"]["artifacts_dir"] is True
+
+
+def test_redaction_masks_secrets_in_trace_and_bundle_snapshots() -> None:
+    run_root = Path(".test_runs") / make_id("bundleredact")
+    config = AppConfig.model_validate(
+        {
+            "llm": {
+                "default_provider": "mock",
+                "default_model": "mock-default",
+                "timeout_seconds": 30,
+                "max_request_tokens": 2048,
+                "max_total_requests_per_session": 16,
+            },
+            "storage": {
+                "artifacts_dir": str(run_root),
+                "sessions_dir": str(run_root / "sessions"),
+                "traces_dir": str(run_root / "traces"),
+                "math_artifacts_dir": str(run_root / "math"),
+                "bundles_dir": str(run_root / "bundles"),
+            },
+            "log_level": "INFO",
+            "max_hypotheses": 2,
+            "tool_timeout_seconds": 15,
+        }
+    )
+    session = ResearchSession(
+        seed=ResearchSeed(raw_text="Check secret redaction in exported snapshots.")
+    )
+    session.report = ResearchReport(
+        session_id=session.session_id,
+        seed_text=session.seed.raw_text,
+        summary="Secret redaction bundle export.",
+        confidence=ConfidenceLevel.LOW,
+    )
+    session_dir = run_root / "sessions"
+    trace_dir = run_root / "traces"
+    session_dir.mkdir(parents=True, exist_ok=True)
+    trace_dir.mkdir(parents=True, exist_ok=True)
+    session.session_file_path = str(session_dir / f"{session.session_id}.json")
+    Path(session.session_file_path).write_text(
+        '{"api_key": "sk-testsecret1234567890", "safe": "ok"}',
+        encoding="utf-8",
+    )
+
+    trace_writer = TraceWriter(str(trace_dir))
+    trace_path = trace_writer.append(
+        TraceEvent(
+            session_id=session.session_id,
+            event_type="provider_call",
+            agent="test",
+            summary="Trace event with sensitive data.",
+            data={"Authorization": "Bearer abcdefghijklmnop", "safe": "ok"},
+        )
+    )
+    session.trace_file_path = str(trace_path)
+
+    manifest = build_run_manifest(
+        session=session,
+        config=config,
+        plugin_metadata=[],
+        session_path_fallback=Path(session.session_file_path),
+    )
+    bundle_store = ReproducibilityBundleStore(config.storage.bundles_dir)
+    bundle_dir = bundle_store.export(session=session, manifest=manifest)
+
+    trace_text = trace_path.read_text(encoding="utf-8")
+    session_text = (bundle_dir / "session.json").read_text(encoding="utf-8")
+    bundle_trace_text = (bundle_dir / "trace.jsonl").read_text(encoding="utf-8")
+
+    assert "sk-testsecret1234567890" not in session_text
+    assert "Bearer abcdefghijklmnop" not in trace_text
+    assert "Bearer abcdefghijklmnop" not in bundle_trace_text
+    assert REDACTED in session_text
+    assert REDACTED in trace_text
+    assert REDACTED in bundle_trace_text
+
+
+def test_redaction_helper_recursively_masks_sensitive_data() -> None:
+    payload = {
+        "safe": "OPENAI_API_KEY is only an environment variable name",
+        "nested": {
+            "token": "raw-token-value",
+            "notes": "OPENROUTER_API_KEY=sk-or-v1-testsecret1234567890",
+        },
+        "items": [{"password": "hunter2"}],
+    }
+
+    redacted = redact_sensitive_data(payload)
+
+    assert redacted["safe"] == "OPENAI_API_KEY is only an environment variable name"
+    assert redacted["nested"]["token"] == REDACTED
+    assert redacted["nested"]["notes"] == f"OPENROUTER_API_KEY={REDACTED}"
+    assert redacted["items"][0]["password"] == REDACTED

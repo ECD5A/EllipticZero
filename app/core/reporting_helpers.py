@@ -658,6 +658,50 @@ def build_evidence_profile(session: ResearchSession) -> list[str]:
     return ordered_unique(items)[:4]
 
 
+def build_evidence_coverage_summary(session: ResearchSession) -> list[str]:
+    tool_names = ordered_unique((evidence.tool_name or evidence.source) for evidence in session.evidence)
+    experiment_types = ordered_unique(
+        evidence.experiment_type for evidence in session.evidence if evidence.experiment_type
+    )
+    artifact_count = sum(len(evidence.artifact_paths) for evidence in session.evidence)
+    tool_backed_count = sum(1 for evidence in session.evidence if evidence.tool_name)
+    manual_review_count = len(session.report.manual_review_items) if session.report is not None else 0
+    finding_card_count = len(session.report.contract_finding_cards) if session.report is not None else 0
+
+    if _is_smart_contract_session(session):
+        domain_label = "smart-contract audit"
+    elif _is_ecc_session(session):
+        domain_label = "ECC research"
+    else:
+        domain_label = "bounded research"
+
+    items = [
+        f"Evidence coverage: domain={domain_label}; evidence={len(session.evidence)}; "
+        f"tool-backed={tool_backed_count}; tools={len(tool_names)}; "
+        f"experiment-types={len(experiment_types)}; artifacts={artifact_count}."
+    ]
+    if session.executed_pack_steps or session.selected_pack_name:
+        items.append(
+            f"Benchmark coverage: selected-pack={session.selected_pack_name or 'none'}; "
+            f"executed-steps={len(session.executed_pack_steps)}; "
+            f"recommended-packs={len(session.recommended_pack_names)}."
+        )
+    if finding_card_count or manual_review_count:
+        items.append(
+            f"Review coverage: finding-cards={finding_card_count}; "
+            f"manual-review-items={manual_review_count}."
+        )
+    if session.comparative_report is not None:
+        comparison_ready = session.comparative_report.cross_session_comparison is not None
+        items.append(
+            "Comparison coverage: "
+            f"branch-comparisons={len(session.comparative_report.branch_comparisons)}; "
+            f"tool-comparisons={len(session.comparative_report.tool_comparisons)}; "
+            f"before-after={'yes' if comparison_ready else 'no'}."
+        )
+    return ordered_unique(items)[:4]
+
+
 def build_calibration_blockers(session: ResearchSession) -> list[str]:
     if session.report is None:
         return []
@@ -727,6 +771,49 @@ def build_reproducibility_summary(session: ResearchSession) -> list[str]:
             f"Baseline linkage preserved for replay/compare: {session.comparison_baseline_session_id}."
         )
     return ordered_unique(items)[:4]
+
+
+def build_toolchain_fingerprint_summary(session: ResearchSession) -> list[str]:
+    tool_names = ordered_unique((evidence.tool_name or evidence.source) for evidence in session.evidence)
+    metadata_snapshots = unique_metadata_snapshots(session)
+    version_pairs = _tool_version_pairs(metadata_snapshots)
+
+    items = [
+        f"Toolchain fingerprint: tools={len(tool_names)}; "
+        f"metadata-snapshots={len(metadata_snapshots)}; jobs={len(session.jobs)}."
+    ]
+    if version_pairs:
+        items.append("Tool versions: " + ", ".join(version_pairs[:6]) + ".")
+    if session.plugin_metadata:
+        loaded = sum(1 for item in session.plugin_metadata if item.load_status == "loaded")
+        items.append(
+            f"Plugin fingerprint: loaded={loaded}; total={len(session.plugin_metadata)}."
+        )
+    if session.is_replay:
+        items.append(
+            f"Replay fingerprint: source={session.replay_source_type or 'unknown'}; "
+            f"mode={session.replay_mode or 'conservative'}."
+        )
+    return ordered_unique(items)[:4]
+
+
+def _tool_version_pairs(metadata_snapshots: list[dict[str, Any]]) -> list[str]:
+    pairs: list[str] = []
+    for metadata in metadata_snapshots:
+        name = _metadata_value(metadata, "name") or _metadata_value(metadata, "tool_name")
+        version = _metadata_value(metadata, "version") or _metadata_value(metadata, "tool_version")
+        if not name:
+            continue
+        pairs.append(f"{name}={version or 'unknown'}")
+    return ordered_unique(pairs)
+
+
+def _metadata_value(metadata: dict[str, Any], key: str) -> str | None:
+    value = metadata.get(key)
+    if value is None:
+        return None
+    stripped = str(value).strip()
+    return stripped or None
 
 
 def build_quality_gates(session: ResearchSession) -> list[str]:
@@ -2310,6 +2397,171 @@ def build_contract_priority_findings(session: ResearchSession) -> list[str]:
                     "Medium priority: review Foundry structural inspection gaps before relying on build-only results."
                 )
     return ordered_unique(items)[:8]
+
+
+def build_contract_finding_cards(session: ResearchSession) -> list[str]:
+    if not _is_smart_contract_session(session) or session.report is None:
+        return []
+
+    sources = session.report
+    potential_findings = ordered_unique(
+        [
+            *sources.contract_priority_findings,
+            *sources.contract_review_queue,
+            *sources.contract_residual_risk,
+            *sources.contract_review_focus,
+        ]
+    )
+    evidence_lines = ordered_unique(
+        [
+            *sources.contract_static_findings,
+            *sources.contract_testbed_findings,
+            *sources.contract_surface_summary,
+            *sources.contract_compile_summary,
+            *sources.contract_toolchain_alignment,
+        ]
+    )
+    why_lines = ordered_unique(
+        [
+            *sources.contract_residual_risk,
+            *sources.contract_signal_consensus,
+            *sources.contract_validation_matrix,
+            *sources.contract_manual_review_items,
+        ]
+    )
+    fix_lines = ordered_unique(
+        [
+            *sources.contract_remediation_guidance,
+            *sources.contract_remediation_validation,
+        ]
+    )
+    recheck_lines = ordered_unique(
+        [
+            *sources.contract_remediation_follow_up,
+            *sources.contract_exit_criteria,
+        ]
+    )
+
+    if not potential_findings and not evidence_lines:
+        return []
+
+    cards: list[str] = []
+    card_count = min(3, max(len(potential_findings), 1))
+    for index in range(card_count):
+        potential = _contract_card_value(
+            potential_findings,
+            index,
+            "No standalone finding was produced; keep the current contract signal set in manual-review mode.",
+        )
+        keywords = _contract_card_keywords(potential)
+        fallback_why = (
+            "The current evidence is bounded and should not be treated as a confirmed vulnerability without review."
+        )
+        fallback_fix = "Narrow the implicated flow, harden the control path, and keep the claim manual-review bounded."
+        fallback_recheck = (
+            "Re-run the same bounded smart-contract audit path and compare the strongest local signals."
+        )
+        evidence = _contract_card_match_value(
+            evidence_lines,
+            index,
+            keywords,
+            "No direct local evidence line was available for this card.",
+        )
+        why = _contract_card_match_value(
+            why_lines,
+            index,
+            keywords,
+            fallback_why,
+        )
+        fix = _contract_card_match_value(
+            fix_lines,
+            index,
+            keywords,
+            fallback_fix,
+        )
+        recheck = _contract_card_match_value(
+            recheck_lines,
+            index,
+            keywords,
+            fallback_recheck,
+        )
+        cards.append(
+            f"Finding card {index + 1}: Potential finding: {potential} "
+            f"Evidence: {evidence} Why it matters: {why} "
+            f"Fix direction: {fix} Recheck: {recheck}"
+        )
+
+    return ordered_unique(cards)
+
+
+def _contract_card_value(values: list[str], index: int, fallback: str) -> str:
+    if not values:
+        return fallback
+    return values[index] if index < len(values) else values[-1]
+
+
+def _contract_card_match_value(values: list[str], index: int, keywords: list[str], fallback: str) -> str:
+    if not values:
+        return fallback
+    normalized_keywords = ordered_unique(keyword.lower() for keyword in keywords if len(keyword.strip()) > 2)
+    best_value: str | None = None
+    best_score = 0
+    for value in values:
+        lowered = value.lower()
+        score = sum(1 for keyword in normalized_keywords if keyword in lowered)
+        if score > best_score:
+            best_value = value
+            best_score = score
+    if best_value is not None:
+        return best_value
+    return _contract_card_value(values, index, fallback)
+
+
+def _contract_card_keywords(text: str) -> list[str]:
+    lowered = text.lower()
+    keyword_groups = [
+        (
+            ("reentrancy", "sweep", "rescue", "external call", "value transfer", "low-level call"),
+            ["reentrancy", "sweep", "rescue", "asset", "asset-flow", "external", "value", "balance", "accounting"],
+        ),
+        (
+            ("share", "vault", "asset-backing", "mint", "redeem"),
+            ["vault", "share", "asset-backing", "asset", "conversion", "redeem", "mint"],
+        ),
+        (
+            ("replay", "nonce", "permit", "signature", "ecrecover"),
+            ["permit", "signature", "nonce", "domain", "signer"],
+        ),
+        (
+            ("allowance", "approve", "transferfrom", "token"),
+            ["token", "allowance", "approve", "transfer"],
+        ),
+        (
+            ("delegatecall", "proxy", "storage", "implementation", "slot"),
+            ["proxy", "storage", "delegatecall", "implementation", "slot"],
+        ),
+        (
+            ("upgrade", "admin", "owner", "role", "pause", "privileged", "authority"),
+            ["upgrade", "authority", "role", "owner", "pause", "admin", "control"],
+        ),
+        (
+            ("oracle", "price", "twap"),
+            ["oracle", "price", "freshness", "twap"],
+        ),
+        (
+            ("collateral", "liquidation", "health"),
+            ["collateral", "liquidation", "health", "threshold"],
+        ),
+        (
+            ("reserve", "debt", "fee"),
+            ["reserve", "debt", "fee", "protocol"],
+        ),
+    ]
+    keywords: list[str] = []
+    for triggers, group_keywords in keyword_groups:
+        if any(trigger in lowered for trigger in triggers):
+            keywords.extend(group_keywords)
+    return ordered_unique(keywords)
 
 
 def build_contract_static_findings(session: ResearchSession) -> list[str]:

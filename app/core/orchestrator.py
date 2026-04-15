@@ -55,6 +55,7 @@ from app.core.reporting_helpers import (
     build_contract_casebook_triage,
     build_contract_compile_summary,
     build_contract_exit_criteria,
+    build_contract_finding_cards,
     build_contract_inventory_summary,
     build_contract_manual_review_items,
     build_contract_overview,
@@ -91,6 +92,7 @@ from app.core.reporting_helpers import (
     build_ecc_signal_consensus,
     build_ecc_validation_matrix,
     build_evidence_conclusion,
+    build_evidence_coverage_summary,
     build_evidence_profile,
     build_evidence_summary,
     build_exploratory_findings,
@@ -103,6 +105,7 @@ from app.core.reporting_helpers import (
     build_regression_flags,
     build_reproducibility_summary,
     build_shared_follow_up,
+    build_toolchain_fingerprint_summary,
     build_validation_posture,
     compose_evidence_summary,
     extract_evidence_notes,
@@ -141,6 +144,7 @@ from app.models import (
 )
 from app.models.trace import TraceEvent
 from app.storage.math_artifacts import MathArtifactStore
+from app.storage.redaction import redaction_summary
 from app.storage.reproducibility_bundle import ReproducibilityBundleStore
 from app.storage.session_store import SessionStore
 from app.storage.trace_writer import TraceWriter
@@ -455,6 +459,7 @@ class ResearchOrchestrator:
         session.report.contract_residual_risk = build_contract_residual_risk(session)
         session.report.contract_exit_criteria = build_contract_exit_criteria(session)
         session.report.contract_manual_review_items = build_contract_manual_review_items(session)
+        session.report.contract_finding_cards = build_contract_finding_cards(session)
         session.report.agent_contributions = self._build_agent_contributions(session)
         session.comparative_report = build_comparative_report(
             session,
@@ -522,6 +527,9 @@ class ResearchOrchestrator:
             )
             if exploratory_note not in session.report.manual_review_items:
                 session.report.manual_review_items.append(exploratory_note)
+        session.report.evidence_coverage_summary = build_evidence_coverage_summary(session)
+        session.report.toolchain_fingerprint_summary = build_toolchain_fingerprint_summary(session)
+        session.report.secret_redaction_summary = redaction_summary()
         self._trace(
             session=session,
             event_type="report_generated",
@@ -547,6 +555,10 @@ class ResearchOrchestrator:
         session.comparative_report_file_path = str(
             self.bundle_store.comparative_report_path_for_session(session.session_id)
         )
+        session.report.reproducibility_summary = build_reproducibility_summary(session)
+        session.report.quality_gates = build_quality_gates(session)
+        session.report.hardening_summary = build_hardening_summary(session)
+        session.report.evidence_coverage_summary = build_evidence_coverage_summary(session)
         saved_path = self.session_store.save_session(session)
         self._trace(
             session=session,

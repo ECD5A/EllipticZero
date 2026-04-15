@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from app.models.session import ResearchSession
+from app.storage.redaction import redact_sensitive_data
 
 
 class SessionStore:
@@ -18,7 +19,7 @@ class SessionStore:
 
     def save_session(self, session: ResearchSession) -> Path:
         path = self.path_for_session(session.session_id)
-        payload = session.model_dump(mode="json")
+        payload = redact_sensitive_data(session.model_dump(mode="json"))
         path.write_text(
             json.dumps(payload, indent=2, ensure_ascii=False),
             encoding="utf-8",

@@ -12,6 +12,12 @@ introduced.
 
 - Machine-readable `--evaluation-summary --evaluation-summary-format json`
   output for evaluator and integration workflows.
+- Smart-contract finding cards that connect bounded potential issues to
+  evidence, risk context, defensive fix direction, and a recheck path.
+- Evidence-coverage summaries, toolchain fingerprints, and secret-redaction
+  summaries in reports, manifests, bundle overviews, and export notes.
+- Secret redaction for saved session JSON, trace JSONL, comparative-report, and
+  bundle JSON snapshots before export.
 - Compact `--evaluation-summary` CLI path for no-key evaluator orientation.
 - Evaluator-facing case-study snapshots for ECC point-format review,
   vault-permission review, and repo-scale lending-protocol triage.

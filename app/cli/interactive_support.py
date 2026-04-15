@@ -214,14 +214,31 @@ class InteractiveRenderer:
         print(self.ui.center_text(self.t("block.summary"), color=WHITE, bold=True))
         print(self.ui.center_text(session.report.summary, color=WHITE))
         self.print_list_block(self.t("block.confidence_rationale"), session.report.confidence_rationale, color=GREEN)
+        self.print_list_block(self.t("block.contract_overview"), session.report.contract_overview, color=CYAN)
+        self.print_list_block(self.t("block.contract_finding_cards"), session.report.contract_finding_cards, color=AMBER)
+        self.print_list_block(self.t("block.ecc_benchmark_summary"), session.report.ecc_benchmark_summary, color=CYAN)
         self.print_list_block(self.t("block.evidence_profile"), session.report.evidence_profile, color=CYAN)
+        self.print_list_block(
+            self.t("block.evidence_coverage_summary"),
+            session.report.evidence_coverage_summary,
+            color=CYAN,
+        )
         self.print_list_block(self.t("block.validation_posture"), session.report.validation_posture, color=GREEN)
         self.print_list_block(self.t("block.shared_follow_up"), session.report.shared_follow_up, color=CYAN)
         self.print_list_block(self.t("block.calibration_blockers"), session.report.calibration_blockers, color=AMBER)
         self.print_list_block(self.t("block.reproducibility_summary"), session.report.reproducibility_summary, color=CYAN)
         self.print_list_block(self.t("block.quality_gates"), session.report.quality_gates, color=GREEN)
         self.print_list_block(self.t("block.hardening_summary"), session.report.hardening_summary, color=AMBER)
-        self.print_list_block(self.t("block.ecc_benchmark_summary"), session.report.ecc_benchmark_summary, color=CYAN)
+        self.print_list_block(
+            self.t("block.toolchain_fingerprint"),
+            session.report.toolchain_fingerprint_summary,
+            color=CYAN,
+        )
+        self.print_list_block(
+            self.t("block.secret_redaction_summary"),
+            session.report.secret_redaction_summary,
+            color=AMBER,
+        )
         self.print_list_block(self.t("block.ecc_benchmark_posture"), session.report.ecc_benchmark_posture, color=GREEN)
         self.print_list_block(self.t("block.ecc_family_coverage"), session.report.ecc_family_coverage, color=CYAN)
         self.print_list_block(self.t("block.ecc_coverage_matrix"), session.report.ecc_coverage_matrix, color=CYAN)
@@ -235,7 +252,6 @@ class InteractiveRenderer:
         self.print_list_block(self.t("block.ecc_regression_summary"), session.report.ecc_regression_summary, color=AMBER)
         self.print_list_block(self.t("block.ecc_review_queue"), session.report.ecc_review_queue, color=GREEN)
         self.print_list_block(self.t("block.ecc_exit_criteria"), session.report.ecc_exit_criteria, color=GREEN)
-        self.print_list_block(self.t("block.contract_overview"), session.report.contract_overview, color=CYAN)
         self.print_list_block(self.t("block.contract_inventory"), session.report.contract_inventory_summary, color=CYAN)
         self.print_list_block(self.t("block.contract_protocol_map"), session.report.contract_protocol_map, color=CYAN)
         self.print_list_block(self.t("block.contract_protocol_invariants"), session.report.contract_protocol_invariants, color=CYAN)

@@ -32,7 +32,7 @@ Every `ResearchReport` must contain these sections in a clear and stable order:
    Must separate supported findings, unsupported hypotheses, inconclusive branches, deferred items, and manual review items.
 8. Confidence assessment
    Must assign bounded confidence categories and briefly justify them.
-   When useful, it should also preserve a short evidence profile, a compact validation posture, shared bounded follow-up, dominant calibration blockers, a reproducibility summary, quality gates, and a hardening summary so the reader can see what structured the current confidence level.
+   When useful, it should also preserve a short evidence profile, evidence-coverage summary, compact validation posture, shared bounded follow-up, dominant calibration blockers, reproducibility summary, toolchain fingerprint, secret-redaction summary, quality gates, and a hardening summary so the reader can see what structured the current confidence level.
 9. Limitations and risks
    Must record evidence gaps, unresolved contradictions, assumption sensitivity, and methodological risks.
 10. Recommended next actions
@@ -63,6 +63,7 @@ For smart-contract sessions, the report should also preserve contract-specific d
 - a short casebook triage block highlighting the strongest bounded repo-casebook match and its current validation posture
 - a short toolchain-alignment block showing which local compile, surface, static, invariant, structural, or casebook paths currently support the strongest repo lanes, including lanes that span more than one matched family, and where replay gaps remain
 - a short review-queue block naming which repo lane to inspect first, which matched case currently anchors that lane, and which bounded replay path should follow
+- compact finding cards when the report can connect a bounded potential finding to local evidence, why it matters, a defensive fix direction, and a recheck path
 - short residual-risk lines when the report can state which strongest repo lanes remain open, why they remain open, and which matched casebook or toolchain signals still anchor them
 - a short exit-criteria block naming what should weaken, disappear, or remain unresolved before the strongest repo lane can be treated as meaningfully narrowed
 - more specific bounded benchmark-pack summaries when upgrade/control, governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission, or lending-style benchmark packs materially structured the current review path

@@ -243,10 +243,13 @@ def render_report(
     session_id: str,
     report_summary: str,
     evidence_profile: list[str],
+    evidence_coverage_summary: list[str],
     validation_posture: list[str],
     shared_follow_up: list[str],
     calibration_blockers: list[str],
     reproducibility_summary: list[str],
+    toolchain_fingerprint_summary: list[str],
+    secret_redaction_summary: list[str],
     quality_gates: list[str],
     hardening_summary: list[str],
     ecc_benchmark_summary: list[str],
@@ -286,6 +289,7 @@ def render_report(
     contract_compile_summary: list[str],
     contract_surface_summary: list[str],
     contract_priority_findings: list[str],
+    contract_finding_cards: list[str],
     contract_static_findings: list[str],
     contract_testbed_findings: list[str],
     contract_remediation_validation: list[str],
@@ -343,9 +347,21 @@ def render_report(
     if confidence_rationale:
         lines.extend(["", f"{t(lang, 'report.confidence_rationale')}:"])
         lines.extend(f"- {item}" for item in confidence_rationale)
+    if contract_overview:
+        lines.extend(["", f"{t(lang, 'report.contract_overview')}:"])
+        lines.extend(f"- {item}" for item in contract_overview)
+    if contract_finding_cards:
+        lines.extend(["", f"{t(lang, 'report.contract_finding_cards')}:"])
+        lines.extend(f"- {item}" for item in contract_finding_cards)
+    if ecc_benchmark_summary:
+        lines.extend(["", f"{t(lang, 'report.ecc_benchmark_summary')}:"])
+        lines.extend(f"- {item}" for item in ecc_benchmark_summary)
     if evidence_profile:
         lines.extend(["", f"{t(lang, 'report.evidence_profile')}:"])
         lines.extend(f"- {item}" for item in evidence_profile)
+    if evidence_coverage_summary:
+        lines.extend(["", f"{t(lang, 'report.evidence_coverage_summary')}:"])
+        lines.extend(f"- {item}" for item in evidence_coverage_summary)
     if validation_posture:
         lines.extend(["", f"{t(lang, 'report.validation_posture')}:"])
         lines.extend(f"- {item}" for item in validation_posture)
@@ -364,9 +380,12 @@ def render_report(
     if hardening_summary:
         lines.extend(["", f"{t(lang, 'report.hardening_summary')}:"])
         lines.extend(f"- {item}" for item in hardening_summary)
-    if ecc_benchmark_summary:
-        lines.extend(["", f"{t(lang, 'report.ecc_benchmark_summary')}:"])
-        lines.extend(f"- {item}" for item in ecc_benchmark_summary)
+    if toolchain_fingerprint_summary:
+        lines.extend(["", f"{t(lang, 'report.toolchain_fingerprint')}:"])
+        lines.extend(f"- {item}" for item in toolchain_fingerprint_summary)
+    if secret_redaction_summary:
+        lines.extend(["", f"{t(lang, 'report.secret_redaction_summary')}:"])
+        lines.extend(f"- {item}" for item in secret_redaction_summary)
     if ecc_benchmark_posture:
         lines.extend(["", f"{t(lang, 'report.ecc_benchmark_posture')}:"])
         lines.extend(f"- {item}" for item in ecc_benchmark_posture)
@@ -406,9 +425,6 @@ def render_report(
     if ecc_exit_criteria:
         lines.extend(["", f"{t(lang, 'report.ecc_exit_criteria')}:"])
         lines.extend(f"- {item}" for item in ecc_exit_criteria)
-    if contract_overview:
-        lines.extend(["", f"{t(lang, 'report.contract_overview')}:"])
-        lines.extend(f"- {item}" for item in contract_overview)
     if contract_inventory_summary:
         lines.extend(["", f"{t(lang, 'report.contract_inventory')}:"])
         lines.extend(f"- {item}" for item in contract_inventory_summary)

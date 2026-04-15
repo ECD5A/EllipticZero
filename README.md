@@ -25,7 +25,9 @@ risk lanes, confidence, and follow-up guidance.
 
 - a local-first agent workflow for ECC and smart-contract audit research
 - tool-backed evidence instead of model-only claims
+- compact smart-contract finding cards for risk, evidence, fix direction, and recheck path
 - reproducible sessions, traces, manifests, bundles, and replay
+- evidence coverage, toolchain fingerprints, and secret-redacted JSON exports
 - benchmark and golden cases for evaluator-facing smoke checks
 - cautious reports with manual-review boundaries and remediation direction
 
@@ -33,6 +35,12 @@ The repository is public and source-available under `FSL-1.1-ALv2`. Current
 versions are not offered under an OSI open-source license, and competing
 commercial use, hosted deployment, OEM distribution, or white-label use require
 a separate agreement.
+
+**License TL;DR:** Read, evaluate, run locally, and use for research or internal
+review under `FSL-1.1-ALv2`. Building a competing commercial product,
+hosted/SaaS service, OEM integration, white-label product, resale package, or
+paid security platform around EllipticZero requires a separate commercial
+license. Each published version becomes Apache-2.0 after two years.
 
 ## Why EllipticZero
 
@@ -77,6 +85,7 @@ commercial partner, start with:
 - built-in smart-contract benchmark packs for static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, upgrade/control benchmarking, governance/timelock benchmarking, rewards/distribution benchmarking, stablecoin/collateral benchmarking, AMM/liquidity benchmarking, bridge/custody benchmarking, staking/rebase benchmarking, keeper/auction benchmarking, treasury/vesting benchmarking, insurance/recovery benchmarking, vault/permission benchmarking, and lending-style protocol benchmarking
 - golden/synthetic example cases with expected report shapes for evaluator-facing ECC and smart-contract smoke checks
 - traces, manifests, bundles, replay, and doctor/self-check
+- evidence coverage summaries, toolchain fingerprints, and secret-redacted session/trace/bundle JSON snapshots
 - `mock` by default, plus `openai`, `openrouter`, `gemini`, and `anthropic` when configured
 
 ## Quick Start
@@ -197,6 +206,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Smart-contract experiment packs can now structure bounded static benchmarking, repo-casebook benchmarking, protocol-style benchmark passes, and more specific upgrade/control, governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission, or lending-style benchmark passes; their executed steps are preserved in the session, replay artifacts, and final report.
 - New direct CLI comparison flags (`--compare-session`, `--compare-manifest`, `--compare-bundle`) can attach a saved baseline session to a fresh bounded run, so the final report can include cautious before/after and regression-oriented comparison notes.
 - Smart-contract reporting can include contract inventory, repo-scale protocol maps, protocol invariants, signal-consensus summaries, validation matrices, benchmark posture summaries, strongest priorities, repo triage, entrypoint review lanes, function-family priorities, and risk-family lane summaries.
+- Smart-contract reporting can present compact finding cards that connect a bounded potential issue to local evidence, why it matters, defensive fix direction, and a recheck path.
 - Smart-contract reporting can also include bounded repo-casebook coverage, compact matched case-study summaries, archetype-style case-study labels for governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, or similar protocol cases, short priority-case lines, a short gap block for unmatched lanes, benchmark-support notes, casebook triage, and toolchain alignment for the strongest repo lanes.
 - Smart-contract reporting can also include benchmark-pack summaries and short benchmark-case summaries when a bounded contract benchmark pack materially shaped the session.
 - Smart-contract reporting can also include a casebook coverage matrix, benchmark posture summaries, and toolchain-backed validation posture for the strongest repo lanes, including repo-casebooks that support more than one risk family in the same bounded pass.
@@ -204,6 +214,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Completed runs can write session, trace, comparative, and bundle artifacts under `artifacts/`, and reproducibility bundles now include an `overview.json` snapshot with focus summary, comparison readiness, export-level counts, plus quality-gate and hardening-summary counts.
 - Cross-domain reporting can also preserve quality gates and hardening summaries so bounded evidence depth, comparison readiness, export posture, plugin-safety posture, and residual manual-review lanes remain legible in one place.
 - Reproducibility manifests and bundles now filter out artifact references that resolve outside the approved local storage roots, and session/trace copies are exported only when their source paths stay inside those approved roots.
+- Reports, manifests, and bundle overviews can now preserve evidence-coverage counts, toolchain fingerprints, and secret-redaction summaries while saved session and trace JSON snapshots mask likely credentials before export.
 - Unsafe local plugin path layouts are blocked before registry loading.
 - GitHub Actions now include a dedicated CodeQL workflow for bounded code-scanning coverage on the Python codebase, and Dependabot can keep Python/github-actions dependencies under review.
 

@@ -6,6 +6,7 @@ from shutil import copy2
 
 from app.models.run_manifest import RunManifest
 from app.models.session import ResearchSession
+from app.storage.redaction import redact_sensitive_data, redact_text
 
 
 class ReproducibilityBundleStore:
@@ -34,31 +35,49 @@ class ReproducibilityBundleStore:
         copied_session = False
         copied_trace = False
         if manifest.session_export_ready and session.session_file_path:
-            copy2(session.session_file_path, bundle_dir / "session.json")
+            self._copy_redacted_json_snapshot(
+                Path(session.session_file_path),
+                bundle_dir / "session.json",
+                jsonl=False,
+            )
             copied_session = True
         if manifest.trace_export_ready and session.trace_file_path and Path(session.trace_file_path).exists():
-            copy2(session.trace_file_path, bundle_dir / "trace.jsonl")
+            self._copy_redacted_json_snapshot(
+                Path(session.trace_file_path),
+                bundle_dir / "trace.jsonl",
+                jsonl=True,
+            )
             copied_trace = True
 
         self._copy_artifacts(manifest=manifest, bundle_dir=bundle_dir)
 
         manifest_path = bundle_dir / "manifest.json"
         manifest_path.write_text(
-            json.dumps(manifest.model_dump(mode="json"), indent=2, ensure_ascii=False),
+            json.dumps(
+                redact_sensitive_data(manifest.model_dump(mode="json")),
+                indent=2,
+                ensure_ascii=False,
+            ),
             encoding="utf-8",
         )
         if session.comparative_report is not None:
             self.comparative_report_path_for_session(session.session_id).write_text(
-                json.dumps(session.comparative_report.model_dump(mode="json"), indent=2, ensure_ascii=False),
+                json.dumps(
+                    redact_sensitive_data(session.comparative_report.model_dump(mode="json")),
+                    indent=2,
+                    ensure_ascii=False,
+                ),
                 encoding="utf-8",
             )
         self.overview_path_for_session(session.session_id).write_text(
             json.dumps(
-                self._bundle_overview(
-                    session=session,
-                    manifest=manifest,
-                    copied_session=copied_session,
-                    copied_trace=copied_trace,
+                redact_sensitive_data(
+                    self._bundle_overview(
+                        session=session,
+                        manifest=manifest,
+                        copied_session=copied_session,
+                        copied_trace=copied_trace,
+                    )
                 ),
                 indent=2,
                 ensure_ascii=False,
@@ -75,6 +94,32 @@ class ReproducibilityBundleStore:
             encoding="utf-8",
         )
         return bundle_dir
+
+    def _copy_redacted_json_snapshot(self, source: Path, target: Path, *, jsonl: bool) -> None:
+        text = source.read_text(encoding="utf-8")
+        if jsonl:
+            lines: list[str] = []
+            for line in text.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                try:
+                    payload = json.loads(stripped)
+                except json.JSONDecodeError:
+                    lines.append(redact_text(line))
+                    continue
+                lines.append(json.dumps(redact_sensitive_data(payload), ensure_ascii=False))
+            target.write_text(("\n".join(lines) + "\n") if lines else "", encoding="utf-8")
+            return
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError:
+            target.write_text(redact_text(text), encoding="utf-8")
+            return
+        target.write_text(
+            json.dumps(redact_sensitive_data(payload), indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
 
     def _copy_artifacts(self, *, manifest: RunManifest, bundle_dir: Path) -> None:
         artifacts_dir = bundle_dir / "artifacts"
@@ -114,6 +159,9 @@ class ReproducibilityBundleStore:
             "Export policy summary:",
         ]
         lines.extend(f"- {item}" for item in manifest.export_policy_summary)
+        if manifest.secret_redaction_summary:
+            lines.extend(["", "Secret redaction summary:"])
+            lines.extend(f"- {item}" for item in manifest.secret_redaction_summary)
         lines.extend(
             [
                 "",
@@ -151,6 +199,9 @@ class ReproducibilityBundleStore:
             "hardening_summary_count": manifest.hardening_summary_count,
             "quality_gate_summary": list(manifest.quality_gate_summary),
             "hardening_summary": list(manifest.hardening_summary),
+            "evidence_coverage_summary": dict(manifest.evidence_coverage_summary),
+            "toolchain_fingerprint": dict(manifest.toolchain_fingerprint),
+            "secret_redaction_summary": list(manifest.secret_redaction_summary),
             "outputs": {
                 "session_json": copied_session,
                 "trace_jsonl": copied_trace,
