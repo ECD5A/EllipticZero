@@ -176,6 +176,16 @@ python -m app.main --list-golden-cases
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
+Fast buyer demo path:
+
+```powershell
+python -m app.main --golden-case contract-vault-permission-lane
+```
+
+Expected first-screen anchors: `Finding Cards`, `Evidence Coverage`,
+reproducibility outputs, and lower export-quality notes for toolchain
+fingerprint and secret redaction.
+
 Additional CLI utilities:
 
 ```powershell

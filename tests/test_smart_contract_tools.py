@@ -1502,6 +1502,7 @@ def test_orchestrator_can_run_bounded_smart_contract_session() -> None:
         and "Recheck:" in item
         for item in session.report.contract_finding_cards
     )
+    assert all(len(item) <= 600 for item in session.report.contract_finding_cards)
     assert "contract_remediation_validation" in session.model_dump()["report"]
     assert any("contract_" in item for item in session.report.local_experiment_summary)
     assert session.session_file_path is not None
@@ -1652,6 +1653,7 @@ contract Proxy is SharedBase { ProxyLogic public logic; }
     assert any("residual risk" in item.lower() and "status=" in item.lower() for item in session.report.contract_residual_risk)
     assert any("exit criterion for" in item.lower() and "should still replay cleanly" in item.lower() for item in session.report.contract_exit_criteria)
     assert any("Evidence:" in item and "Why it matters:" in item and "Recheck:" in item for item in session.report.contract_finding_cards)
+    assert all(len(item) <= 600 for item in session.report.contract_finding_cards)
     assert any("re-run compile" in item.lower() or "hardening" in item.lower() or "storage-slot" in item.lower() or "delegatecall" in item.lower() for item in session.report.contract_remediation_guidance)
     assert any("function families" in item.lower() or "risk-family lanes" in item.lower() or "review lanes" in item.lower() or "entrypoint" in item.lower() or "candidate files" in item.lower() or "repository" in item.lower() or "risky files" in item.lower() for item in session.report.contract_review_focus)
     assert any("function families" in item.lower() or "risk-family lanes" in item.lower() or "review lanes" in item.lower() or "entrypoint" in item.lower() or "candidate files" in item.lower() or "repository" in item.lower() or "risky files" in item.lower() for item in session.report.contract_manual_review_items)

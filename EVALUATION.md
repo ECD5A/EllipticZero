@@ -76,6 +76,24 @@ Run a repo-scale smart-contract golden case:
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
+## Buyer Demo Path
+
+For the fastest product-oriented review, run the vault/permission golden case:
+
+```powershell
+python -m app.main --golden-case contract-vault-permission-lane
+```
+
+In the first screen of the report, check for:
+
+- `Finding Cards` with potential finding, evidence, why it matters, fix direction, and recheck path
+- `Evidence Coverage` showing evidence count, tool-backed count, tools, experiment types, and review items
+- reproducibility outputs for session, trace, comparative report, and bundle
+- `Toolchain Fingerprint` and `Secret Redaction` in the lower export-quality section
+
+This path is intentionally no-key and synthetic. It demonstrates the workflow
+shape a commercial reviewer should expect before testing a private repository.
+
 ## Benchmark Scorecard
 
 Use the benchmark layer as a review checklist, not as a claim that the tool has

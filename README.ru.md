@@ -182,6 +182,15 @@ python -m app.main --list-golden-cases
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
+Быстрый demo path для продуктовой оценки:
+
+```powershell
+python -m app.main --golden-case contract-vault-permission-lane
+```
+
+Ожидаемые якоря на первом экране: `Finding Cards`, `Evidence Coverage`,
+reproducibility outputs, toolchain fingerprint и secret redaction.
+
 Дополнительные CLI-утилиты:
 
 ```powershell

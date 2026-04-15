@@ -49,6 +49,12 @@
 
 ## `contract-vault-permission-lane`
 
+Buyer-visible anchors для этого case:
+
+- `Finding Cards` видны в верхней части отчета и сохраняют potential finding, evidence, why it matters, fix direction и recheck path
+- `Evidence Coverage` и reproducibility outputs видны без погружения в raw JSON artifacts
+- `Toolchain Fingerprint` и `Secret Redaction` остаются доступны в export-quality слое
+
 Что ожидается в полезном выводе:
 
 - выбран пакет `vault_permission_benchmark_pack`

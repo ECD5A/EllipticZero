@@ -76,6 +76,25 @@ python -m app.main --golden-case ecc-secp256k1-point-format-edge
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
+## Demo Path Для Продуктовой Оценки
+
+Для самой быстрой продуктовой оценки запусти vault/permission golden case:
+
+```powershell
+python -m app.main --golden-case contract-vault-permission-lane
+```
+
+В первом экране отчёта стоит проверить:
+
+- `Finding Cards` с потенциальной находкой, доказательством, причиной важности, направлением исправления и recheck path
+- `Evidence Coverage` с количеством evidence, tool-backed count, tools, experiment types и review items
+- reproducibility outputs для session, trace, comparative report и bundle
+- `Toolchain Fingerprint` и `Secret Redaction` ниже, в export-quality слое
+
+Этот путь специально работает без API-ключей и на synthetic case. Он показывает
+форму workflow, которую коммерческий reviewer должен ожидать перед проверкой
+частного репозитория.
+
 ## Benchmark scorecard
 
 Benchmark-слой стоит воспринимать как проверочный список для оценки, а не как

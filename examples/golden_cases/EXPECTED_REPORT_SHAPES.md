@@ -54,6 +54,9 @@ Expected useful output:
 - selected pack is `vault_permission_benchmark_pack`
 - parser output includes the synthetic vault contract and its externally reachable functions
 - surface summary highlights payable, value-flow, share/accounting, permission, or signature-style lanes when present
+- finding cards appear near the top and preserve potential finding, evidence, why it matters, fix direction, and recheck path
+- evidence coverage and reproducibility outputs are visible without digging into raw JSON artifacts
+- toolchain fingerprint and secret-redaction posture remain available in the export-quality section
 - manual review queue and residual-risk lines remain visible
 - report avoids claiming a confirmed exploit from pattern evidence alone
 

@@ -2486,12 +2486,21 @@ def build_contract_finding_cards(session: ResearchSession) -> list[str]:
             fallback_recheck,
         )
         cards.append(
-            f"Finding card {index + 1}: Potential finding: {potential} "
-            f"Evidence: {evidence} Why it matters: {why} "
-            f"Fix direction: {fix} Recheck: {recheck}"
+            f"Finding card {index + 1}: Potential finding: {_contract_card_excerpt(potential, 90)} "
+            f"Evidence: {_contract_card_excerpt(evidence, 95)} "
+            f"Why it matters: {_contract_card_excerpt(why, 85)} "
+            f"Fix direction: {_contract_card_excerpt(fix, 85)} "
+            f"Recheck: {_contract_card_excerpt(recheck, 90)}"
         )
 
     return ordered_unique(cards)
+
+
+def _contract_card_excerpt(text: str, limit: int) -> str:
+    normalized = " ".join(text.strip().split())
+    if len(normalized) <= limit:
+        return normalized
+    return normalized[: max(0, limit - 3)].rstrip(" .,;:") + "..."
 
 
 def _contract_card_value(values: list[str], index: int, fallback: str) -> str:

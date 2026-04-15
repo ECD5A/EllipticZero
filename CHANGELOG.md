@@ -18,6 +18,8 @@ introduced.
   summaries in reports, manifests, bundle overviews, and export notes.
 - Secret redaction for saved session JSON, trace JSONL, comparative-report, and
   bundle JSON snapshots before export.
+- Buyer-demo guidance for the no-key vault/permission golden case.
+- More compact smart-contract finding-card text for first-screen review.
 - Compact `--evaluation-summary` CLI path for no-key evaluator orientation.
 - Evaluator-facing case-study snapshots for ECC point-format review,
   vault-permission review, and repo-scale lending-protocol triage.

@@ -19,6 +19,8 @@
   в отчётах, manifest, bundle overview и export notes.
 - Редактирование вероятных секретов в saved session JSON, trace JSONL,
   comparative-report и bundle JSON snapshots перед экспортом.
+- Demo path для no-key vault/permission golden case.
+- Более компактный текст smart-contract finding cards для первого экрана отчёта.
 - Компактная CLI-команда `--evaluation-summary` для быстрой оценки проекта без
   API-ключей.
 - Короткие case-study snapshots для оценки ECC point-format review,
