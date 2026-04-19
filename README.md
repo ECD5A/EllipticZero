@@ -264,7 +264,7 @@ pytest -q
 
 The project currently passes the test suite in mock mode.
 
-## Support
+## Donate
 
 - Bitcoin (BTC): `1ECDSA1b4d5TcZHtqNpcxmY8pBH1GgHntN`
 - USDT (TRC20): `TSWcFVfqCp4WCXrUkkzdCkcLnhtFLNN3Ba`
