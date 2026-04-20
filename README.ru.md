@@ -267,7 +267,9 @@ pytest -q
 
 Сейчас проект проходит тесты в `mock`-режиме.
 
-## Поддержка проекта
+## Как поддержать проект
+
+Если EllipticZero полезен в работе, проект можно поддержать здесь:
 
 - Bitcoin (BTC): `1ECDSA1b4d5TcZHtqNpcxmY8pBH1GgHntN`
 - USDT (TRC20): `TSWcFVfqCp4WCXrUkkzdCkcLnhtFLNN3Ba`
