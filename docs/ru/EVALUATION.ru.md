@@ -11,12 +11,12 @@ EllipticZero рассчитан на прямую проверку: исходн
 ## Что можно оценивать
 
 По условиям публичной лицензии `FSL-1.1-ALv2` репозиторий можно читать,
-собирать, запускать локально и оценивать для исследований, внутреннего review и
-других разрешенных целей.
+собирать, запускать локально и оценивать для исследований, внутренней проверки
+и других разрешенных целей.
 
 Полезные пути оценки:
 
-- просмотр кода оркестрации, агентных ролей, раннеров, отчетов и export-границ
+- просмотр кода оркестрации, агентных ролей, раннеров, отчетов и границ экспорта
 - локальная CLI-проверка без ключей в `mock`-режиме
 - golden/synthetic cases для стабильных smoke-проверок
 - ECC benchmark-пакеты по point format, curve metadata, subgroup, cofactor,
@@ -70,13 +70,13 @@ python -m app.main --list-golden-cases
 python -m app.main --golden-case ecc-secp256k1-point-format-edge
 ```
 
-Запустить repo-scale smart-contract golden case:
+Запустить repo-scale golden case по смарт-контрактам:
 
 ```powershell
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
-## Demo Path Для Продуктовой Оценки
+## Демо-путь для продуктовой оценки
 
 Для самой быстрой продуктовой оценки запусти vault/permission golden case:
 
@@ -86,13 +86,13 @@ python -m app.main --golden-case contract-vault-permission-lane
 
 В первом экране отчёта стоит проверить:
 
-- `Finding Cards` с потенциальной находкой, доказательством, причиной важности, направлением исправления и recheck path
-- `Evidence Coverage` с количеством evidence, tool-backed count, tools, experiment types и review items
-- reproducibility outputs для session, trace, comparative report и bundle
+- `Finding Cards` с потенциальной находкой, доказательством, причиной важности, направлением исправления и путём перепроверки
+- `Evidence Coverage` с количеством доказательств, tool-backed count, tools, experiment types и review items
+- артефакты воспроизводимости для session, trace, comparative report и bundle
 - `Toolchain Fingerprint` и `Secret Redaction` ниже, в export-quality слое
 
 Этот путь специально работает без API-ключей и на synthetic case. Он показывает
-форму workflow, которую коммерческий reviewer должен ожидать перед проверкой
+форму рабочего цикла, которую коммерческий оценщик должен ожидать перед проверкой
 частного репозитория.
 
 ## Benchmark scorecard
@@ -102,15 +102,15 @@ Benchmark-слой стоит воспринимать как проверочн
 
 | Зона | Что проверять | Более сильный сигнал |
 | --- | --- | --- |
-| Golden cases | Встроенные ECC и smart-contract cases запускаются чисто и дают ожидаемую форму отчета. | Smoke-output стабилен при повторных локальных запусках. |
+| Golden cases | Встроенные ECC- и smart-contract кейсы запускаются чисто и дают ожидаемую форму отчета. | Smoke-output стабилен при повторных локальных запусках. |
 | ECC coverage | В отчете видны форматы точек, метаданные кривых, subgroup/cofactor проверки, twist hygiene, переходы между семействами кривых и domain-completeness поверхности. | Локальные вычисления и интерпретация отчета согласованы без завышения уверенности. |
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue и residual-risk lanes появляются, когда входные данные это оправдывают. | Отчет отделяет подтвержденные локальные сигналы от приоритетов ручной проверки. |
 | Comparison | Сохраненную baseline можно подключить через `--compare-session`, `--compare-manifest` или `--compare-bundle`. | Before/after строки показывают осторожные изменения и возможные regression flags. |
 | Export quality | Session, trace, manifest и bundle artifacts остаются внутри разрешенных локальных export roots. | Проверяющий может воспроизвести запуск и посмотреть evidence trail. |
 | Hosted path | Optional live smoke работает только когда проверяющий передает валидные provider credentials. | Provider output воспринимается как интерпретация, а не как доказательство. |
 
-Пропуски в scorecard тоже полезны. Если какой-то lane отсутствует, стоит
-проверить: входные данные не оправдывали этот lane, локальный toolchain не был
+Пропуски в scorecard тоже полезны. Если какая-то линия проверки отсутствует, стоит
+проверить: входные данные не оправдывали этот путь, локальный toolchain не был
 установлен, prompt был слишком узким или проекту нужна более глубокая coverage
 в этой зоне.
 
@@ -130,12 +130,12 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 
 Что смотреть в результате:
 
-- inventory контрактов и repo-scale карту протокола
-- entrypoint review lanes
+- инвентаризацию контрактов и repo-scale карту протокола
+- маршруты обзора по entrypoint-файлам
 - приоритеты семейств функций
 - покрытие casebook и benchmark
-- strongest priorities и residual-risk строки
-- статус компиляции и posture внешних анализаторов, если они установлены
+- strongest priorities и строки с остаточным риском
+- статус компиляции и состояние внешних анализаторов, если они установлены
 - before/after delta и regression flags, если передана baseline-сессия
 
 ## ECC путь
@@ -165,7 +165,7 @@ python -m app.main "Inspect whether secp256k1 point encoding, curve metadata, an
 ## Оценка с реальными провайдерами
 
 Hosted-провайдеры необязательны. Их стоит настраивать только если нужно
-проверить агентный цикл с живыми model outputs вместо стандартного `mock`
+проверить агентный цикл с живыми ответами модели вместо стандартного `mock`
 провайдера.
 
 Поддерживаемые имена провайдеров:
@@ -201,7 +201,7 @@ python -m app.main --live-provider-smoke openrouter --live-smoke-model openroute
 
 ## Коммерческая граница
 
-Оценка, исследование, внутренний review и локальное тестирование доступны по
+Оценка, исследование, внутренняя проверка и локальное тестирование доступны по
 условиям публичной лицензии.
 
 Если сценарий включает конкурирующее коммерческое использование, hosted или

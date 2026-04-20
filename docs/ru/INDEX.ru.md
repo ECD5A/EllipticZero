@@ -10,10 +10,10 @@
 - [Архитектура](ARCHITECTURE.ru.md)
 - [Агентная система](AGENTS.ru.md)
 - [Примеры запуска](../../examples/README.ru.md)
-- [Примеры форм отчета](../../examples/SAMPLE_OUTPUTS.ru.md)
-- [Golden synthetic cases](../../examples/golden_cases/README.ru.md)
-- [Runbook для golden cases](../../examples/golden_cases/RUNBOOK.ru.md)
-- [Ожидаемые формы golden-отчетов](../../examples/golden_cases/EXPECTED_REPORT_SHAPES.ru.md)
+- [Примеры форм отчёта](../../examples/SAMPLE_OUTPUTS.ru.md)
+- [Синтетические golden cases](../../examples/golden_cases/README.ru.md)
+- [Пошаговый runbook для golden cases](../../examples/golden_cases/RUNBOOK.ru.md)
+- [Ожидаемые формы golden-отчётов](../../examples/golden_cases/EXPECTED_REPORT_SHAPES.ru.md)
 - [Сценарии использования](USE_CASES.ru.md)
 - [Профили окружения](ENVIRONMENT_PROFILES.ru.md)
 
@@ -24,8 +24,8 @@
 
 ## Безопасность и использование
 
-- [Security policy](SECURITY.ru.md)
-- [Contributing](CONTRIBUTING.ru.md)
+- [Политика безопасности](SECURITY.ru.md)
+- [Как вносить изменения](CONTRIBUTING.ru.md)
 
 ## Лицензирование и коммерческое использование
 

@@ -8,28 +8,41 @@
 ![Domains](https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2)
 ![Local First](https://img.shields.io/badge/local--first-reproducible%20evidence-5b5fc7)
 
-EllipticZero is a source-available local lab for bounded defensive research in two domains:
+Language: [English](README.md) | [Русская версия](README.ru.md)
 
-- ECC / defensive cryptography research
-- smart-contract audit
+EllipticZero is a source-available local lab for bounded defensive ECC research
+and smart-contract audits.
+
+It is built for researchers, audit teams, and protocol teams that want local
+evidence instead of model-only output.
 
 Simple outside, strict inside: load a contract or choose an ECC target, write the
 research idea, let bounded agents select local checks, then review evidence,
 risk lanes, confidence, and follow-up guidance.
 
-![EllipticZero interactive home screen](docs/assets/console-home.png)
-
-![EllipticZero session report screen](docs/assets/session-report.png)
+| Interactive Home | Session Report |
+| --- | --- |
+| ![EllipticZero interactive home screen](docs/assets/console-home.png) | ![EllipticZero session report screen](docs/assets/session-report.png) |
 
 ## What You Get
 
-- a local-first agent workflow for ECC and smart-contract audit research
+- a local-first workflow for ECC research and smart-contract audits
 - tool-backed evidence instead of model-only claims
 - compact smart-contract finding cards for risk, evidence, fix direction, and recheck path
 - reproducible sessions, traces, manifests, bundles, and replay
 - evidence coverage, toolchain fingerprints, and secret-redacted JSON exports
-- benchmark and golden cases for evaluator-facing smoke checks
+- benchmark packs and golden cases for evaluator-facing smoke checks
 - cautious reports with manual-review boundaries and remediation direction
+
+**Fast evaluation path:**
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e .[lab]
+python -m app.main --doctor
+python -m app.main --golden-case contract-vault-permission-lane
+```
 
 The repository is public and source-available under `FSL-1.1-ALv2`. Current
 versions are not offered under an OSI open-source license, and competing

@@ -3,7 +3,7 @@
 Этот файл описывает, что должен сохранять полезный отчет EllipticZero при
 запуске golden synthetic cases. Описание намеренно качественное: точные
 формулировки и количество артефактов могут зависеть от локальных инструментов,
-опциональных адаптеров и выбранного provider.
+опциональных адаптеров и выбранного провайдера.
 
 ## `ecc-secp256k1-domain-completeness`
 
@@ -17,42 +17,42 @@
 
 Хороший сигнал для оценки:
 
-- по отчету понятно, что именно было проверено и что остается ручным review-вопросом
+- по отчету понятно, что именно было проверено и что остается вопросом для ручной проверки
 
 ## `ecc-25519-subgroup-hygiene`
 
 Что ожидается в полезном выводе:
 
 - выбран пакет `ecc_subgroup_hygiene_benchmark_pack`
-- видны subgroup, cofactor, twist или encoding lanes
-- coordinate или family caveat отделены от production finding
+- видны линии проверки по subgroup, cofactor, twist или encoding
+- оговорки по координатам или семейству отделены от более сильного вывода
 - уверенность остается ограниченной
 - границы ручной проверки сохранены
 
 Хороший сигнал для оценки:
 
-- отчет отделяет локальные review-сигналы от подтвержденных доказательств по конкретной implementation
+- отчет отделяет локальные сигналы для проверки от подтвержденных доказательств по конкретной реализации
 
 ## `ecc-secp256k1-point-format-edge`
 
 Что ожидается в полезном выводе:
 
 - выбран пакет `point_format_inspection_pack`
-- видны point-format или prefix evidence
+- видны сигналы по point-format или prefix
 - bounded consistency output отделен от более сильных криптографических заявлений
 - уверенность остается ограниченной
-- отчет не заявляет private-key recovery или production library vulnerability
+- отчет не заявляет восстановление закрытого ключа или уязвимость production-библиотеки
 
 Хороший сигнал для оценки:
 
-- отчет трактует malformed или edge-format evidence как review signal, а не как exploit
+- отчет трактует malformed или edge-format evidence как сигнал для проверки, а не как exploit
 
 ## `contract-vault-permission-lane`
 
-Buyer-visible anchors для этого case:
+Что должно быть видно оценщику в этом кейсе:
 
 - `Finding Cards` видны в верхней части отчета и сохраняют potential finding, evidence, why it matters, fix direction и recheck path
-- `Evidence Coverage` и reproducibility outputs видны без погружения в raw JSON artifacts
+- `Evidence Coverage` и артефакты воспроизводимости видны без погружения в raw JSON artifacts
 - `Toolchain Fingerprint` и `Secret Redaction` остаются доступны в export-quality слое
 
 Что ожидается в полезном выводе:
@@ -60,12 +60,12 @@ Buyer-visible anchors для этого case:
 - выбран пакет `vault_permission_benchmark_pack`
 - parser output включает синтетический vault-контракт и его externally reachable функции
 - surface summary подсвечивает payable, value-flow, share/accounting, permission или signature-style lanes, если они есть в локальном разборе
-- manual review queue и residual-risk строки остаются видны
+- manual review queue и строки с остаточным риском остаются видны
 - отчет не заявляет подтвержденный exploit только на основании pattern evidence
 
 Хороший сигнал для оценки:
 
-- отчет дает покупателю или ревьюеру понятный первый triage path без завышения результата
+- отчет дает покупателю или ревьюеру понятный первый путь первичного разбора без завышения результата
 
 ## `contract-governance-timelock-lane`
 
@@ -94,4 +94,4 @@ Buyer-visible anchors для этого case:
 
 Хороший сигнал для оценки:
 
-- отчет демонстрирует repo-scale triage: должно быть понятно, какие файлы и lanes человеку проверять первыми
+- отчет демонстрирует repo-scale triage: должно быть понятно, какие файлы и линии проверки человеку проверять первыми

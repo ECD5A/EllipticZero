@@ -8,41 +8,55 @@
 ![Domains](https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2)
 ![Local First](https://img.shields.io/badge/local--first-reproducible%20evidence-5b5fc7)
 
-EllipticZero — локальная лаборатория с доступным исходным кодом по модели source-available для ограниченных защитных исследований в двух доменах:
+Язык: [English](README.md) | [Русская версия](README.ru.md)
 
-- ECC / защитная криптография
-- аудит смарт-контрактов
+EllipticZero — локальная source-available лаборатория для ограниченных
+защитных ECC-исследований и аудита смарт-контрактов.
+
+Проект рассчитан на исследователей, аудиторские и протокольные команды,
+которым нужна локальная доказательная база, а не только ответы модели.
 
 Снаружи все просто, внутри строго: загрузи контракт или выбери ECC-цель,
 напиши исследовательскую идею, дай ограниченным агентам выбрать локальные
 проверки, затем смотри доказательную базу, риск-линии, уверенность и следующие
 шаги.
 
-![Стартовый экран EllipticZero](docs/assets/console-home-ru.png)
-
-![Экран итогового отчёта EllipticZero](docs/assets/session-report-ru.png)
+| Стартовый экран | Итоговый отчёт |
+| --- | --- |
+| ![Стартовый экран EllipticZero](docs/assets/console-home-ru.png) | ![Экран итогового отчёта EllipticZero](docs/assets/session-report-ru.png) |
 
 ## Что получаешь
 
-- локальный агентный workflow для ECC и аудита смарт-контрактов
+- локальный агентный цикл для ECC-исследований и аудита смарт-контрактов
 - выводы, опирающиеся на инструменты и артефакты, а не только на модель
-- компактные карточки smart-contract находок: риск, доказательства, направление исправления и путь перепроверки
+- компактные карточки находок по смарт-контрактам: риск, доказательства, направление исправления и путь перепроверки
 - воспроизводимые сессии, трассировки, манифесты, bundle-пакеты и replay
-- evidence coverage, toolchain fingerprints и JSON-экспорт с редактированием секретов
-- benchmark и golden cases для быстрой оценки проекта
-- осторожные отчеты с границами ручной проверки и направлением исправлений
+- сводки покрытия доказательной базы, отпечатки toolchain и JSON-экспорт с редактированием секретов
+- benchmark-пакеты и golden cases для быстрой оценки проекта
+- осторожные отчёты с границами ручной проверки и направлением исправлений
+
+**Самый быстрый путь для оценки:**
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e .[lab]
+python -m app.main --doctor
+python -m app.main --golden-case contract-vault-permission-lane
+```
 
 Репозиторий остаётся публичным и source-available по `FSL-1.1-ALv2`. Текущие
 версии не предлагаются как OSI-approved open-source release, а конкурирующее
 коммерческое использование, hosted-развёртывание, OEM и white-label сценарии
 требуют отдельного соглашения.
 
-**Коротко о лицензии:** можно читать код, оценивать проект, запускать локально
-и использовать для исследований или внутреннего review по `FSL-1.1-ALv2`.
-Конкурирующий коммерческий продукт, hosted/SaaS-сервис, OEM-интеграция,
-white-label продукт, перепродажа или платная security-платформа на базе
-EllipticZero требуют отдельной коммерческой лицензии. Каждая опубликованная
-версия переходит на Apache-2.0 через два года.
+**Коротко о лицензии:** код можно читать, оценивать и запускать локально.
+Публичная версия доступна для исследований, оценки и внутреннего использования
+по `FSL-1.1-ALv2`. Если вы делаете конкурирующий коммерческий продукт,
+SaaS/hosted-сервис, OEM-интеграцию, white-label решение, перепродажу или
+коммерческую платформу безопасности на базе EllipticZero, нужна отдельная
+коммерческая лицензия. Каждая опубликованная версия становится доступной по
+Apache-2.0 через два года после даты публикации.
 
 ## Почему EllipticZero
 
@@ -59,12 +73,12 @@ EllipticZero сделан для локальных исследований, г
 
 EllipticZero построен вокруг:
 
-- локальных защитных исследований и аудиторских workflow
-- ограниченной оркестрации для ECC и smart-contract review
-- воспроизводимых доказательств, трассировок, манифестов, bundle-пакетов и отчетов
+- локальных защитных исследований и аудиторских процессов
+- ограниченной оркестрации для ECC и проверки смарт-контрактов
+- воспроизводимых доказательств, трассировок, манифестов, пакетов воспроизводимости и отчетов
 - benchmark-пакетов для повторяемого сравнения и проверки защитных доработок
-- осторожной оценки уверенности с сохранением ручных review lanes
-- source-available оценки проекта с отдельным путем коммерческого лицензирования
+- осторожной оценки уверенности с сохранением линий ручной проверки
+- source-available публикации проекта с отдельным путём коммерческого лицензирования
 
 ## Быстрая оценка проекта
 
@@ -74,24 +88,24 @@ EllipticZero построен вокруг:
 - [EVALUATION.ru.md](docs/ru/EVALUATION.ru.md) - путь оценки проекта и
   проверочная benchmark-таблица
 - [examples/golden_cases/README.ru.md](examples/golden_cases/README.ru.md) -
-  стабильные ECC и smart-contract smoke-сценарии
+  стабильные ECC- и smart-contract smoke-сценарии
 - [COMMERCIAL_LICENSE.ru.md](docs/ru/COMMERCIAL_LICENSE.ru.md) - если сценарий
-  связан с продуктом, hosted-сервисом, OEM, white-label, перепродажей или
+  связан с продуктом, развёртыванием как сервиса, OEM, white-label, перепродажей или
   похожим коммерческим использованием
 
 ## Подробные возможности
 
 - исследовательские сессии с оркестратором в центре цикла
 - агенты Math, Cryptography, Strategy, Hypothesis, Critic и Report
-- локальные изолированные раннеры для символьных, формальных, проверок свойств, фаззинга и ECC testbed-проверок
+- локальные изолированные раннеры для символьных, формальных, property-based, фаззинг- и ECC testbed-проверок
 - встроенные ECC benchmark-наборы для point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor и twist hygiene, а также bounded domain completeness
 - инструменты аудита смарт-контрактов: разбор кода, компиляция, инвентаризация репозитория контрактов, ограниченный анализ импортов и зависимостей, карта протокольных модулей, маршруты обзора, приоритизация семейств функций и сведение межфайловых сигналов в общие приоритеты
 - встроенные проверочные корпуса для asset-flow, vault/share, oracle freshness, collateral/liquidation и liquidation-fee review, protocol-fee/reserve-buffer/debt accounting, bad-debt socialization и смежных protocol-style семейств обзора
 - ограниченные repo-casebook сценарии для upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery и vault/permit, а также опциональные адаптеры `Slither`, `Foundry` и `Echidna`, если они установлены локально
 - встроенные smart-contract benchmark-пакеты для static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, а также для governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style проходов
-- golden/synthetic примеры с ожидаемыми формами отчетов для быстрой оценки ECC и smart-contract smoke checks
+- golden/synthetic примеры с ожидаемыми формами отчетов для быстрой оценки ECC- и smart-contract smoke-checks
 - трассировки, манифесты, пакеты воспроизводимости, повторный запуск и `doctor`
-- сводки evidence coverage, toolchain fingerprints и session/trace/bundle JSON-снимки с редактированием секретов
+- сводки покрытия доказательной базы, отпечатков toolchain и session/trace/bundle JSON-снимков с редактированием секретов
 - `mock` по умолчанию, а также `openai`, `openrouter`, `gemini` и `anthropic` при корректной настройке
 
 ## Быстрый старт
@@ -175,21 +189,21 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 python -m app.main --show-routing
 ```
 
-Встроенные golden evaluator cases:
+Встроенные golden-кейсы для оценки:
 
 ```powershell
 python -m app.main --list-golden-cases
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
-Быстрый demo path для продуктовой оценки:
+Быстрый демо-путь для продуктовой оценки:
 
 ```powershell
 python -m app.main --golden-case contract-vault-permission-lane
 ```
 
 Ожидаемые якоря на первом экране: `Finding Cards`, `Evidence Coverage`,
-reproducibility outputs, toolchain fingerprint и secret redaction.
+артефакты воспроизводимости, отпечаток toolchain и редактирование секретов.
 
 Дополнительные CLI-утилиты:
 
@@ -204,12 +218,12 @@ python -m app.main --replay-session .\artifacts\sessions\session_id.json
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Повторно прогнать bounded-аудит и записать различия до/после относительно сохранённой baseline-сессии."
 ```
 
-## Конфигурация и runtime
+## Конфигурация и среда выполнения
 
 - Конфигурация читается из базовых значений, `configs/settings.yaml`, переменных окружения и необязательного `.env`.
 - Поддерживаемые провайдеры: `mock`, `openai`, `openrouter`, `gemini`, `anthropic`.
 - Нормальный сценарий — один общий провайдер и одна модель для всех ролей. Переопределения по ролям доступны как продвинутый вариант настройки.
-- OpenRouter может быть удобным bounded smoke-путём для live-проверки, потому что даёт OpenAI-compatible API и единый ключ для многих моделей. Если использовать варианты с суффиксом `:free`, относись к ним как к удобной проверке, а не как к гарантированному runtime: у OpenRouter есть свои лимиты по частоте и дневному объёму таких запросов.
+- OpenRouter может быть удобным bounded smoke-путём для live-проверки, потому что даёт OpenAI-compatible API и единый ключ для многих моделей. Если использовать варианты с суффиксом `:free`, относись к ним как к удобной проверке, а не как к гарантированной среде выполнения: у OpenRouter есть свои лимиты по частоте и дневному объёму таких запросов.
 - Локальная среда может включать `SymPy`, `Hypothesis`, `z3-solver`, встроенные мутационные пробы, ECC-тестбеды, проверки для аудита смарт-контрактов и `SageMath`, если он доступен.
 - ECC-отчёт теперь может включать краткую benchmark-сводку, benchmark-статус, покрытие ECC-семейств, короткие сводки по benchmark-кейсам, bounded ECC review focus, строки с остаточным риском, заметки по согласованности ECC-сигналов, короткую ECC validation matrix, осторожные строки ECC-сравнения до/после, заметки по ECC benchmark-delta и ECC-регрессионные дельты, когда локальные сигналы по encoding, family transitions, twist hygiene, subgroup/cofactor или domain completeness это оправдывают.
 - Setup-профили могут развернуть управляемый Solidity-компилятор в `.ellipticzero/tooling/solcx`, чтобы проверки компиляции и зависящие от компилятора адаптеры не зависели от глобальной установки `solc`.
@@ -217,7 +231,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Для аудита смарт-контрактов можно использовать вставку кода, встроенный код в CLI или локальный файл `.sol` / `.vy`.
 - `doctor` теперь отдельно показывает конфигурацию провайдера и готовность hosted live-smoke path, а прямой smoke-run выводит фактический тайм-аут и лимит токенов запроса.
 - `doctor` теперь также показывает bounded local plugin safety gate и политику approved export roots, используемую при экспорте manifest и bundle.
-- Сессия по смарт-контракту может нести локальный корень контрактного репозитория, чтобы ограниченный аудит строил инвентаризацию репозитория, маршруты обзора по entrypoint-файлам, приоритеты семейств функций, сводки по маршрутам семейств рисков, подсказки по общим зависимостям и сравнение с ограниченными repo-casebook сценариями. Если используется локальный файл контракта, интерактивный flow теперь автоматически выводит ограниченный локальный корень.
+- Сессия по смарт-контракту может нести локальный корень контрактного репозитория, чтобы ограниченный аудит строил инвентаризацию репозитория, маршруты обзора по entrypoint-файлам, приоритеты семейств функций, сводки по маршрутам семейств рисков, подсказки по общим зависимостям и сравнение с ограниченными repo-casebook сценариями. Если используется локальный файл контракта, интерактивный сценарий теперь автоматически выводит ограниченный локальный корень.
 - Smart-contract experiment packs теперь могут структурировать bounded static benchmarking, repo-casebook benchmarking, protocol-style benchmark passes, а также более узкие governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style benchmark passes; их выполненные шаги сохраняются в сессии, replay-артефактах и итоговом отчёте.
 - Прямые CLI-аргументы `--compare-session`, `--compare-manifest` и `--compare-bundle` теперь позволяют привязать сохранённую baseline-сессию к новому bounded-запуску, чтобы итоговый отчёт мог показать осторожные различия до/после и флаги возможных регрессий.
 - Отчёт по смарт-контракту может включать инвентаризацию контрактов, карту протокольных модулей, инварианты протокола, сводку по согласованности сигналов, матрицу валидации, benchmark-статус, сильнейшие приоритеты по обзору репозитория, триаж первого ограниченного прохода, маршруты обзора по entrypoint-файлам, приоритеты семейств функций и сводки по семействам рисков.
@@ -289,7 +303,7 @@ pytest -q
 два года после даты её публикации.
 
 Если вам нужны права сверх публичной лицензии, включая конкурирующее
-коммерческое использование, hosted or managed service, OEM, white-label или
+коммерческое использование, развёртывание как сервиса, OEM, white-label или
 перепродажу, смотрите [COMMERCIAL_LICENSE.ru.md](docs/ru/COMMERCIAL_LICENSE.ru.md).
 
 Права на бренд и название не передаются вместе с лицензией на код. См.

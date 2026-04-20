@@ -9,19 +9,19 @@
 - выбрать ограниченный кейс
 - запустить подходящий benchmark-пакет
 - посмотреть выполненные шаги пакета и локальные доказательства
-- проверить, что итоговый отчет сохраняет границы уверенности и ручные review lanes
+- проверить, что итоговый отчет сохраняет границы уверенности и ручные линии проверки
 
 ## Состав
 
 - [golden_manifest.json](golden_manifest.json) описывает поддерживаемые кейсы, ожидаемые пакеты и форму отчета.
-- [RUNBOOK.ru.md](RUNBOOK.ru.md) дает короткий evaluator path по golden cases.
+- [RUNBOOK.ru.md](RUNBOOK.ru.md) даёт короткий путь оценки по golden cases.
 - [EXPECTED_REPORT_SHAPES.ru.md](EXPECTED_REPORT_SHAPES.ru.md) объясняет, что должен содержать полезный отчет по каждому кейсу.
-- [contracts/SyntheticVault.sol](contracts/SyntheticVault.sol) - безопасный fixture для vault/permission review.
-- [contracts/SyntheticGovernanceTimelock.sol](contracts/SyntheticGovernanceTimelock.sol) - безопасный fixture для governance/timelock и upgrade-control review.
-- [protocols/SyntheticLendingProtocol](protocols/SyntheticLendingProtocol) - безопасный repo-scale fixture для lending protocol review.
-- [ecc/secp256k1_metadata_seed.txt](ecc/secp256k1_metadata_seed.txt) - seed для ECC domain-completeness проверки.
-- [ecc/curve25519_subgroup_seed.txt](ecc/curve25519_subgroup_seed.txt) - seed для subgroup/cofactor hygiene проверки.
-- [ecc/secp256k1_point_format_edge_seed.txt](ecc/secp256k1_point_format_edge_seed.txt) - seed для ECC point-format edge проверки.
+- [contracts/SyntheticVault.sol](contracts/SyntheticVault.sol) - безопасная тестовая фикстура для vault/permission review.
+- [contracts/SyntheticGovernanceTimelock.sol](contracts/SyntheticGovernanceTimelock.sol) - безопасная тестовая фикстура для governance/timelock и upgrade-control review.
+- [protocols/SyntheticLendingProtocol](protocols/SyntheticLendingProtocol) - безопасная repo-scale фикстура для lending-protocol review.
+- [ecc/secp256k1_metadata_seed.txt](ecc/secp256k1_metadata_seed.txt) - seed-файл для ECC domain-completeness проверки.
+- [ecc/curve25519_subgroup_seed.txt](ecc/curve25519_subgroup_seed.txt) - seed-файл для subgroup/cofactor hygiene проверки.
+- [ecc/secp256k1_point_format_edge_seed.txt](ecc/secp256k1_point_format_edge_seed.txt) - seed-файл для ECC point-format edge проверки.
 
 ## Быстрые запуски
 
@@ -63,10 +63,10 @@ python -m app.main --domain smart_contract_audit --contract-file .\examples\gold
 
 ## Как оценивать
 
-Кейсы специально сделаны синтетическими. Они проверяют parser, surface,
-benchmark, report и confidence-calibration пути, но не публикуют реальные
+Кейсы специально сделаны синтетическими. Они проверяют пути парсинга,
+surface-анализа, benchmark-режима, отчета и confidence-calibration, но не публикуют реальные
 эксплуатационные материалы.
 
 Хороший вывод должен сохранять то, что реально наблюдалось локально. Он не
-должен превращать review lane в подтвержденную уязвимость без дополнительной
+должен превращать линию проверки в подтвержденную уязвимость без дополнительной
 локальной доказательной базы.
