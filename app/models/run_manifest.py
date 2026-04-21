@@ -64,6 +64,8 @@ class RunManifest(BaseModel):
     experiment_types: list[str] = Field(default_factory=list)
     local_experiment_summary: list[str] = Field(default_factory=list)
     report_focus_summary: list[str] = Field(default_factory=list)
+    report_snapshot_summary: list[str] = Field(default_factory=list)
+    report_snapshot_count: int = 0
     quality_gate_summary: list[str] = Field(default_factory=list)
     quality_gate_count: int = 0
     hardening_summary: list[str] = Field(default_factory=list)

@@ -7,7 +7,11 @@
 
 ## Не выпущено
 
-Пока нет невыпущенных публичных изменений.
+### Добавлено
+
+- `report_snapshot_summary` и `report_snapshot_count` в manifest и bundle
+  overview, чтобы compact ECC / smart-contract triage и remediation-delta
+  сигналы были видны без открытия полного session JSON.
 
 ## 0.1.1 - 2026-04-15
 

@@ -86,6 +86,8 @@ def test_manifest_and_bundle_export_without_advanced_artifacts() -> None:
     assert manifest["artifact_count"] == len(manifest["artifacts"])
     assert manifest["comparison_ready"] is False
     assert manifest["report_focus_summary"]
+    assert manifest["report_snapshot_summary"]
+    assert manifest["report_snapshot_count"] == len(manifest["report_snapshot_summary"])
     assert manifest["quality_gate_count"] == len(manifest["quality_gate_summary"])
     assert manifest["hardening_summary_count"] == len(manifest["hardening_summary"])
     assert manifest["quality_gate_summary"]
@@ -101,6 +103,8 @@ def test_manifest_and_bundle_export_without_advanced_artifacts() -> None:
     assert overview["tool_count"] == len(manifest["tool_names"])
     assert overview["comparison_ready"] is False
     assert overview["focus_summary"]
+    assert overview["report_snapshot_summary"] == manifest["report_snapshot_summary"]
+    assert overview["report_snapshot_count"] == manifest["report_snapshot_count"]
     assert overview["filtered_artifact_count"] == 0
     assert overview["export_policy_summary"]
     assert overview["approved_export_roots"]

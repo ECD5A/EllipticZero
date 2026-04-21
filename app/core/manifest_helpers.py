@@ -11,6 +11,7 @@ from app.config import AppConfig
 from app.core.reporting_helpers import (
     build_local_experiment_summary,
     build_manifest_focus_summary,
+    build_report_snapshot_summary,
     collect_artifact_references,
     ordered_unique,
     unique_metadata_snapshots,
@@ -65,6 +66,7 @@ def build_run_manifest(
         plugin_metadata=plugin_metadata,
         tool_metadata_snapshots=tool_metadata_snapshots,
     )
+    report_snapshot_summary = build_report_snapshot_summary(session)
 
     return RunManifest(
         session_id=session.session_id,
@@ -98,6 +100,8 @@ def build_run_manifest(
         ),
         local_experiment_summary=build_local_experiment_summary(session),
         report_focus_summary=build_manifest_focus_summary(session),
+        report_snapshot_summary=report_snapshot_summary,
+        report_snapshot_count=len(report_snapshot_summary),
         quality_gate_summary=list(session.report.quality_gates) if session.report is not None else [],
         quality_gate_count=len(session.report.quality_gates) if session.report is not None else 0,
         hardening_summary=list(session.report.hardening_summary) if session.report is not None else [],

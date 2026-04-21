@@ -269,5 +269,8 @@ def test_direct_session_can_attach_before_after_comparison() -> None:
     manifest = json.loads(Path(compared.manifest_file_path).read_text(encoding="utf-8"))
     assert manifest["comparison_ready"] is True
     assert manifest["report_focus_summary"]
+    assert manifest["report_snapshot_summary"]
+    assert manifest["report_snapshot_count"] == len(manifest["report_snapshot_summary"])
+    assert any("before/after posture" in item.lower() for item in manifest["report_snapshot_summary"])
     assert manifest["quality_gate_count"] == len(manifest["quality_gate_summary"])
     assert manifest["hardening_summary_count"] == len(manifest["hardening_summary"])

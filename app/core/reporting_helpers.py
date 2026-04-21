@@ -998,13 +998,10 @@ def build_manifest_focus_summary(session: ResearchSession) -> list[str]:
 
     focus: list[str] = []
     if _is_smart_contract_session(session):
-        focus.extend(session.report.contract_triage_snapshot[:2])
-        focus.extend(session.report.remediation_delta_summary[:1])
         focus.extend(session.report.contract_repo_triage[:2])
         focus.extend(session.report.contract_review_focus[:1])
+        focus.extend(session.report.contract_validation_matrix[:1])
     elif _is_ecc_session(session):
-        focus.extend(session.report.ecc_triage_snapshot[:2])
-        focus.extend(session.report.remediation_delta_summary[:1])
         focus.extend(session.report.ecc_benchmark_posture[:1])
         focus.extend(session.report.ecc_coverage_matrix[:1])
         focus.extend(session.report.ecc_validation_matrix[:1])
@@ -1021,6 +1018,23 @@ def build_manifest_focus_summary(session: ResearchSession) -> list[str]:
     if not focus and session.report.summary:
         focus.append(session.report.summary)
     return ordered_unique(focus)[:4]
+
+
+def build_report_snapshot_summary(session: ResearchSession) -> list[str]:
+    if session.report is None:
+        return []
+
+    snapshots: list[str] = []
+    if _is_smart_contract_session(session):
+        snapshots.extend(session.report.contract_triage_snapshot[:4])
+    elif _is_ecc_session(session):
+        snapshots.extend(session.report.ecc_triage_snapshot[:4])
+    else:
+        snapshots.extend(session.report.confidence_rationale[:2])
+    snapshots.extend(session.report.remediation_delta_summary[:2])
+    snapshots.extend(session.report.before_after_comparison[:1])
+    snapshots.extend(session.report.quality_gates[:1])
+    return ordered_unique(snapshots)[:6]
 
 
 def build_confidence_rationale(session: ResearchSession) -> list[str]:

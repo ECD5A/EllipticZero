@@ -81,7 +81,7 @@ commercial partner, start with:
 - built-in smart-contract benchmark packs for static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, upgrade/control benchmarking, governance/timelock benchmarking, rewards/distribution benchmarking, stablecoin/collateral benchmarking, AMM/liquidity benchmarking, bridge/custody benchmarking, staking/rebase benchmarking, keeper/auction benchmarking, treasury/vesting benchmarking, insurance/recovery benchmarking, vault/permission benchmarking, and lending-style protocol benchmarking
 - golden/synthetic example cases with expected report shapes for evaluator-facing ECC and smart-contract smoke checks
 - traces, manifests, bundles, replay, and doctor/self-check
-- evidence coverage summaries, toolchain fingerprints, and secret-redacted session/trace/bundle JSON snapshots
+- evidence coverage summaries, report snapshot summaries, toolchain fingerprints, and secret-redacted session/trace/bundle JSON snapshots
 - `mock` by default, plus `openai`, `openrouter`, `gemini`, and `anthropic` when configured
 
 ## Quick Start
@@ -218,7 +218,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Smart-contract reporting can also include benchmark-pack summaries and short benchmark-case summaries when a bounded contract benchmark pack materially shaped the session.
 - Smart-contract reporting can also include a casebook coverage matrix, benchmark posture summaries, and toolchain-backed validation posture for the strongest repo lanes, including repo-casebooks that support more than one risk family in the same bounded pass.
 - When local signals justify it, smart-contract reporting can also include a short review queue, residual-risk lines for the strongest lane set, exit criteria for the strongest lane, compile status, contract surface summary, built-in pattern findings, protocol-style review focus, remediation-validation notes, a compact remediation-delta summary, remediation follow-up priorities, cautious defensive remediation guidance, external static findings, bounded testbed or repo-casebook comparisons, confidence-calibration notes explaining why the current evidence is still bounded, and before/after comparison lines with regression flags when a saved baseline session is attached.
-- Completed runs can write session, trace, comparative, and bundle artifacts under `artifacts/`, and reproducibility bundles now include an `overview.json` snapshot with focus summary, comparison readiness, export-level counts, plus quality-gate and hardening-summary counts.
+- Completed runs can write session, trace, comparative, and bundle artifacts under `artifacts/`, and reproducibility bundles now include an `overview.json` snapshot with report snapshots, focus summary, comparison readiness, export-level counts, plus quality-gate and hardening-summary counts.
 - Cross-domain reporting can also preserve quality gates and hardening summaries so bounded evidence depth, comparison readiness, export posture, plugin-safety posture, and residual manual-review lanes remain legible in one place.
 - Reproducibility manifests and bundles now filter out artifact references that resolve outside the approved local storage roots, and session/trace copies are exported only when their source paths stay inside those approved roots.
 - Reports, manifests, and bundle overviews can now preserve evidence-coverage counts, toolchain fingerprints, and secret-redaction summaries while saved session and trace JSON snapshots mask likely credentials before export.

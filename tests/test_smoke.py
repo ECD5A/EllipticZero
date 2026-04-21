@@ -88,6 +88,7 @@ def test_smoke_flow() -> None:
 
     session_payload = json.loads(session_path.read_text(encoding="utf-8"))
     manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    overview_payload = json.loads((bundle_dir / "overview.json").read_text(encoding="utf-8"))
     trace_lines = trace_path.read_text(encoding="utf-8").strip().splitlines()
 
     assert session_payload["seed"]["raw_text"]
@@ -102,6 +103,10 @@ def test_smoke_flow() -> None:
     assert manifest_payload["trace_file_path"] == str(trace_path)
     assert manifest_payload["comparative_report_path"] == str(comparative_report_path)
     assert "loaded_plugins" in manifest_payload["environment_summary"]
+    assert manifest_payload["report_snapshot_summary"]
+    assert manifest_payload["report_snapshot_count"] == len(manifest_payload["report_snapshot_summary"])
+    assert overview_payload["report_snapshot_summary"] == manifest_payload["report_snapshot_summary"]
+    assert overview_payload["report_snapshot_count"] == manifest_payload["report_snapshot_count"]
     assert session_payload["evidence"][0]["tool_name"] == session.evidence[0].tool_name
     assert session_payload["jobs"][0]["tool_plan"]["tool_name"] == session.jobs[0].tool_plan.tool_name
     assert session_payload["report"]["tested_hypotheses"]

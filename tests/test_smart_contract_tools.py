@@ -1662,7 +1662,9 @@ contract Proxy is SharedBase { ProxyLogic public logic; }
     assert any("function families" in item.lower() or "risk-family lanes" in item.lower() or "review lanes" in item.lower() or "entrypoint" in item.lower() or "candidate files" in item.lower() or "repository" in item.lower() or "risky files" in item.lower() for item in session.report.contract_review_focus)
     assert any("function families" in item.lower() or "risk-family lanes" in item.lower() or "review lanes" in item.lower() or "entrypoint" in item.lower() or "candidate files" in item.lower() or "repository" in item.lower() or "risky files" in item.lower() for item in session.report.contract_manual_review_items)
     assert session.session_file_path is not None
+    assert session.manifest_file_path is not None
     session_payload = json.loads(Path(session.session_file_path).read_text(encoding="utf-8"))
+    manifest_payload = json.loads(Path(session.manifest_file_path).read_text(encoding="utf-8"))
     assert session_payload["report"]["contract_inventory_summary"]
     assert session_payload["report"]["contract_protocol_map"]
     assert session_payload["report"]["contract_protocol_invariants"]
@@ -1677,6 +1679,9 @@ contract Proxy is SharedBase { ProxyLogic public logic; }
     assert session_payload["report"]["contract_exit_criteria"]
     assert session_payload["report"]["contract_finding_cards"]
     assert session_payload["report"]["contract_triage_snapshot"]
+    assert manifest_payload["report_snapshot_summary"]
+    assert any("triage snapshot" in item.lower() for item in manifest_payload["report_snapshot_summary"])
+    assert manifest_payload["report_snapshot_count"] == len(manifest_payload["report_snapshot_summary"])
     assert session_payload["report"]["contract_casebook_gaps"]
     assert "contract_review_focus" in session_payload["report"]
     assert "contract_remediation_guidance" in session_payload["report"]

@@ -107,7 +107,7 @@ Benchmark-слой стоит воспринимать как проверочн
 | ECC coverage | В отчете видны форматы точек, метаданные кривых, subgroup/cofactor проверки, twist hygiene, переходы между семействами кривых, domain-completeness поверхности и компактная сводка ECC-триажа. | Локальные вычисления и интерпретация отчета согласованы без завышения уверенности. |
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, residual-risk lanes и компактная сводка триажа появляются, когда входные данные это оправдывают. | Отчет отделяет подтвержденные локальные сигналы от приоритетов ручной проверки. |
 | Comparison | Сохраненную baseline можно подключить через `--compare-session`, `--compare-manifest` или `--compare-bundle`. | Before/after строки и remediation-delta summary показывают осторожные изменения, возможные regression flags и следующий replay-path. |
-| Export quality | Session, trace, manifest и bundle artifacts остаются внутри разрешенных локальных export roots. | Проверяющий может воспроизвести запуск и посмотреть evidence trail. |
+| Export quality | Session, trace, manifest и bundle artifacts остаются внутри разрешенных локальных export roots. | Проверяющий может воспроизвести запуск, посмотреть evidence trail и быстро увидеть `report_snapshot_summary` в manifest / bundle overview. |
 | Hosted path | Optional live smoke работает только когда проверяющий передает валидные provider credentials. | Provider output воспринимается как интерпретация, а не как доказательство. |
 
 Пропуски в scorecard тоже полезны. Если какая-то линия проверки отсутствует, стоит
