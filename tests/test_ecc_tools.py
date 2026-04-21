@@ -178,6 +178,7 @@ def test_orchestrator_builds_ecc_benchmark_focus_for_subgroup_seed() -> None:
     assert session.report.ecc_validation_matrix
     assert session.report.validation_posture
     assert session.report.shared_follow_up
+    assert session.report.ecc_triage_snapshot
     assert session.report.ecc_review_queue
     assert session.report.ecc_exit_criteria
     assert any("benchmark" in line.lower() or "coverage" in line.lower() for line in session.report.ecc_benchmark_summary)
@@ -193,6 +194,8 @@ def test_orchestrator_builds_ecc_benchmark_focus_for_subgroup_seed() -> None:
     assert any("hardening posture" in line.lower() for line in session.report.hardening_summary)
     assert any("subgroup/cofactor/twist" in line.lower() for line in session.report.ecc_signal_consensus)
     assert any("validation for subgroup/cofactor/twist" in line.lower() for line in session.report.ecc_validation_matrix)
+    assert any("primary family" in line.lower() for line in session.report.ecc_triage_snapshot)
+    assert any("next ecc check" in line.lower() for line in session.report.ecc_triage_snapshot)
     assert any("validation posture" in line.lower() or "posture=" in line.lower() for line in session.report.validation_posture)
     assert any(
         "follow-up" in line.lower() or "re-run" in line.lower() or "re-check" in line.lower()
@@ -244,6 +247,7 @@ def test_orchestrator_builds_ecc_family_depth_focus_for_mixed_family_seed() -> N
     assert session.report.ecc_residual_risk
     assert session.report.ecc_signal_consensus
     assert session.report.ecc_validation_matrix
+    assert session.report.ecc_triage_snapshot
     assert session.report.ecc_review_queue
     assert session.report.ecc_exit_criteria
     assert any("family-transition" in line.lower() or "family-depth" in line.lower() for line in session.report.ecc_benchmark_summary)
@@ -253,6 +257,7 @@ def test_orchestrator_builds_ecc_family_depth_focus_for_mixed_family_seed() -> N
     assert any("montgomery" in line.lower() or "edwards" in line.lower() or "family" in line.lower() for line in session.report.ecc_review_focus)
     assert any("family transitions" in line.lower() for line in session.report.ecc_signal_consensus)
     assert any("validation for family transitions" in line.lower() for line in session.report.ecc_validation_matrix)
+    assert any("family transitions" in line.lower() for line in session.report.ecc_triage_snapshot)
 
 
 def test_orchestrator_builds_ecc_domain_completeness_focus_for_metadata_seed() -> None:
@@ -297,6 +302,7 @@ def test_orchestrator_builds_ecc_domain_completeness_focus_for_metadata_seed() -
     assert session.report.ecc_residual_risk
     assert session.report.ecc_signal_consensus
     assert session.report.ecc_validation_matrix
+    assert session.report.ecc_triage_snapshot
     assert session.report.ecc_review_queue
     assert session.report.ecc_exit_criteria
     assert any("domain" in line.lower() or "registry" in line.lower() for line in session.report.ecc_review_focus)
@@ -306,6 +312,7 @@ def test_orchestrator_builds_ecc_domain_completeness_focus_for_metadata_seed() -
     assert any("domain" in line.lower() or "metadata" in line.lower() for line in session.report.ecc_residual_risk)
     assert any("domain completeness" in line.lower() for line in session.report.ecc_signal_consensus)
     assert any("validation for domain completeness" in line.lower() for line in session.report.ecc_validation_matrix)
+    assert any("domain completeness" in line.lower() for line in session.report.ecc_triage_snapshot)
 
 
 def test_ecc_before_after_comparison_populates_ecc_comparison_focus() -> None:
@@ -361,8 +368,12 @@ def test_ecc_before_after_comparison_populates_ecc_comparison_focus() -> None:
     assert compared.report.shared_follow_up
     assert compared.report.ecc_review_queue
     assert compared.report.ecc_exit_criteria
+    assert compared.report.ecc_triage_snapshot
+    assert compared.report.remediation_delta_summary
     assert any("baseline session" in line.lower() for line in compared.report.ecc_comparison_focus)
     assert any("benchmark delta" in line.lower() for line in compared.report.ecc_benchmark_delta)
+    assert any("before/after delta" in line.lower() or "baseline=" in line.lower() for line in compared.report.ecc_triage_snapshot)
+    assert any("before/after posture" in line.lower() for line in compared.report.remediation_delta_summary)
     assert any("regression summary" in line.lower() or "regression watch" in line.lower() for line in compared.report.ecc_regression_summary)
     assert any("comparison:" in line.lower() or "baseline=" in line.lower() for line in compared.report.quality_gates)
     assert any("before/after" in line.lower() or "baseline" in line.lower() for line in compared.report.hardening_summary)

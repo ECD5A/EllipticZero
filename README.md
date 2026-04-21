@@ -1,14 +1,14 @@
 # EllipticZero
 
-[![tests](https://github.com/ECD5A/EllipticZero/actions/workflows/tests.yml/badge.svg)](https://github.com/ECD5A/EllipticZero/actions/workflows/tests.yml)
-[![codeql](https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml/badge.svg)](https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml)
-![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
-![License](https://img.shields.io/badge/license-FSL--1.1--ALv2-f0b429)
-![Source Available](https://img.shields.io/badge/source--available-FSL--1.1--ALv2-2ea44f)
-![Domains](https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2)
-![Local First](https://img.shields.io/badge/local--first-reproducible%20evidence-5b5fc7)
+<p align="center">
+  <a href="https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml/badge.svg"></a>
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white">
+  <img alt="Source available: FSL-1.1-ALv2" src="https://img.shields.io/badge/source--available-FSL--1.1--ALv2-f0b429">
+  <img alt="Domains: ECC and smart contracts" src="https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2">
+  <img alt="Local first reproducible evidence" src="https://img.shields.io/badge/local--first-reproducible%20evidence-2ea44f">
+</p>
 
-Language: [English](README.md) | [Русская версия](README.ru.md)
+<p align="right"><a href="README.ru.md">Русская версия</a></p>
 
 EllipticZero is a source-available local lab for bounded defensive ECC research
 and smart-contract audits.
@@ -20,9 +20,18 @@ Simple outside, strict inside: load a contract or choose an ECC target, write th
 research idea, let bounded agents select local checks, then review evidence,
 risk lanes, confidence, and follow-up guidance.
 
-| Interactive Home | Session Report |
-| --- | --- |
-| ![EllipticZero interactive home screen](docs/assets/console-home.png) | ![EllipticZero session report screen](docs/assets/session-report.png) |
+<p align="center">
+  <img src="docs/assets/console-home.png" alt="EllipticZero interactive home screen" width="820">
+</p>
+
+<details>
+<summary>Session report preview</summary>
+
+<p align="center">
+  <img src="docs/assets/session-report.png" alt="EllipticZero session report screen" width="820">
+</p>
+
+</details>
 
 ## What You Get
 
@@ -33,21 +42,6 @@ risk lanes, confidence, and follow-up guidance.
 - evidence coverage, toolchain fingerprints, and secret-redacted JSON exports
 - benchmark packs and golden cases for evaluator-facing smoke checks
 - cautious reports with manual-review boundaries and remediation direction
-
-**Fast evaluation path:**
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -e .[lab]
-python -m app.main --doctor
-python -m app.main --golden-case contract-vault-permission-lane
-```
-
-The repository is public and source-available under `FSL-1.1-ALv2`. Current
-versions are not offered under an OSI open-source license, and competing
-commercial use, hosted deployment, OEM distribution, or white-label use require
-a separate agreement.
 
 **License TL;DR:** Read, evaluate, run locally, and use for research or internal
 review under `FSL-1.1-ALv2`. Building a competing commercial product,
@@ -63,17 +57,6 @@ replay, confidence, and manual-review boundaries visible in one workflow.
 
 Its goal is to help a careful reviewer narrow what should be checked next, what
 the local evidence actually supports, and what still requires human judgment.
-
-## Core Strengths
-
-EllipticZero is designed around:
-
-- local-first defensive research and audit workflows
-- bounded orchestration for ECC and smart-contract review
-- reproducible evidence, traces, manifests, bundles, and reports
-- benchmark packs for repeatable comparison and hardening validation
-- cautious confidence calibration with manual-review lanes preserved
-- source-available evaluation with a commercial licensing path
 
 ## Evaluate Quickly
 
@@ -142,6 +125,12 @@ Run the self-check:
 python -m app.main --doctor
 ```
 
+Run a safe evaluation case:
+
+```powershell
+python -m app.main --golden-case contract-vault-permission-lane
+```
+
 Inside the interactive console, use `F2` or `L` to switch between `EN` and `RU`.
 
 ## Common Commands
@@ -189,15 +178,10 @@ python -m app.main --list-golden-cases
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
-Fast buyer demo path:
-
-```powershell
-python -m app.main --golden-case contract-vault-permission-lane
-```
-
-Expected first-screen anchors: `Finding Cards`, `Evidence Coverage`,
-reproducibility outputs, and lower export-quality notes for toolchain
-fingerprint and secret redaction.
+For the safe evaluation case from `Quick Start`, expected first-screen anchors
+are `Repo Triage Snapshot`, `ECC Triage Snapshot`, `Remediation Delta Summary`,
+`Finding Cards`, `Evidence Coverage`, reproducibility outputs, and lower
+export-quality notes for toolchain fingerprint and secret redaction.
 
 Additional CLI utilities:
 
@@ -219,7 +203,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - The normal setup is one shared provider/model for all roles. Per-agent overrides are optional.
 - OpenRouter is useful as a bounded live-smoke path because it exposes OpenAI-compatible hosted models behind one API key, and the direct smoke path now defaults to `openrouter/auto` unless you explicitly pin another model.
 - Optional local tooling can include `SymPy`, `Hypothesis`, `z3-solver`, built-in bounded mutation probes, ECC testbeds, smart-contract audit checks, and `SageMath` when available.
-- ECC reporting can now include a short benchmark summary, benchmark posture, family-coverage lines, an ECC coverage matrix, compact benchmark-case summaries, bounded ECC review focus, residual-risk lines, ECC signal-consensus notes, a short ECC validation matrix, cautious ECC comparison-focus lines, ECC benchmark-delta notes, and ECC regression-watch lines when local encoding, family transitions, twist hygiene, subgroup/cofactor, or domain-completeness signals justify them.
+- ECC reporting can now include a compact ECC triage snapshot, a short benchmark summary, benchmark posture, family-coverage lines, an ECC coverage matrix, compact benchmark-case summaries, bounded ECC review focus, residual-risk lines, ECC signal-consensus notes, a short ECC validation matrix, cautious ECC comparison-focus lines, ECC benchmark-delta notes, and ECC regression-watch lines when local encoding, family transitions, twist hygiene, subgroup/cofactor, or domain-completeness signals justify them.
 - The setup profiles can provision a project-managed Solidity compiler under `.ellipticzero/tooling/solcx` so compile checks and compiler-aware adapters do not depend on a global `solc` install.
 - Solidity analysis is version-aware: the contract pragma is read first, then the runtime picks a compatible locally available managed compiler instead of assuming one fixed `solc` version.
 - Smart-contract sessions can use pasted code, inline code, or a local `.sol` / `.vy` file as input.
@@ -228,12 +212,12 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Smart-contract sessions can optionally carry a local contract root so the bounded audit can build a repo-scale inventory, separate first-party from dependency scope, trace entrypoint review lanes, rank function families, summarize risk-family lanes, and compare the repo against bounded casebook scenarios. When a local contract file is used, the interactive flow now derives a bounded local root automatically.
 - Smart-contract experiment packs can now structure bounded static benchmarking, repo-casebook benchmarking, protocol-style benchmark passes, and more specific upgrade/control, governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission, or lending-style benchmark passes; their executed steps are preserved in the session, replay artifacts, and final report.
 - New direct CLI comparison flags (`--compare-session`, `--compare-manifest`, `--compare-bundle`) can attach a saved baseline session to a fresh bounded run, so the final report can include cautious before/after and regression-oriented comparison notes.
-- Smart-contract reporting can include contract inventory, repo-scale protocol maps, protocol invariants, signal-consensus summaries, validation matrices, benchmark posture summaries, strongest priorities, repo triage, entrypoint review lanes, function-family priorities, and risk-family lane summaries.
+- Smart-contract reporting can include a compact repo triage snapshot, contract inventory, repo-scale protocol maps, protocol invariants, signal-consensus summaries, validation matrices, benchmark posture summaries, strongest priorities, repo triage, entrypoint review lanes, function-family priorities, and risk-family lane summaries.
 - Smart-contract reporting can present compact finding cards that connect a bounded potential issue to local evidence, why it matters, defensive fix direction, and a recheck path.
 - Smart-contract reporting can also include bounded repo-casebook coverage, compact matched case-study summaries, archetype-style case-study labels for governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, or similar protocol cases, short priority-case lines, a short gap block for unmatched lanes, benchmark-support notes, casebook triage, and toolchain alignment for the strongest repo lanes.
 - Smart-contract reporting can also include benchmark-pack summaries and short benchmark-case summaries when a bounded contract benchmark pack materially shaped the session.
 - Smart-contract reporting can also include a casebook coverage matrix, benchmark posture summaries, and toolchain-backed validation posture for the strongest repo lanes, including repo-casebooks that support more than one risk family in the same bounded pass.
-- When local signals justify it, smart-contract reporting can also include a short review queue, residual-risk lines for the strongest lane set, exit criteria for the strongest lane, compile status, contract surface summary, built-in pattern findings, protocol-style review focus, remediation-validation notes, remediation follow-up priorities, cautious defensive remediation guidance, external static findings, bounded testbed or repo-casebook comparisons, confidence-calibration notes explaining why the current evidence is still bounded, and before/after comparison lines with regression flags when a saved baseline session is attached.
+- When local signals justify it, smart-contract reporting can also include a short review queue, residual-risk lines for the strongest lane set, exit criteria for the strongest lane, compile status, contract surface summary, built-in pattern findings, protocol-style review focus, remediation-validation notes, a compact remediation-delta summary, remediation follow-up priorities, cautious defensive remediation guidance, external static findings, bounded testbed or repo-casebook comparisons, confidence-calibration notes explaining why the current evidence is still bounded, and before/after comparison lines with regression flags when a saved baseline session is attached.
 - Completed runs can write session, trace, comparative, and bundle artifacts under `artifacts/`, and reproducibility bundles now include an `overview.json` snapshot with focus summary, comparison readiness, export-level counts, plus quality-gate and hardening-summary counts.
 - Cross-domain reporting can also preserve quality gates and hardening summaries so bounded evidence depth, comparison readiness, export posture, plugin-safety posture, and residual manual-review lanes remain legible in one place.
 - Reproducibility manifests and bundles now filter out artifact references that resolve outside the approved local storage roots, and session/trace copies are exported only when their source paths stay inside those approved roots.

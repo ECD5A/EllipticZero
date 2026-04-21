@@ -75,6 +75,7 @@ from app.core.reporting_helpers import (
     build_contract_surface_summary,
     build_contract_testbed_findings,
     build_contract_toolchain_alignment,
+    build_contract_triage_snapshot,
     build_contract_validation_matrix,
     build_dead_end_summary,
     build_ecc_benchmark_case_summaries,
@@ -90,6 +91,7 @@ from app.core.reporting_helpers import (
     build_ecc_review_focus,
     build_ecc_review_queue,
     build_ecc_signal_consensus,
+    build_ecc_triage_snapshot,
     build_ecc_validation_matrix,
     build_evidence_conclusion,
     build_evidence_coverage_summary,
@@ -103,6 +105,7 @@ from app.core.reporting_helpers import (
     build_next_defensive_leads,
     build_quality_gates,
     build_regression_flags,
+    build_remediation_delta_summary,
     build_reproducibility_summary,
     build_shared_follow_up,
     build_toolchain_fingerprint_summary,
@@ -427,6 +430,7 @@ class ResearchOrchestrator:
         session.report.ecc_benchmark_case_summaries = build_ecc_benchmark_case_summaries(session)
         session.report.ecc_review_focus = build_ecc_review_focus(session)
         session.report.ecc_residual_risk = build_ecc_residual_risk(session)
+        session.report.ecc_triage_snapshot = build_ecc_triage_snapshot(session)
         session.report.contract_overview = build_contract_overview(session)
         session.report.contract_inventory_summary = build_contract_inventory_summary(session)
         session.report.contract_protocol_map = build_contract_protocol_map(session)
@@ -460,6 +464,7 @@ class ResearchOrchestrator:
         session.report.contract_exit_criteria = build_contract_exit_criteria(session)
         session.report.contract_manual_review_items = build_contract_manual_review_items(session)
         session.report.contract_finding_cards = build_contract_finding_cards(session)
+        session.report.contract_triage_snapshot = build_contract_triage_snapshot(session)
         session.report.agent_contributions = self._build_agent_contributions(session)
         session.comparative_report = build_comparative_report(
             session,
@@ -468,6 +473,7 @@ class ResearchOrchestrator:
         )
         session.report.before_after_comparison = build_before_after_comparison(session)
         session.report.regression_flags = build_regression_flags(session)
+        session.report.remediation_delta_summary = build_remediation_delta_summary(session)
         session.report.evidence_profile = build_evidence_profile(session)
         session.report.reproducibility_summary = build_reproducibility_summary(session)
         session.report.ecc_regression_summary = build_ecc_regression_summary(session)
@@ -475,6 +481,7 @@ class ResearchOrchestrator:
         session.report.ecc_validation_matrix = build_ecc_validation_matrix(session)
         session.report.ecc_comparison_focus = build_ecc_comparison_focus(session)
         session.report.ecc_benchmark_delta = build_ecc_benchmark_delta(session)
+        session.report.ecc_triage_snapshot = build_ecc_triage_snapshot(session)
         session.report.ecc_review_queue = build_ecc_review_queue(session)
         session.report.ecc_exit_criteria = build_ecc_exit_criteria(session)
         session.report.calibration_blockers = build_calibration_blockers(session)

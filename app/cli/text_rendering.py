@@ -252,6 +252,7 @@ def render_report(
     secret_redaction_summary: list[str],
     quality_gates: list[str],
     hardening_summary: list[str],
+    ecc_triage_snapshot: list[str],
     ecc_benchmark_summary: list[str],
     ecc_benchmark_posture: list[str],
     ecc_family_coverage: list[str],
@@ -299,6 +300,8 @@ def render_report(
     contract_residual_risk: list[str],
     contract_exit_criteria: list[str],
     contract_manual_review_items: list[str],
+    contract_triage_snapshot: list[str],
+    remediation_delta_summary: list[str],
     before_after_comparison: list[str],
     regression_flags: list[str],
     tested_hypotheses: list[str],
@@ -344,6 +347,15 @@ def render_report(
             f"{t(lang, 'report.confidence')}: {confidence}",
         ]
     )
+    if contract_triage_snapshot:
+        lines.extend(["", f"{t(lang, 'report.contract_triage_snapshot')}:"])
+        lines.extend(f"- {item}" for item in contract_triage_snapshot)
+    if remediation_delta_summary:
+        lines.extend(["", f"{t(lang, 'report.remediation_delta_summary')}:"])
+        lines.extend(f"- {item}" for item in remediation_delta_summary)
+    if ecc_triage_snapshot:
+        lines.extend(["", f"{t(lang, 'report.ecc_triage_snapshot')}:"])
+        lines.extend(f"- {item}" for item in ecc_triage_snapshot)
     if confidence_rationale:
         lines.extend(["", f"{t(lang, 'report.confidence_rationale')}:"])
         lines.extend(f"- {item}" for item in confidence_rationale)

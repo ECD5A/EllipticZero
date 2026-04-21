@@ -83,6 +83,11 @@ Report focus:
 - missing or incomplete domain fields
 - cautious comparison notes if a baseline is attached
 
+ECC triage snapshot:
+- primary ECC family
+- current support labels
+- next ECC check
+
 Confidence:
 - bounded by local tool evidence
 - no cryptographic break claimed
@@ -158,6 +163,8 @@ Casebook matches:
   related lanes when supported by local evidence.
 
 Triage:
+- compact repo triage snapshot with the top lane, top files, why it matters,
+  and next manual step
 - strongest matched case families
 - unmatched or weakly matched lanes
 - suggested manual review order
@@ -182,6 +189,8 @@ Comparison source:
 - baseline session, manifest, or bundle path
 
 Delta summary:
+- compact remediation-delta summary with before/after posture, strongest
+  improvement or regression, and next replay path
 - changed review lanes
 - added or removed pattern signals
 - compile or parser posture changes

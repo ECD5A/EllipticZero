@@ -1,14 +1,14 @@
 # EllipticZero
 
-[![tests](https://github.com/ECD5A/EllipticZero/actions/workflows/tests.yml/badge.svg)](https://github.com/ECD5A/EllipticZero/actions/workflows/tests.yml)
-[![codeql](https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml/badge.svg)](https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml)
-![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
-![License](https://img.shields.io/badge/license-FSL--1.1--ALv2-f0b429)
-![Source Available](https://img.shields.io/badge/source--available-FSL--1.1--ALv2-2ea44f)
-![Domains](https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2)
-![Local First](https://img.shields.io/badge/local--first-reproducible%20evidence-5b5fc7)
+<p align="center">
+  <a href="https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml/badge.svg"></a>
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white">
+  <img alt="Source available: FSL-1.1-ALv2" src="https://img.shields.io/badge/source--available-FSL--1.1--ALv2-f0b429">
+  <img alt="Domains: ECC and smart contracts" src="https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2">
+  <img alt="Local first reproducible evidence" src="https://img.shields.io/badge/local--first-reproducible%20evidence-2ea44f">
+</p>
 
-Язык: [English](README.md) | [Русская версия](README.ru.md)
+<p align="right"><a href="README.md">English version</a></p>
 
 EllipticZero — локальная source-available лаборатория для ограниченных
 защитных ECC-исследований и аудита смарт-контрактов.
@@ -21,9 +21,18 @@ EllipticZero — локальная source-available лаборатория дл
 проверки, затем смотри доказательную базу, риск-линии, уверенность и следующие
 шаги.
 
-| Стартовый экран | Итоговый отчёт |
-| --- | --- |
-| ![Стартовый экран EllipticZero](docs/assets/console-home-ru.png) | ![Экран итогового отчёта EllipticZero](docs/assets/session-report-ru.png) |
+<p align="center">
+  <img src="docs/assets/console-home-ru.png" alt="Стартовый экран EllipticZero" width="820">
+</p>
+
+<details>
+<summary>Предпросмотр итогового отчёта</summary>
+
+<p align="center">
+  <img src="docs/assets/session-report-ru.png" alt="Экран итогового отчёта EllipticZero" width="820">
+</p>
+
+</details>
 
 ## Что получаешь
 
@@ -34,21 +43,6 @@ EllipticZero — локальная source-available лаборатория дл
 - сводки покрытия доказательной базы, отпечатки toolchain и JSON-экспорт с редактированием секретов
 - benchmark-пакеты и golden cases для быстрой оценки проекта
 - осторожные отчёты с границами ручной проверки и направлением исправлений
-
-**Самый быстрый путь для оценки:**
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -e .[lab]
-python -m app.main --doctor
-python -m app.main --golden-case contract-vault-permission-lane
-```
-
-Репозиторий остаётся публичным и source-available по `FSL-1.1-ALv2`. Текущие
-версии не предлагаются как OSI-approved open-source release, а конкурирующее
-коммерческое использование, hosted-развёртывание, OEM и white-label сценарии
-требуют отдельного соглашения.
 
 **Коротко о лицензии:** код можно читать, оценивать и запускать локально.
 Публичная версия доступна для исследований, оценки и внутреннего использования
@@ -68,17 +62,6 @@ EllipticZero сделан для локальных исследований, г
 Цель проекта - помочь аккуратному исследователю понять, что проверять дальше,
 что действительно подтверждается локальными артефактами, а что все еще требует
 решения специалиста.
-
-## Сильные стороны
-
-EllipticZero построен вокруг:
-
-- локальных защитных исследований и аудиторских процессов
-- ограниченной оркестрации для ECC и проверки смарт-контрактов
-- воспроизводимых доказательств, трассировок, манифестов, пакетов воспроизводимости и отчетов
-- benchmark-пакетов для повторяемого сравнения и проверки защитных доработок
-- осторожной оценки уверенности с сохранением линий ручной проверки
-- source-available публикации проекта с отдельным путём коммерческого лицензирования
 
 ## Быстрая оценка проекта
 
@@ -149,6 +132,12 @@ python -m app.main --interactive
 python -m app.main --doctor
 ```
 
+Безопасный кейс для быстрой оценки:
+
+```powershell
+python -m app.main --golden-case contract-vault-permission-lane
+```
+
 В интерактивной консоли язык можно переключать без перезапуска клавишами `F2` или `L`.
 
 ## Полезные команды
@@ -196,14 +185,10 @@ python -m app.main --list-golden-cases
 python -m app.main --golden-case contract-repo-scale-lending-protocol
 ```
 
-Быстрый демо-путь для продуктовой оценки:
-
-```powershell
-python -m app.main --golden-case contract-vault-permission-lane
-```
-
-Ожидаемые якоря на первом экране: `Finding Cards`, `Evidence Coverage`,
-артефакты воспроизводимости, отпечаток toolchain и редактирование секретов.
+Для безопасного кейса из `Быстрого старта` ожидаемые якоря на первом экране:
+`Сводка триажа репозитория`, `Сводка ECC-триажа`, `Сводка изменений после
+доработки`, `Finding Cards`, `Evidence Coverage`, артефакты воспроизводимости,
+отпечаток toolchain и редактирование секретов.
 
 Дополнительные CLI-утилиты:
 
@@ -225,7 +210,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Нормальный сценарий — один общий провайдер и одна модель для всех ролей. Переопределения по ролям доступны как продвинутый вариант настройки.
 - OpenRouter может быть удобным bounded smoke-путём для live-проверки, потому что даёт OpenAI-compatible API и единый ключ для многих моделей. Если использовать варианты с суффиксом `:free`, относись к ним как к удобной проверке, а не как к гарантированной среде выполнения: у OpenRouter есть свои лимиты по частоте и дневному объёму таких запросов.
 - Локальная среда может включать `SymPy`, `Hypothesis`, `z3-solver`, встроенные мутационные пробы, ECC-тестбеды, проверки для аудита смарт-контрактов и `SageMath`, если он доступен.
-- ECC-отчёт теперь может включать краткую benchmark-сводку, benchmark-статус, покрытие ECC-семейств, короткие сводки по benchmark-кейсам, bounded ECC review focus, строки с остаточным риском, заметки по согласованности ECC-сигналов, короткую ECC validation matrix, осторожные строки ECC-сравнения до/после, заметки по ECC benchmark-delta и ECC-регрессионные дельты, когда локальные сигналы по encoding, family transitions, twist hygiene, subgroup/cofactor или domain completeness это оправдывают.
+- ECC-отчёт теперь может включать компактную сводку ECC-триажа, краткую benchmark-сводку, benchmark-статус, покрытие ECC-семейств, короткие сводки по benchmark-кейсам, bounded ECC review focus, строки с остаточным риском, заметки по согласованности ECC-сигналов, короткую ECC validation matrix, осторожные строки ECC-сравнения до/после, заметки по ECC benchmark-delta и ECC-регрессионные дельты, когда локальные сигналы по encoding, family transitions, twist hygiene, subgroup/cofactor или domain completeness это оправдывают.
 - Setup-профили могут развернуть управляемый Solidity-компилятор в `.ellipticzero/tooling/solcx`, чтобы проверки компиляции и зависящие от компилятора адаптеры не зависели от глобальной установки `solc`.
 - Анализ Solidity работает с учётом версии: сначала читается `pragma` контракта, а затем система выбирает совместимый локально доступный управляемый компилятор вместо привязки к одной фиксированной версии `solc`.
 - Для аудита смарт-контрактов можно использовать вставку кода, встроенный код в CLI или локальный файл `.sol` / `.vy`.
@@ -234,12 +219,12 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Сессия по смарт-контракту может нести локальный корень контрактного репозитория, чтобы ограниченный аудит строил инвентаризацию репозитория, маршруты обзора по entrypoint-файлам, приоритеты семейств функций, сводки по маршрутам семейств рисков, подсказки по общим зависимостям и сравнение с ограниченными repo-casebook сценариями. Если используется локальный файл контракта, интерактивный сценарий теперь автоматически выводит ограниченный локальный корень.
 - Smart-contract experiment packs теперь могут структурировать bounded static benchmarking, repo-casebook benchmarking, protocol-style benchmark passes, а также более узкие governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style benchmark passes; их выполненные шаги сохраняются в сессии, replay-артефактах и итоговом отчёте.
 - Прямые CLI-аргументы `--compare-session`, `--compare-manifest` и `--compare-bundle` теперь позволяют привязать сохранённую baseline-сессию к новому bounded-запуску, чтобы итоговый отчёт мог показать осторожные различия до/после и флаги возможных регрессий.
-- Отчёт по смарт-контракту может включать инвентаризацию контрактов, карту протокольных модулей, инварианты протокола, сводку по согласованности сигналов, матрицу валидации, benchmark-статус, сильнейшие приоритеты по обзору репозитория, триаж первого ограниченного прохода, маршруты обзора по entrypoint-файлам, приоритеты семейств функций и сводки по семействам рисков.
+- Отчёт по смарт-контракту может включать компактную сводку триажа репозитория, инвентаризацию контрактов, карту протокольных модулей, инварианты протокола, сводку по согласованности сигналов, матрицу валидации, benchmark-статус, сильнейшие приоритеты по обзору репозитория, триаж первого ограниченного прохода, маршруты обзора по entrypoint-файлам, приоритеты семейств функций и сводки по семействам рисков.
 - Отчёт по смарт-контракту может показывать компактные карточки находок, где bounded потенциальный issue связан с локальной доказательной базой, причиной важности, направлением защитной доработки и путём повторной проверки.
 - Отчёт по смарт-контракту также может включать сводку по ограниченному покрытию repo-casebook, компактные сводки по совпавшим сценариям, archetype-style подписи для governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery и похожих protocol-style case-study линий, короткие строки с ключевыми совпавшими кейсами, короткий блок с оставшимися пробелами, benchmark-сводки, casebook-triage и блок связки инструментов для сильнейших маршрутов обзора по репозиторию.
 - Отчёт по смарт-контракту также может включать сводки по benchmark-пакетам и короткие benchmark-case summary, если bounded contract benchmark pack материально влиял на сессию.
 - Отчёт по смарт-контракту также может включать матрицу покрытия casebook, benchmark-статус и более жёсткий validation posture для сильнейших маршрутов обзора по репозиторию, включая bounded repo-casebook-сценарии, которые поддерживают сразу несколько семейств рисков в одном проходе.
-- Когда локальные сигналы это оправдывают, отчёт по смарт-контракту может также включать короткую очередь проверки, строки с остаточным риском для сильнейших маршрутов обзора, критерии завершения для сильнейшего маршрута обзора, статус компиляции, сводку по поверхности контракта, встроенные результаты проверок риск-паттернов, протокольный фокус, заметки по ограниченной проверке защитной доработки, приоритеты повторной проверки после доработки, осторожные рекомендации по защитной доработке, внешние результаты статического анализа и сравнение с ограниченными проверочными корпусами или repo-casebook-сценариями, где replay-путь может идти сразу по нескольким совпавшим семействам, если маршрут обзора действительно их объединяет, а также строки сравнения до/после и флаги возможных регрессий, когда к запуску привязана сохранённая baseline-сессия.
+- Когда локальные сигналы это оправдывают, отчёт по смарт-контракту может также включать короткую очередь проверки, строки с остаточным риском для сильнейших маршрутов обзора, критерии завершения для сильнейшего маршрута обзора, статус компиляции, сводку по поверхности контракта, встроенные результаты проверок риск-паттернов, протокольный фокус, заметки по ограниченной проверке защитной доработки, компактную сводку изменений после доработки, приоритеты повторной проверки после доработки, осторожные рекомендации по защитной доработке, внешние результаты статического анализа и сравнение с ограниченными проверочными корпусами или repo-casebook-сценариями, где replay-путь может идти сразу по нескольким совпавшим семействам, если маршрут обзора действительно их объединяет, а также строки сравнения до/после и флаги возможных регрессий, когда к запуску привязана сохранённая baseline-сессия.
 - Завершённые запуски могут сохранять файл сессии, трассировку, сравнительный отчёт и пакет воспроизводимости в `artifacts/`, а пакет воспроизводимости теперь включает `overview.json` со сводкой фокуса, готовностью к сравнению, экспортными счётчиками и сводками по quality gates / hardening.
 - Кросс-доменный отчёт теперь тоже может сохранять quality gates и hardening summary, чтобы глубина доказательной базы, готовность к сравнению, export posture и остаточные manual-review lanes были видны в одном месте.
 - Manifest и bundle теперь фильтруют ссылки на артефакты, которые разрешаются вне approved local storage roots, а session/trace copies экспортируются только если исходные пути остаются внутри этих разрешённых корней.

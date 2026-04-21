@@ -587,6 +587,43 @@ def build_ecc_review_queue(session: ResearchSession) -> list[str]:
     return ordered_unique(items)[:4]
 
 
+def build_ecc_triage_snapshot(session: ResearchSession) -> list[str]:
+    if not _is_ecc_session(session):
+        return []
+
+    support_map = _collect_ecc_family_support(session)
+    if not support_map:
+        return []
+
+    residual_labels = _collect_ecc_residual_labels(session)
+    comparison_state = _collect_ecc_comparison_state(session)
+    review_queue = build_ecc_review_queue(session)
+    validation_matrix = build_ecc_validation_matrix(session)
+    benchmark_delta = build_ecc_benchmark_delta(session)
+
+    def _family_rank(family: str) -> tuple[int, int, str]:
+        unresolved = 0 if family in residual_labels else 1
+        support_width = -len(support_map.get(family, set()))
+        return (unresolved, support_width, family)
+
+    primary_family = sorted(support_map, key=_family_rank)[0]
+    support_labels = ", ".join(sorted(support_map[primary_family]))
+    items = [
+        f"ECC triage snapshot - primary family: {primary_family}; support={support_labels}; "
+        f"baseline={comparison_state.get(primary_family, 'unchanged')}; "
+        f"residual-risk={'yes' if primary_family in residual_labels else 'no'}."
+    ]
+
+    if validation_matrix:
+        items.append("ECC triage snapshot - validation posture: " + _trim_sentence(validation_matrix[0], 260))
+    if benchmark_delta:
+        items.append("ECC triage snapshot - before/after delta: " + _trim_sentence(benchmark_delta[0], 260))
+    if review_queue:
+        items.append("ECC triage snapshot - next ECC check: " + _trim_sentence(review_queue[0], 260))
+
+    return ordered_unique(items)[:4]
+
+
 def build_ecc_exit_criteria(session: ResearchSession) -> list[str]:
     if not _is_ecc_session(session):
         return []
@@ -961,9 +998,13 @@ def build_manifest_focus_summary(session: ResearchSession) -> list[str]:
 
     focus: list[str] = []
     if _is_smart_contract_session(session):
+        focus.extend(session.report.contract_triage_snapshot[:2])
+        focus.extend(session.report.remediation_delta_summary[:1])
         focus.extend(session.report.contract_repo_triage[:2])
         focus.extend(session.report.contract_review_focus[:1])
     elif _is_ecc_session(session):
+        focus.extend(session.report.ecc_triage_snapshot[:2])
+        focus.extend(session.report.remediation_delta_summary[:1])
         focus.extend(session.report.ecc_benchmark_posture[:1])
         focus.extend(session.report.ecc_coverage_matrix[:1])
         focus.extend(session.report.ecc_validation_matrix[:1])
@@ -1803,6 +1844,50 @@ def build_contract_repo_triage(session: ResearchSession) -> list[str]:
             + "."
         )
     return ordered_unique(items)[:5]
+
+
+def build_contract_triage_snapshot(session: ResearchSession) -> list[str]:
+    if not _is_smart_contract_session(session):
+        return []
+
+    priority_lines = build_contract_repo_priorities(session)
+    triage_lines = build_contract_repo_triage(session)
+    review_queue = build_contract_review_queue(session)
+    finding_cards = build_contract_finding_cards(session)
+    inventory = _first_contract_result(session, "contract_inventory_tool") or {}
+
+    top_lane = _first_matching_line(priority_lines, ("priority repo lane", "priority repo scope"))
+    if top_lane is None:
+        top_lane = _first_matching_line(triage_lines, ("start repo review", "top repo family"))
+    if top_lane is None and priority_lines:
+        top_lane = priority_lines[0]
+
+    files = ordered_unique(
+        [
+            *_as_str_list(inventory.get("risk_linked_files"))[:3],
+            *_as_str_list(inventory.get("entrypoint_candidates"))[:3],
+            *_as_str_list(inventory.get("candidate_files"))[:3],
+            *_as_str_list(inventory.get("shared_dependency_files"))[:2],
+        ]
+    )
+
+    items: list[str] = []
+    if top_lane:
+        items.append("Triage snapshot - top repo lane: " + _trim_sentence(top_lane, 260))
+    if files:
+        items.append("Triage snapshot - top files/contracts: " + ", ".join(files[:5]) + ".")
+
+    why_line = _first_matching_line(finding_cards, ("Why it matters:", "Evidence:"))
+    if why_line is None:
+        why_line = _first_matching_line(priority_lines, ("Supporting signals:",))
+    if why_line:
+        items.append("Triage snapshot - why it matters: " + _trim_sentence(why_line, 260))
+
+    next_step = review_queue[0] if review_queue else _first_matching_line(triage_lines, ("re-run", "manual", "review"))
+    if next_step:
+        items.append("Triage snapshot - next manual step: " + _trim_sentence(next_step, 260))
+
+    return ordered_unique(items)[:4]
 
 
 def build_contract_casebook_coverage(session: ResearchSession) -> list[str]:
@@ -5339,6 +5424,63 @@ def build_before_after_comparison(session: ResearchSession) -> list[str]:
     return ordered_unique(items)
 
 
+def build_remediation_delta_summary(session: ResearchSession) -> list[str]:
+    comparison = (
+        session.comparative_report.cross_session_comparison
+        if session.comparative_report is not None
+        else None
+    )
+    validation_lines = build_contract_remediation_validation(session)
+    follow_up_lines = build_contract_remediation_follow_up(session)
+
+    items: list[str] = []
+    if comparison is not None:
+        improved_count = len(comparison.improvements)
+        regression_count = len(comparison.regressions)
+        stable_count = len(comparison.stable_findings)
+        if regression_count:
+            state = "regression-risk"
+        elif improved_count:
+            state = "narrowed"
+        elif stable_count:
+            state = "stable"
+        else:
+            state = "inconclusive"
+        items.append(
+            "Remediation delta - before/after posture: "
+            f"baseline={comparison.baseline_session_id}; state={state}; "
+            f"improved={improved_count}; regressions={regression_count}; stable={stable_count}."
+        )
+        if comparison.improvements:
+            items.append(
+                "Remediation delta - strongest improvement: "
+                + _trim_sentence(comparison.improvements[0], 240)
+            )
+        if comparison.regressions:
+            items.append(
+                "Remediation delta - recheck first: "
+                + _trim_sentence(comparison.regressions[0], 240)
+            )
+        elif comparison.stable_findings:
+            items.append(
+                "Remediation delta - stable carry-over: "
+                + _trim_sentence(comparison.stable_findings[0], 240)
+            )
+
+    if validation_lines:
+        items.append(
+            "Remediation delta - local safer-control signal: "
+            + _trim_sentence(validation_lines[0], 240)
+        )
+    if follow_up_lines:
+        items.append(
+            "Remediation delta - next replay: "
+            + _trim_sentence(follow_up_lines[0], 240)
+        )
+
+    return ordered_unique(items)[:5]
+
+
 def build_regression_flags(session: ResearchSession) -> list[str]:
     if session.comparative_report is None or session.comparative_report.cross_session_comparison is None:
         return []
@@ -5593,3 +5735,19 @@ def _as_count_summary(value: Any) -> str:
         return ""
     ordered_pairs = sorted(pairs, key=lambda item: (-item[1], item[0]))
     return ", ".join(f"{key}={count}" for key, count in ordered_pairs[:5])
+
+
+def _first_matching_line(lines: Iterable[str], needles: tuple[str, ...]) -> str | None:
+    normalized_needles = tuple(needle.lower() for needle in needles)
+    for line in lines:
+        lowered = line.lower()
+        if any(needle in lowered for needle in normalized_needles):
+            return line
+    return None
+
+
+def _trim_sentence(text: str, max_length: int) -> str:
+    stripped = " ".join(str(text).strip().split())
+    if len(stripped) <= max_length:
+        return stripped
+    return stripped[: max_length - 3].rstrip(" ,;:.") + "..."

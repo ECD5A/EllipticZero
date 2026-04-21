@@ -1624,6 +1624,7 @@ contract Proxy is SharedBase { ProxyLogic public logic; }
     assert session.report.contract_residual_risk
     assert session.report.contract_exit_criteria
     assert session.report.contract_finding_cards
+    assert session.report.contract_triage_snapshot
     assert any("Scoped contract root:" in item for item in session.report.contract_inventory_summary)
     assert any("Candidate review files:" in item for item in session.report.contract_inventory_summary)
     assert any("Entrypoint review files:" in item for item in session.report.contract_inventory_summary)
@@ -1650,6 +1651,9 @@ contract Proxy is SharedBase { ProxyLogic public logic; }
     assert any("lane alignment for" in item.lower() and "support=" in item.lower() for item in session.report.contract_toolchain_alignment)
     assert any("no family-matched bounded casebook" in item.lower() or "no foundry structural pass" in item.lower() or "no echidna replay" in item.lower() for item in session.report.contract_toolchain_alignment)
     assert any("queue 1:" in item.lower() and "next replay:" in item.lower() for item in session.report.contract_review_queue)
+    assert any("triage snapshot - top" in item.lower() for item in session.report.contract_triage_snapshot)
+    assert any("top files/contracts" in item.lower() for item in session.report.contract_triage_snapshot)
+    assert any("next manual step" in item.lower() for item in session.report.contract_triage_snapshot)
     assert any("residual risk" in item.lower() and "status=" in item.lower() for item in session.report.contract_residual_risk)
     assert any("exit criterion for" in item.lower() and "should still replay cleanly" in item.lower() for item in session.report.contract_exit_criteria)
     assert any("Evidence:" in item and "Why it matters:" in item and "Recheck:" in item for item in session.report.contract_finding_cards)
@@ -1672,6 +1676,7 @@ contract Proxy is SharedBase { ProxyLogic public logic; }
     assert session_payload["report"]["contract_residual_risk"]
     assert session_payload["report"]["contract_exit_criteria"]
     assert session_payload["report"]["contract_finding_cards"]
+    assert session_payload["report"]["contract_triage_snapshot"]
     assert session_payload["report"]["contract_casebook_gaps"]
     assert "contract_review_focus" in session_payload["report"]
     assert "contract_remediation_guidance" in session_payload["report"]
@@ -2437,10 +2442,12 @@ library StorageSlotLib {
     assert any("top repo family" in item.lower() or "secondary pass" in item.lower() for item in session.report.contract_repo_triage)
     assert session.report.contract_remediation_validation
     assert session.report.contract_remediation_follow_up
+    assert session.report.remediation_delta_summary
     assert any("weakens" in item.lower() or "clears" in item.lower() for item in session.report.contract_remediation_validation)
     assert any("repo-scale" in item.lower() or "proxy and upgrade" in item.lower() for item in session.report.contract_remediation_validation)
     assert any("re-check repo lane" in item.lower() for item in session.report.contract_remediation_follow_up)
     assert any("repo casebook" in item.lower() for item in session.report.contract_remediation_follow_up)
+    assert any("local safer-control signal" in item.lower() or "next replay" in item.lower() for item in session.report.remediation_delta_summary)
     assert any("proxy" in item.lower() or "storage" in item.lower() for item in session.report.contract_review_focus)
     assert any("repo lane:" in item.lower() or "repo scope:" in item.lower() for item in session.report.contract_repo_priorities)
     assert any("implementation" in item.lower() or "storage-slot" in item.lower() or "delegatecall" in item.lower() for item in session.report.contract_remediation_guidance)

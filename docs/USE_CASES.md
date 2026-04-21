@@ -24,7 +24,7 @@ strengths matter most for research, audit, and commercial review.
 - run benchmark packs for ECC family-depth, subgroup hygiene, and domain completeness
 - run benchmark packs for smart-contract static review, repo-scale casebooks, and protocol archetypes
 - evaluate the product with safe golden cases before using private repositories
-- build a first-pass review queue with manual-review lanes and cautious confidence notes
+- build a first-pass review queue with compact triage snapshots, manual-review lanes, and cautious confidence notes
 - keep hosted-provider usage optional while preserving mock-mode reproducibility
 
 ## Buyer-Relevant Strengths
@@ -32,6 +32,7 @@ strengths matter most for research, audit, and commercial review.
 - local-first design keeps sensitive inputs away from a default hosted service path
 - bounded orchestration keeps agent work inside a controlled review loop
 - reports preserve negative, null, inconclusive, and manual-review outcomes
+- report snapshots compress repo-scale, ECC, and remediation deltas into first-screen review cues
 - benchmark packs make repeated review paths easier to compare over time
 - before/after comparison supports hardening validation and regression checks
 - source-available licensing keeps evaluation possible while preserving a commercial path

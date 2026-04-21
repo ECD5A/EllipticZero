@@ -1016,6 +1016,14 @@ TRANSLATIONS["ru"]["report.toolchain_fingerprint"] = "Отпечаток toolcha
 TRANSLATIONS["ru"]["report.secret_redaction_summary"] = "Редактирование секретов"
 
 
+TRANSLATIONS["en"]["report.contract_triage_snapshot"] = "Repo Triage Snapshot"
+TRANSLATIONS["en"]["report.remediation_delta_summary"] = "Remediation Delta Summary"
+TRANSLATIONS["en"]["report.ecc_triage_snapshot"] = "ECC Triage Snapshot"
+TRANSLATIONS["ru"]["report.contract_triage_snapshot"] = "Сводка триажа репозитория"
+TRANSLATIONS["ru"]["report.remediation_delta_summary"] = "Сводка изменений после доработки"
+TRANSLATIONS["ru"]["report.ecc_triage_snapshot"] = "Сводка ECC-триажа"
+
+
 def normalize_language(language: str | None) -> str:
     if not language:
         return "en"
