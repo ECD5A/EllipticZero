@@ -120,6 +120,22 @@ def build_run_evaluation_summary_payload(
         manifest=manifest,
     )
     focus_summary = _report_focus_summary(report=report, manifest=manifest)
+    quality_gates = _quality_gates(report=report, manifest=manifest)
+    hardening_summary = _hardening_summary(report=report, manifest=manifest)
+    evidence_coverage = _evidence_coverage(report=report, manifest=manifest)
+    artifact_paths = _artifact_paths(
+        loaded_source=loaded_source,
+        session=session,
+        manifest=manifest,
+    )
+    review_status = _review_status(
+        report_snapshot_summary=report_snapshot_summary,
+        focus_summary=focus_summary,
+        quality_gates=quality_gates,
+        hardening_summary=hardening_summary,
+        evidence_coverage=evidence_coverage,
+        artifacts=artifact_paths,
+    )
 
     return {
         "project": "EllipticZero",
@@ -143,26 +159,23 @@ def build_run_evaluation_summary_payload(
             "tool_names": list(loaded_source.tool_names),
             "experiment_types": list(loaded_source.experiment_types),
         },
+        "review_status": review_status,
         "report": {
             "summary": _report_summary(report=report, manifest=manifest),
             "confidence": _report_confidence(report=report, manifest=manifest),
             "report_snapshot_summary": report_snapshot_summary,
             "report_snapshot_count": len(report_snapshot_summary),
             "focus_summary": focus_summary,
-            "quality_gates": _quality_gates(report=report, manifest=manifest),
-            "hardening_summary": _hardening_summary(report=report, manifest=manifest),
+            "quality_gates": quality_gates,
+            "hardening_summary": hardening_summary,
         },
         "evidence": {
-            "coverage": _evidence_coverage(report=report, manifest=manifest),
+            "coverage": evidence_coverage,
             "tool_count": len(loaded_source.tool_names),
             "experiment_type_count": len(loaded_source.experiment_types),
             "artifact_reference_count": len(loaded_source.artifact_paths),
         },
-        "artifacts": _artifact_paths(
-            loaded_source=loaded_source,
-            session=session,
-            manifest=manifest,
-        ),
+        "artifacts": artifact_paths,
         "notes": list(loaded_source.notes),
     }
 
@@ -293,6 +306,9 @@ def render_run_evaluation_summary(
                 f"- Confidence: {payload['report']['confidence'] or 'недоступно'}",
                 f"- Pack: {payload['session']['selected_pack_name'] or 'none'}",
                 "",
+                "Review Status:",
+                *_render_review_status(payload["review_status"], language=lang),
+                "",
                 "Report Snapshot:",
                 *_render_list(payload["report"]["report_snapshot_summary"], "snapshot недоступен"),
                 "",
@@ -323,6 +339,9 @@ def render_run_evaluation_summary(
             f"- Session ID: {payload['session']['session_id'] or 'unavailable'}",
             f"- Confidence: {payload['report']['confidence'] or 'unavailable'}",
             f"- Pack: {payload['session']['selected_pack_name'] or 'none'}",
+            "",
+            "Review Status:",
+            *_render_review_status(payload["review_status"], language=lang),
             "",
             "Report Snapshot:",
             *_render_list(payload["report"]["report_snapshot_summary"], "snapshot unavailable"),
@@ -482,10 +501,128 @@ def _artifact_paths(
     }
 
 
+def _review_status(
+    *,
+    report_snapshot_summary: list[str],
+    focus_summary: list[str],
+    quality_gates: list[str],
+    hardening_summary: list[str],
+    evidence_coverage: dict[str, Any] | list[str],
+    artifacts: dict[str, str | None],
+) -> dict[str, Any]:
+    evidence_count = _coverage_int(evidence_coverage, "evidence_count")
+    tool_backed_count = _coverage_int(evidence_coverage, "tool_backed_evidence_count")
+    unique_tool_count = _coverage_int(evidence_coverage, "unique_tool_count")
+    experiment_type_count = _coverage_int(evidence_coverage, "experiment_type_count")
+    comparison_ready = _coverage_bool(evidence_coverage, "before_after_ready")
+    missing_artifacts = [
+        key
+        for key in ("session_json", "manifest_json")
+        if not artifacts.get(key)
+    ]
+
+    if evidence_count <= 0 or tool_backed_count <= 0:
+        evidence_depth = "missing"
+    elif evidence_count == 1 or unique_tool_count <= 1:
+        evidence_depth = "thin"
+    elif evidence_count >= 3 and unique_tool_count >= 2 and experiment_type_count >= 2:
+        evidence_depth = "strong"
+    else:
+        evidence_depth = "usable"
+
+    blockers: list[str] = []
+    if not report_snapshot_summary:
+        blockers.append("missing report snapshot summary")
+    if not focus_summary:
+        blockers.append("missing focus summary")
+    if evidence_depth == "missing":
+        blockers.append("no tool-backed evidence coverage recorded")
+    elif evidence_depth == "thin":
+        blockers.append("thin evidence depth; repeat with additional bounded tool paths")
+    if missing_artifacts:
+        blockers.append("missing required reviewer artifacts: " + ", ".join(missing_artifacts))
+    if not quality_gates:
+        blockers.append("quality gates not recorded")
+    if not hardening_summary:
+        blockers.append("hardening summary not recorded")
+
+    ready_for_review = (
+        bool(report_snapshot_summary)
+        and bool(focus_summary)
+        and evidence_depth != "missing"
+        and not missing_artifacts
+    )
+    if not ready_for_review:
+        verdict = "needs_artifacts_or_evidence"
+    elif blockers:
+        verdict = "reviewable_with_manual_caution"
+    else:
+        verdict = "ready_for_review"
+
+    return {
+        "verdict": verdict,
+        "ready_for_review": ready_for_review,
+        "needs_manual_review": True,
+        "evidence_depth": evidence_depth,
+        "comparison_ready": comparison_ready,
+        "missing_artifacts": missing_artifacts,
+        "blockers": blockers,
+    }
+
+
+def _coverage_int(coverage: dict[str, Any] | list[str], key: str) -> int:
+    if isinstance(coverage, dict):
+        value = coverage.get(key)
+        if isinstance(value, bool):
+            return int(value)
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str) and value.isdigit():
+            return int(value)
+    return 0
+
+
+def _coverage_bool(coverage: dict[str, Any] | list[str], key: str) -> bool:
+    if not isinstance(coverage, dict):
+        return False
+    value = coverage.get(key)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() in {"1", "true", "yes", "ready"}
+    return bool(value)
+
+
 def _render_list(items: object, empty_message: str) -> list[str]:
     if not isinstance(items, list) or not items:
         return [f"- {empty_message}"]
     return [f"- {item}" for item in items]
+
+
+def _render_review_status(status: object, *, language: str) -> list[str]:
+    if not isinstance(status, dict):
+        return ["- review status unavailable"]
+    yes = "да" if language == "ru" else "yes"
+    no = "нет" if language == "ru" else "no"
+    manual_review = "требуется" if language == "ru" else "required"
+    missing = status.get("missing_artifacts")
+    blockers = status.get("blockers")
+    lines = [
+        f"- verdict: {status.get('verdict', 'unavailable')}",
+        f"- ready_for_review: {yes if status.get('ready_for_review') else no}",
+        f"- evidence_depth: {status.get('evidence_depth', 'unavailable')}",
+        f"- comparison_ready: {yes if status.get('comparison_ready') else no}",
+        f"- manual_review: {manual_review}",
+    ]
+    if isinstance(missing, list) and missing:
+        lines.append("- missing_artifacts: " + ", ".join(str(item) for item in missing))
+    else:
+        lines.append("- missing_artifacts: none")
+    if isinstance(blockers, list) and blockers:
+        lines.append("- blockers: " + "; ".join(str(item) for item in blockers))
+    else:
+        lines.append("- blockers: none")
+    return lines
 
 
 def _render_evidence_lines(evidence: object, *, language: str) -> list[str]:

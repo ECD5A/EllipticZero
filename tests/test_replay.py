@@ -122,6 +122,7 @@ def test_run_evaluation_summary_can_render_saved_bundle() -> None:
     payload = json.loads(rendered_json)
 
     assert "EllipticZero Run Evaluation Summary" in rendered
+    assert "Review Status:" in rendered
     assert "Report Snapshot:" in rendered
     assert "Artifacts:" in rendered
     assert "Сводка сохраненного запуска EllipticZero" in rendered_ru
@@ -129,6 +130,15 @@ def test_run_evaluation_summary_can_render_saved_bundle() -> None:
     assert payload["source"]["source_type"] == "bundle"
     assert payload["source"]["recovered_session"] is True
     assert payload["source"]["recovered_manifest"] is True
+    assert payload["review_status"]["verdict"] in {
+        "ready_for_review",
+        "reviewable_with_manual_caution",
+    }
+    assert payload["review_status"]["ready_for_review"] is True
+    assert payload["review_status"]["needs_manual_review"] is True
+    assert payload["review_status"]["evidence_depth"] in {"thin", "usable", "strong"}
+    assert isinstance(payload["review_status"]["comparison_ready"], bool)
+    assert payload["review_status"]["missing_artifacts"] == []
     assert payload["report"]["report_snapshot_summary"]
     assert payload["report"]["focus_summary"]
     assert payload["report"]["quality_gates"]

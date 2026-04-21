@@ -64,6 +64,9 @@ For a saved run, print a compact reviewer summary without re-executing:
 python -m app.main --evaluation-summary --replay-bundle .\artifacts\bundles\session_id
 ```
 
+Saved-run summaries include a short `review_status` block with evidence depth,
+comparison readiness, missing reviewer artifacts, and manual-review posture.
+
 List built-in golden cases:
 
 ```powershell

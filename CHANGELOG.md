@@ -14,6 +14,9 @@ The project currently follows a source-available release track under
   are visible without opening the full session JSON.
 - `--evaluation-summary --replay-session/--replay-manifest/--replay-bundle`
   mode for compact reviewer summaries of saved runs without re-execution.
+- Saved-run evaluation summaries now include a `review_status` block with
+  evidence depth, comparison readiness, missing artifacts, and manual-review
+  posture.
 
 ## 0.1.1 - 2026-04-15
 

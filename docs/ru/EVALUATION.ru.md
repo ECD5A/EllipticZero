@@ -65,6 +65,10 @@ python -m app.main --evaluation-summary --evaluation-summary-format json
 python -m app.main --evaluation-summary --replay-bundle .\artifacts\bundles\session_id
 ```
 
+Сводка сохраненного запуска включает короткий блок `review_status`: глубину
+доказательной базы, готовность comparison, недостающие review-артефакты и
+manual-review posture.
+
 Посмотреть встроенные golden cases:
 
 ```powershell
