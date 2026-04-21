@@ -310,6 +310,8 @@ See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for the short policy.
 
 For commercial licensing, collaboration, and partnership inquiries:
 
-- Email: `stelmak159@gmail.com`
-- Telegram: `@ECDS4`
-- Repository: `https://github.com/ECD5A/EllipticZero`
+<p>
+  <a href="mailto:stelmak159@gmail.com"><img alt="Email" src="https://img.shields.io/badge/Email-stelmak159%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white"></a>
+  <a href="https://t.me/ECDS4"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-%40ECDS4-26A5E4?style=for-the-badge&logo=telegram&logoColor=white"></a>
+  <a href="https://github.com/ECD5A/EllipticZero"><img alt="GitHub repository" src="https://img.shields.io/badge/GitHub-ECD5A%2FEllipticZero-181717?style=for-the-badge&logo=github&logoColor=white"></a>
+</p>
