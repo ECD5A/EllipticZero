@@ -925,7 +925,7 @@ def build_hardening_summary(session: ResearchSession) -> list[str]:
     )
     if session.bundle_dir:
         items.append(
-            "Hardening posture: reproducibility bundles preserve focus, comparison readiness, and quality/hardening summaries in overview.json."
+            "Hardening posture: reproducibility bundles preserve report snapshots, focus, comparison readiness, and quality/hardening summaries in overview.json."
         )
     if session.report.before_after_comparison:
         items.append(

@@ -58,6 +58,13 @@ python -m app.main --evaluation-summary
 python -m app.main --evaluation-summary --evaluation-summary-format json
 ```
 
+Для сохраненного запуска можно получить короткую reviewer-сводку без повторного
+выполнения:
+
+```powershell
+python -m app.main --evaluation-summary --replay-bundle .\artifacts\bundles\session_id
+```
+
 Посмотреть встроенные golden cases:
 
 ```powershell

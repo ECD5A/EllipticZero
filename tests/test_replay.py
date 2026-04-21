@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from app.cli.text_rendering import render_run_evaluation_summary
 from app.config import AppConfig
 from app.core.replay_loader import ReplayLoader
 from app.core.replay_planner import ReplayPlanner
@@ -102,6 +103,37 @@ def test_replay_loader_supports_session_manifest_and_bundle() -> None:
     assert loaded_session.recovered_seed == session.seed.raw_text
     assert loaded_manifest.tool_names
     assert loaded_bundle.bundle_dir == session.bundle_dir
+
+
+def test_run_evaluation_summary_can_render_saved_bundle() -> None:
+    _, session = _make_source_session()
+    assert session.bundle_dir is not None
+
+    loaded = ReplayLoader().load(
+        ReplayRequest(source_type="bundle", source_path=session.bundle_dir, dry_run=True, reexecute=False)
+    )
+    rendered = render_run_evaluation_summary(language="en", loaded_source=loaded)
+    rendered_ru = render_run_evaluation_summary(language="ru", loaded_source=loaded)
+    rendered_json = render_run_evaluation_summary(
+        language="en",
+        loaded_source=loaded,
+        output_format="json",
+    )
+    payload = json.loads(rendered_json)
+
+    assert "EllipticZero Run Evaluation Summary" in rendered
+    assert "Report Snapshot:" in rendered
+    assert "Artifacts:" in rendered
+    assert "Сводка сохраненного запуска EllipticZero" in rendered_ru
+    assert payload["summary_type"] == "run_evaluation_summary"
+    assert payload["source"]["source_type"] == "bundle"
+    assert payload["source"]["recovered_session"] is True
+    assert payload["source"]["recovered_manifest"] is True
+    assert payload["report"]["report_snapshot_summary"]
+    assert payload["report"]["focus_summary"]
+    assert payload["report"]["quality_gates"]
+    assert payload["report"]["hardening_summary"]
+    assert payload["artifacts"]["bundle_dir"] == session.bundle_dir
 
 
 def test_replay_dry_run_summary() -> None:

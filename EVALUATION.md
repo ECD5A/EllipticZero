@@ -58,6 +58,12 @@ Machine-readable evaluator summary:
 python -m app.main --evaluation-summary --evaluation-summary-format json
 ```
 
+For a saved run, print a compact reviewer summary without re-executing:
+
+```powershell
+python -m app.main --evaluation-summary --replay-bundle .\artifacts\bundles\session_id
+```
+
 List built-in golden cases:
 
 ```powershell

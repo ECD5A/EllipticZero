@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 from app.cli.i18n import normalize_language, t
 from app.config import AppConfig
 from app.core.orchestrator import ResearchOrchestrator
+from app.core.replay_loader import LoadedReplaySource
 from app.llm.router import build_route_overview, summarize_route_mode
 from app.models.doctor import DoctorReport
 from app.models.replay_result import ReplayResult
+from app.models.report import ResearchReport
+from app.models.run_manifest import RunManifest
+from app.models.session import ResearchSession
 
 
 def build_evaluation_summary_payload(
@@ -99,6 +104,66 @@ def build_evaluation_summary_payload(
                 "docs/ru/COMMERCIAL_LICENSE.ru.md",
             ],
         },
+    }
+
+
+def build_run_evaluation_summary_payload(
+    *,
+    loaded_source: LoadedReplaySource,
+) -> dict[str, Any]:
+    session = loaded_source.session
+    manifest = loaded_source.manifest
+    report = session.report if session is not None else None
+
+    report_snapshot_summary = _report_snapshot_summary(
+        report=report,
+        manifest=manifest,
+    )
+    focus_summary = _report_focus_summary(report=report, manifest=manifest)
+
+    return {
+        "project": "EllipticZero",
+        "summary_type": "run_evaluation_summary",
+        "source": {
+            "source_type": loaded_source.source_type,
+            "source_path": loaded_source.source_path,
+            "original_session_id": loaded_source.original_session_id,
+            "recovered_session": session is not None,
+            "recovered_manifest": manifest is not None,
+        },
+        "session": {
+            "session_id": (
+                session.session_id
+                if session is not None
+                else (manifest.session_id if manifest is not None else None)
+            ),
+            "research_mode": loaded_source.research_mode,
+            "exploration_profile": loaded_source.exploration_profile,
+            "selected_pack_name": loaded_source.selected_pack_name,
+            "tool_names": list(loaded_source.tool_names),
+            "experiment_types": list(loaded_source.experiment_types),
+        },
+        "report": {
+            "summary": _report_summary(report=report, manifest=manifest),
+            "confidence": _report_confidence(report=report, manifest=manifest),
+            "report_snapshot_summary": report_snapshot_summary,
+            "report_snapshot_count": len(report_snapshot_summary),
+            "focus_summary": focus_summary,
+            "quality_gates": _quality_gates(report=report, manifest=manifest),
+            "hardening_summary": _hardening_summary(report=report, manifest=manifest),
+        },
+        "evidence": {
+            "coverage": _evidence_coverage(report=report, manifest=manifest),
+            "tool_count": len(loaded_source.tool_names),
+            "experiment_type_count": len(loaded_source.experiment_types),
+            "artifact_reference_count": len(loaded_source.artifact_paths),
+        },
+        "artifacts": _artifact_paths(
+            loaded_source=loaded_source,
+            session=session,
+            manifest=manifest,
+        ),
+        "notes": list(loaded_source.notes),
     }
 
 
@@ -201,6 +266,302 @@ def render_evaluation_summary(
             "- Product, hosted service, OEM, white-label, resale, or similar commercial paths should be discussed before deployment.",
         ]
     )
+
+
+def render_run_evaluation_summary(
+    *,
+    language: str,
+    loaded_source: LoadedReplaySource,
+    output_format: str = "text",
+) -> str:
+    lang = normalize_language(language)
+    payload = build_run_evaluation_summary_payload(loaded_source=loaded_source)
+    if output_format == "json":
+        return json.dumps(payload, ensure_ascii=False, indent=2)
+    if output_format != "text":
+        raise ValueError(f"Unsupported run evaluation summary format: {output_format}")
+
+    if lang == "ru":
+        return "\n".join(
+            [
+                "Сводка сохраненного запуска EllipticZero",
+                "",
+                "Источник:",
+                f"- Тип: {payload['source']['source_type']}",
+                f"- Путь: {payload['source']['source_path']}",
+                f"- Session ID: {payload['session']['session_id'] or 'недоступно'}",
+                f"- Confidence: {payload['report']['confidence'] or 'недоступно'}",
+                f"- Pack: {payload['session']['selected_pack_name'] or 'none'}",
+                "",
+                "Report Snapshot:",
+                *_render_list(payload["report"]["report_snapshot_summary"], "snapshot недоступен"),
+                "",
+                "Focus Summary:",
+                *_render_list(payload["report"]["focus_summary"], "focus summary недоступен"),
+                "",
+                "Evidence Coverage:",
+                *_render_evidence_lines(payload["evidence"], language=lang),
+                "",
+                "Quality Gates:",
+                *_render_list(payload["report"]["quality_gates"], "quality gates не записаны"),
+                "",
+                "Hardening Summary:",
+                *_render_list(payload["report"]["hardening_summary"], "hardening summary не записан"),
+                "",
+                "Artifacts:",
+                *_render_artifact_lines(payload["artifacts"]),
+            ]
+        )
+
+    return "\n".join(
+        [
+            "EllipticZero Run Evaluation Summary",
+            "",
+            "Source:",
+            f"- Type: {payload['source']['source_type']}",
+            f"- Path: {payload['source']['source_path']}",
+            f"- Session ID: {payload['session']['session_id'] or 'unavailable'}",
+            f"- Confidence: {payload['report']['confidence'] or 'unavailable'}",
+            f"- Pack: {payload['session']['selected_pack_name'] or 'none'}",
+            "",
+            "Report Snapshot:",
+            *_render_list(payload["report"]["report_snapshot_summary"], "snapshot unavailable"),
+            "",
+            "Focus Summary:",
+            *_render_list(payload["report"]["focus_summary"], "focus summary unavailable"),
+            "",
+            "Evidence Coverage:",
+            *_render_evidence_lines(payload["evidence"], language=lang),
+            "",
+            "Quality Gates:",
+            *_render_list(payload["report"]["quality_gates"], "no quality gates recorded"),
+            "",
+            "Hardening Summary:",
+            *_render_list(payload["report"]["hardening_summary"], "no hardening summary recorded"),
+            "",
+            "Artifacts:",
+            *_render_artifact_lines(payload["artifacts"]),
+        ]
+    )
+
+
+def _report_summary(
+    *,
+    report: ResearchReport | None,
+    manifest: RunManifest | None,
+) -> str | None:
+    if report is not None:
+        return report.summary
+    if manifest is not None:
+        return manifest.report_summary
+    return None
+
+
+def _report_confidence(
+    *,
+    report: ResearchReport | None,
+    manifest: RunManifest | None,
+) -> str | None:
+    if report is not None:
+        return report.confidence.value
+    if manifest is not None:
+        return manifest.confidence
+    return None
+
+
+def _report_snapshot_summary(
+    *,
+    report: ResearchReport | None,
+    manifest: RunManifest | None,
+) -> list[str]:
+    if manifest is not None and manifest.report_snapshot_summary:
+        return list(manifest.report_snapshot_summary)
+    if report is None:
+        return []
+    items: list[str] = []
+    items.extend(report.contract_triage_snapshot[:4])
+    items.extend(report.ecc_triage_snapshot[:4])
+    items.extend(report.remediation_delta_summary[:2])
+    items.extend(report.before_after_comparison[:1])
+    items.extend(report.quality_gates[:1])
+    return _ordered_nonempty(items)[:6]
+
+
+def _report_focus_summary(
+    *,
+    report: ResearchReport | None,
+    manifest: RunManifest | None,
+) -> list[str]:
+    if manifest is not None and manifest.report_focus_summary:
+        return list(manifest.report_focus_summary)
+    if report is None:
+        return []
+    items: list[str] = []
+    items.extend(report.contract_repo_triage[:2])
+    items.extend(report.contract_review_focus[:1])
+    items.extend(report.ecc_benchmark_posture[:1])
+    items.extend(report.ecc_coverage_matrix[:1])
+    items.extend(report.ecc_validation_matrix[:1])
+    items.extend(report.ecc_review_queue[:1])
+    items.extend(report.validation_posture[:1])
+    items.extend(report.shared_follow_up[:1])
+    items.extend(report.recommendations[:1])
+    return _ordered_nonempty(items)[:4]
+
+
+def _quality_gates(
+    *,
+    report: ResearchReport | None,
+    manifest: RunManifest | None,
+) -> list[str]:
+    if manifest is not None and manifest.quality_gate_summary:
+        return list(manifest.quality_gate_summary)
+    if report is not None:
+        return list(report.quality_gates)
+    return []
+
+
+def _hardening_summary(
+    *,
+    report: ResearchReport | None,
+    manifest: RunManifest | None,
+) -> list[str]:
+    if manifest is not None and manifest.hardening_summary:
+        return list(manifest.hardening_summary)
+    if report is not None:
+        return list(report.hardening_summary)
+    return []
+
+
+def _evidence_coverage(
+    *,
+    report: ResearchReport | None,
+    manifest: RunManifest | None,
+) -> dict[str, Any] | list[str]:
+    if manifest is not None and manifest.evidence_coverage_summary:
+        return dict(manifest.evidence_coverage_summary)
+    if report is not None:
+        return list(report.evidence_coverage_summary)
+    return {}
+
+
+def _artifact_paths(
+    *,
+    loaded_source: LoadedReplaySource,
+    session: ResearchSession | None,
+    manifest: RunManifest | None,
+) -> dict[str, str | None]:
+    bundle_dir = loaded_source.bundle_dir or (session.bundle_dir if session is not None else None)
+    if loaded_source.source_type == "bundle" and bundle_dir is None:
+        bundle_dir = loaded_source.source_path
+
+    manifest_path = session.manifest_file_path if session is not None else None
+    if manifest_path is None and loaded_source.source_type == "manifest":
+        manifest_path = loaded_source.source_path
+    if manifest_path is None and bundle_dir:
+        bundle_manifest_path = Path(bundle_dir) / "manifest.json"
+        manifest_path = str(bundle_manifest_path) if bundle_manifest_path.exists() else None
+
+    session_path = session.session_file_path if session is not None else None
+    if session_path is None and manifest is not None:
+        session_path = manifest.session_file_path
+    if session_path is None and loaded_source.source_type == "session":
+        session_path = loaded_source.source_path
+
+    return {
+        "source": loaded_source.source_path,
+        "session_json": session_path,
+        "trace_jsonl": loaded_source.trace_file_path,
+        "manifest_json": manifest_path,
+        "bundle_dir": bundle_dir,
+        "comparative_report_json": (
+            session.comparative_report_file_path
+            if session is not None
+            else (manifest.comparative_report_path if manifest is not None else None)
+        ),
+    }
+
+
+def _render_list(items: object, empty_message: str) -> list[str]:
+    if not isinstance(items, list) or not items:
+        return [f"- {empty_message}"]
+    return [f"- {item}" for item in items]
+
+
+def _render_evidence_lines(evidence: object, *, language: str) -> list[str]:
+    if not isinstance(evidence, dict):
+        return ["- evidence coverage unavailable"]
+    coverage = evidence.get("coverage")
+    lines: list[str] = []
+    if isinstance(coverage, dict):
+        for key in (
+            "evidence_count",
+            "tool_backed_evidence_count",
+            "unique_tool_count",
+            "experiment_type_count",
+            "artifact_reference_count",
+            "filtered_artifact_reference_count",
+            "finding_card_count",
+            "manual_review_item_count",
+            "quality_gate_count",
+            "before_after_ready",
+        ):
+            if key in coverage:
+                lines.append(f"- {key}: {coverage[key]}")
+        experiment_types = coverage.get("experiment_types")
+        if isinstance(experiment_types, list) and experiment_types:
+            lines.append("- experiment_types: " + ", ".join(str(item) for item in experiment_types))
+    elif isinstance(coverage, list) and coverage:
+        lines.extend(
+            [
+                f"- tool_count: {evidence.get('tool_count', 0)}",
+                f"- experiment_type_count: {evidence.get('experiment_type_count', 0)}",
+                f"- artifact_reference_count: {evidence.get('artifact_reference_count', 0)}",
+            ]
+        )
+        lines.extend(f"- {item}" for item in coverage)
+    else:
+        lines.extend(
+            [
+                f"- tool_count: {evidence.get('tool_count', 0)}",
+                f"- experiment_type_count: {evidence.get('experiment_type_count', 0)}",
+                f"- artifact_reference_count: {evidence.get('artifact_reference_count', 0)}",
+            ]
+        )
+        if language == "ru":
+            lines.append("- подробная сводка покрытия недоступна")
+        else:
+            lines.append("- detailed coverage summary unavailable")
+    return lines
+
+
+def _render_artifact_lines(artifacts: object) -> list[str]:
+    if not isinstance(artifacts, dict):
+        return ["- artifacts unavailable"]
+    lines: list[str] = []
+    for key in (
+        "source",
+        "session_json",
+        "trace_jsonl",
+        "manifest_json",
+        "bundle_dir",
+        "comparative_report_json",
+    ):
+        value = artifacts.get(key)
+        lines.append(f"- {key}: {value or 'unavailable'}")
+    return lines
+
+
+def _ordered_nonempty(values: list[str]) -> list[str]:
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        normalized = value.strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        ordered.append(normalized)
+    return ordered
 
 
 def render_live_smoke_result(

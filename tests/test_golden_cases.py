@@ -113,6 +113,9 @@ def test_evaluation_summary_cli_parser_and_renderer_expose_eval_paths() -> None:
     parser = build_parser()
     args = parser.parse_args(["--evaluation-summary"])
     json_args = parser.parse_args(["--evaluation-summary", "--evaluation-summary-format", "json"])
+    replay_args = parser.parse_args(
+        ["--evaluation-summary", "--replay-bundle", "artifacts/bundles/example"]
+    )
     pack_names = ExperimentPackRegistry().names()
     cases = list_golden_cases()
 
@@ -139,6 +142,8 @@ def test_evaluation_summary_cli_parser_and_renderer_expose_eval_paths() -> None:
 
     assert args.evaluation_summary is True
     assert json_args.evaluation_summary_format == "json"
+    assert replay_args.evaluation_summary is True
+    assert replay_args.replay_bundle == "artifacts/bundles/example"
     assert "EllipticZero Evaluation Summary" in rendered_en
     assert f"Golden cases: {len(cases)}" in rendered_en
     assert f"Experiment packs: {len(pack_names)}" in rendered_en

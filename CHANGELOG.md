@@ -7,7 +7,13 @@ The project currently follows a source-available release track under
 
 ## Unreleased
 
-No unreleased public changes yet.
+### Added
+
+- `report_snapshot_summary` and `report_snapshot_count` in manifests and bundle
+  overviews so compact ECC / smart-contract triage and remediation-delta signals
+  are visible without opening the full session JSON.
+- `--evaluation-summary --replay-session/--replay-manifest/--replay-bundle`
+  mode for compact reviewer summaries of saved runs without re-execution.
 
 ## 0.1.1 - 2026-04-15
 

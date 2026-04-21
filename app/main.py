@@ -22,6 +22,7 @@ from app.cli.text_rendering import (
     render_replay_result,
     render_report,
     render_routing_summary,
+    render_run_evaluation_summary,
     render_synthetic_targets,
 )
 from app.compute.executor import ComputeExecutor
@@ -469,7 +470,6 @@ def main() -> int:
         if (
             args.idea
             or args.interactive
-            or selected_replay
             or selected_comparison
             or args.doctor
             or args.live_provider_smoke
@@ -486,8 +486,31 @@ def main() -> int:
         ):
             parser.exit(
                 status=2,
-                message="Evaluation summary is a direct no-key CLI path and cannot be combined with run, replay, provider, contract, pack, or listing arguments.\n",
+                message="Evaluation summary is a direct no-key CLI path and cannot be combined with run, provider, contract, pack, comparison, or listing arguments.\n",
             )
+        if len(selected_replay) > 1:
+            parser.exit(status=2, message=t(language, "cli.error.choose_one_replay"))
+        if selected_replay:
+            source_type, source_path = selected_replay[0]
+            request = ReplayRequest(
+                source_type=source_type,
+                source_path=source_path,
+                dry_run=True,
+                reexecute=False,
+                preserve_original_seed=True,
+            )
+            try:
+                loaded = ReplayLoader().load(request)
+            except ValueError as exc:
+                parser.exit(status=2, message=t(language, "cli.error.replay_rejected", error=str(exc)))
+            print(
+                render_run_evaluation_summary(
+                    language=language,
+                    loaded_source=loaded,
+                    output_format=args.evaluation_summary_format,
+                )
+            )
+            return 0
         print(
             render_evaluation_summary(
                 language=language,
