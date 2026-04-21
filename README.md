@@ -311,7 +311,9 @@ See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for the short policy.
 For commercial licensing, collaboration, and partnership inquiries:
 
 <p>
-  <a href="mailto:stelmak159@gmail.com"><img alt="Email" src="https://img.shields.io/badge/Email-stelmak159%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white"></a>
-  <a href="https://t.me/ECDS4"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-%40ECDS4-26A5E4?style=for-the-badge&logo=telegram&logoColor=white"></a>
-  <a href="https://github.com/ECD5A/EllipticZero"><img alt="GitHub repository" src="https://img.shields.io/badge/GitHub-ECD5A%2FEllipticZero-181717?style=for-the-badge&logo=github&logoColor=white"></a>
+  <a href="mailto:stelmak159@gmail.com" aria-label="Email"><img alt="Email" height="24" src="https://cdn.simpleicons.org/gmail/EA4335"></a>
+  &nbsp;
+  <a href="https://t.me/ECDS4" aria-label="Telegram"><img alt="Telegram" height="24" src="https://cdn.simpleicons.org/telegram/26A5E4"></a>
+  &nbsp;
+  <a href="https://github.com/ECD5A/EllipticZero" aria-label="GitHub repository"><picture><source media="(prefers-color-scheme: dark)" srcset="https://cdn.simpleicons.org/github/FFFFFF"><img alt="GitHub repository" height="24" src="https://cdn.simpleicons.org/github/181717"></picture></a>
 </p>
