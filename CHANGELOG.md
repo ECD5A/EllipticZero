@@ -11,6 +11,14 @@ The project currently follows a source-available release track under
 
 - Final CLI reports now include the exact saved-run evaluation command whenever
   a reproducibility bundle was produced.
+- Saved runs can now be exported as SARIF 2.1.0 review output for CI and
+  GitHub Code Scanning workflows.
+- SARIF results now include stable partial fingerprints, tags, and
+  EllipticZero severity metadata for cleaner CI triage.
+- Added a provider context preview CLI path so hosted-provider runs can be
+  reviewed for possible context exposure before any live model call.
+- Expanded the existing evaluation and security guides with provider privacy,
+  sandbox limits, artifact boundaries, golden cases, and SARIF review checks.
 
 ## 0.1.2 - 2026-04-21
 

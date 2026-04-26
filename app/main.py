@@ -49,10 +49,15 @@ from app.core.golden_cases import (
     render_golden_cases,
 )
 from app.core.orchestrator import ResearchOrchestrator
+from app.core.provider_privacy import (
+    build_provider_context_preview,
+    render_provider_context_preview,
+)
 from app.core.replay_loader import ReplayLoader
 from app.core.replay_planner import ReplayPlanner
 from app.core.research_targets import ResearchTargetRegistry
 from app.core.sandbox_executor import SandboxExecutor
+from app.core.sarif_export import render_sarif_export_result, write_sarif_file
 from app.core.seed_parsing import build_smart_contract_seed
 from app.llm.gateway import LLMGateway
 from app.llm.live_smoke import resolve_live_smoke_model
@@ -333,6 +338,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format for --evaluation-summary.",
     )
     parser.add_argument(
+        "--provider-context-preview",
+        action="store_true",
+        help="Preview what prepared context could be sent to hosted providers for a direct run and exit.",
+    )
+    parser.add_argument(
+        "--provider-context-preview-format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format for --provider-context-preview.",
+    )
+    parser.add_argument(
+        "--export-sarif",
+        help="Write SARIF 2.1.0 review output from one saved session, manifest, or bundle and exit.",
+    )
+    parser.add_argument(
         "--golden-case",
         help="Run a safe built-in golden evaluator case by case id",
     )
@@ -483,6 +503,8 @@ def main() -> int:
             or args.contract_code
             or args.contract_root
             or args.contract_language
+            or args.export_sarif
+            or args.provider_context_preview
         ):
             parser.exit(
                 status=2,
@@ -518,6 +540,93 @@ def main() -> int:
                 pack_names=ExperimentPackRegistry().names(),
                 provider_names=SUPPORTED_PROVIDER_NAMES,
                 output_format=args.evaluation_summary_format,
+            )
+        )
+        return 0
+
+    if args.provider_context_preview:
+        if (
+            args.interactive
+            or selected_replay
+            or selected_comparison
+            or args.doctor
+            or args.live_provider_smoke
+            or args.list_golden_cases
+            or args.list_packs
+            or args.list_synthetic_targets
+            or args.synthetic_target
+            or args.export_sarif
+        ):
+            parser.exit(
+                status=2,
+                message="Provider context preview is a direct no-call path and cannot be combined with interactive, replay, comparison, doctor, live-smoke, listing, synthetic target, or SARIF export arguments.\n",
+            )
+        try:
+            preview_seed, preview_pack = _prepare_preview_seed(args)
+        except ValueError as exc:
+            parser.exit(status=2, message=f"Provider context preview rejected: {exc}\n")
+        preview = build_provider_context_preview(
+            config=config,
+            seed_text=preview_seed,
+            selected_pack_name=preview_pack,
+        )
+        print(
+            render_provider_context_preview(
+                preview=preview,
+                language=language,
+                output_format=args.provider_context_preview_format,
+            )
+        )
+        return 0
+
+    if args.export_sarif:
+        if (
+            args.idea
+            or args.interactive
+            or selected_comparison
+            or args.doctor
+            or args.live_provider_smoke
+            or args.golden_case
+            or args.list_golden_cases
+            or args.list_packs
+            or args.list_synthetic_targets
+            or args.synthetic_target
+            or args.pack
+            or args.contract_file
+            or args.contract_code
+            or args.contract_root
+            or args.contract_language
+        ):
+            parser.exit(
+                status=2,
+                message="SARIF export requires exactly one replay source and cannot be combined with run, provider, contract, pack, comparison, doctor, or listing arguments.\n",
+            )
+        if len(selected_replay) != 1:
+            parser.exit(
+                status=2,
+                message="SARIF export requires exactly one of --replay-session, --replay-manifest, or --replay-bundle.\n",
+            )
+        source_type, source_path = selected_replay[0]
+        request = ReplayRequest(
+            source_type=source_type,
+            source_path=source_path,
+            dry_run=True,
+            reexecute=False,
+            preserve_original_seed=True,
+        )
+        try:
+            loaded = ReplayLoader().load(request)
+            output_path, result_count = write_sarif_file(
+                loaded_source=loaded,
+                output_path=args.export_sarif,
+            )
+        except ValueError as exc:
+            parser.exit(status=2, message=t(language, "cli.error.replay_rejected", error=str(exc)))
+        print(
+            render_sarif_export_result(
+                output_path=output_path,
+                result_count=result_count,
+                language=language,
             )
         )
         return 0
@@ -870,6 +979,72 @@ def main() -> int:
         )
     )
     return 0
+
+
+def _prepare_preview_seed(args: argparse.Namespace) -> tuple[str, str | None]:
+    if args.golden_case:
+        if args.idea:
+            raise ValueError("do not combine --golden-case with a free-form research idea.")
+        if args.domain or args.contract_file or args.contract_code or args.contract_root or args.contract_language:
+            raise ValueError("do not combine --golden-case with domain or contract source arguments.")
+        try:
+            golden_run = prepare_golden_case_run(args.golden_case)
+        except GoldenCaseError as exc:
+            raise ValueError(str(exc)) from exc
+        return golden_run.seed_text, golden_run.experiment_pack_name
+
+    if args.domain == "smart_contract_audit":
+        if not args.idea:
+            raise ValueError("SMART CONTRACT AUDIT preview requires a free-form research idea.")
+        if args.contract_file and args.contract_code:
+            raise ValueError("SMART CONTRACT AUDIT accepts either --contract-file or --contract-code, not both.")
+        if args.contract_file:
+            contract_path = Path(args.contract_file)
+            if not contract_path.exists() or not contract_path.is_file():
+                raise ValueError(f"contract file not found: {contract_path}")
+            try:
+                contract_code = contract_path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                contract_code = contract_path.read_text(encoding="utf-8-sig")
+            contract_source_label = str(contract_path)
+            contract_root_label = _contract_root_for_preview(args, contract_path.parent)
+        elif args.contract_code:
+            contract_code = args.contract_code
+            contract_source_label = "<inline>"
+            contract_root_label = _contract_root_for_preview(args, None)
+        else:
+            raise ValueError("SMART CONTRACT AUDIT preview requires --contract-file or --contract-code.")
+        return (
+            build_smart_contract_seed(
+                idea_text=args.idea,
+                contract_code=contract_code,
+                language=infer_contract_language(
+                    source_label=contract_source_label,
+                    hinted_language=args.contract_language,
+                    contract_code=contract_code,
+                ),
+                source_label=contract_source_label,
+                contract_root=contract_root_label,
+            ),
+            args.pack,
+        )
+
+    if args.contract_file or args.contract_code or args.contract_root or args.contract_language:
+        raise ValueError("contract source preview requires --domain smart_contract_audit.")
+    if not args.idea:
+        raise ValueError("provider context preview requires an idea, --golden-case, or smart-contract source.")
+    return args.idea, args.pack
+
+
+def _contract_root_for_preview(args: argparse.Namespace, default_root: Path | None) -> str | None:
+    if args.contract_root:
+        contract_root_path = Path(args.contract_root)
+        if not contract_root_path.exists() or not contract_root_path.is_dir():
+            raise ValueError(f"contract root directory not found: {contract_root_path}")
+        return str(contract_root_path.resolve())
+    if default_root is not None:
+        return str(default_root.resolve())
+    return None
 
 
 if __name__ == "__main__":

@@ -64,6 +64,8 @@ If you are reviewing EllipticZero as a researcher, security team, or potential
 commercial partner, start with:
 
 - [EVALUATION.md](EVALUATION.md) for the evaluation path and benchmark scorecard
+- [SECURITY.md](SECURITY.md) for sandbox, provider, artifact, and data-handling
+  boundaries
 - [examples/golden_cases/README.md](examples/golden_cases/README.md) for stable
   ECC and smart-contract smoke cases
 - [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) if your use case involves a
@@ -189,6 +191,8 @@ Additional CLI utilities:
 python -m app.main --evaluation-summary
 python -m app.main --evaluation-summary --evaluation-summary-format json
 python -m app.main --evaluation-summary --replay-bundle .\artifacts\bundles\session_id
+python -m app.main --provider openrouter --provider-context-preview "Preview hosted-provider context before running live agents."
+python -m app.main --replay-bundle .\artifacts\bundles\session_id --export-sarif .\artifacts\sarif\session_id.sarif
 python -m app.main --list-synthetic-targets
 python -m app.main --list-packs
 python -m app.main --live-provider-smoke openai --live-smoke-model gpt-4.1-mini
@@ -209,6 +213,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Solidity analysis is version-aware: the contract pragma is read first, then the runtime picks a compatible locally available managed compiler instead of assuming one fixed `solc` version.
 - Smart-contract sessions can use pasted code, inline code, or a local `.sol` / `.vy` file as input.
 - `doctor` now distinguishes provider configuration from hosted live-smoke readiness, and the direct hosted smoke path shows the effective timeout and request-token cap it used.
+- `--provider-context-preview` shows which agent routes would use hosted providers and whether prepared contract context may leave the local machine before a live agent run.
 - `doctor` now also surfaces the bounded local plugin safety gate and the approved export-root policy used by bundle and manifest export.
 - Smart-contract sessions can optionally carry a local contract root so the bounded audit can build a repo-scale inventory, separate first-party from dependency scope, trace entrypoint review lanes, rank function families, summarize risk-family lanes, and compare the repo against bounded casebook scenarios. When a local contract file is used, the interactive flow now derives a bounded local root automatically.
 - Smart-contract experiment packs can now structure bounded static benchmarking, repo-casebook benchmarking, protocol-style benchmark passes, and more specific upgrade/control, governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission, or lending-style benchmark passes; their executed steps are preserved in the session, replay artifacts, and final report.
@@ -220,6 +225,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Smart-contract reporting can also include a casebook coverage matrix, benchmark posture summaries, and toolchain-backed validation posture for the strongest repo lanes, including repo-casebooks that support more than one risk family in the same bounded pass.
 - When local signals justify it, smart-contract reporting can also include a short review queue, residual-risk lines for the strongest lane set, exit criteria for the strongest lane, compile status, contract surface summary, built-in pattern findings, protocol-style review focus, remediation-validation notes, a compact remediation-delta summary, remediation follow-up priorities, cautious defensive remediation guidance, external static findings, bounded testbed or repo-casebook comparisons, confidence-calibration notes explaining why the current evidence is still bounded, and before/after comparison lines with regression flags when a saved baseline session is attached.
 - Completed runs can write session, trace, comparative, and bundle artifacts under `artifacts/`, and reproducibility bundles now include an `overview.json` snapshot with report snapshots, focus summary, comparison readiness, export-level counts, plus quality-gate and hardening-summary counts.
+- Saved runs can be exported to SARIF 2.1.0 for CI or GitHub Code Scanning review; exported SARIF entries remain review items and do not turn bounded signals into confirmed vulnerabilities.
 - Cross-domain reporting can also preserve quality gates and hardening summaries so bounded evidence depth, comparison readiness, export posture, plugin-safety posture, and residual manual-review lanes remain legible in one place.
 - Reproducibility manifests and bundles now filter out artifact references that resolve outside the approved local storage roots, and session/trace copies are exported only when their source paths stay inside those approved roots.
 - Reports, manifests, and bundle overviews can now preserve evidence-coverage counts, toolchain fingerprints, and secret-redaction summaries while saved session and trace JSON snapshots mask likely credentials before export.

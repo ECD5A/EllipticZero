@@ -66,10 +66,12 @@ EllipticZero сделан для локальных исследований, г
 ## Быстрая оценка проекта
 
 Если ты смотришь EllipticZero как исследователь, команда безопасности или
-потенциальный коммерческий партнер, начни отсюда:
+потенциальный коммерческий партнёр, начни отсюда:
 
 - [EVALUATION.ru.md](docs/ru/EVALUATION.ru.md) - путь оценки проекта и
   проверочная benchmark-таблица
+- [SECURITY.ru.md](docs/ru/SECURITY.ru.md) - границы sandbox, provider,
+  артефактов и обработки данных
 - [examples/golden_cases/README.ru.md](examples/golden_cases/README.ru.md) -
   стабильные ECC- и smart-contract smoke-сценарии
 - [COMMERCIAL_LICENSE.ru.md](docs/ru/COMMERCIAL_LICENSE.ru.md) - если сценарий
@@ -86,7 +88,7 @@ EllipticZero сделан для локальных исследований, г
 - встроенные проверочные корпуса для asset-flow, vault/share, oracle freshness, collateral/liquidation и liquidation-fee review, protocol-fee/reserve-buffer/debt accounting, bad-debt socialization и смежных protocol-style семейств обзора
 - ограниченные repo-casebook сценарии для upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery и vault/permit, а также опциональные адаптеры `Slither`, `Foundry` и `Echidna`, если они установлены локально
 - встроенные smart-contract benchmark-пакеты для static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, а также для governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style проходов
-- golden/synthetic примеры с ожидаемыми формами отчетов для быстрой оценки ECC- и smart-contract smoke-checks
+- golden/synthetic примеры с ожидаемыми формами отчётов для быстрой оценки ECC- и smart-contract smoke-checks
 - трассировки, манифесты, пакеты воспроизводимости, повторный запуск и `doctor`
 - сводки покрытия доказательной базы, компактные report snapshot-сводки, отпечатки toolchain и session/trace/bundle JSON-снимки с редактированием секретов
 - `mock` по умолчанию, а также `openai`, `openrouter`, `gemini` и `anthropic` при корректной настройке
@@ -196,6 +198,8 @@ python -m app.main --golden-case contract-repo-scale-lending-protocol
 python -m app.main --evaluation-summary
 python -m app.main --evaluation-summary --evaluation-summary-format json
 python -m app.main --evaluation-summary --replay-bundle .\artifacts\bundles\session_id
+python -m app.main --provider openrouter --provider-context-preview "Проверить, какой контекст может уйти hosted-провайдеру."
+python -m app.main --replay-bundle .\artifacts\bundles\session_id --export-sarif .\artifacts\sarif\session_id.sarif
 python -m app.main --list-synthetic-targets
 python -m app.main --list-packs
 python -m app.main --live-provider-smoke openai --live-smoke-model gpt-4.1-mini
@@ -216,6 +220,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Анализ Solidity работает с учётом версии: сначала читается `pragma` контракта, а затем система выбирает совместимый локально доступный управляемый компилятор вместо привязки к одной фиксированной версии `solc`.
 - Для аудита смарт-контрактов можно использовать вставку кода, встроенный код в CLI или локальный файл `.sol` / `.vy`.
 - `doctor` теперь отдельно показывает конфигурацию провайдера и готовность hosted live-smoke path, а прямой smoke-run выводит фактический тайм-аут и лимит токенов запроса.
+- `--provider-context-preview` показывает, какие маршруты агентов будут использовать hosted providers и может ли подготовленный контекст контракта уйти с локальной машины до live-запуска.
 - `doctor` теперь также показывает bounded local plugin safety gate и политику approved export roots, используемую при экспорте manifest и bundle.
 - Сессия по смарт-контракту может нести локальный корень контрактного репозитория, чтобы ограниченный аудит строил инвентаризацию репозитория, маршруты обзора по entrypoint-файлам, приоритеты семейств функций, сводки по маршрутам семейств рисков, подсказки по общим зависимостям и сравнение с ограниченными repo-casebook сценариями. Если используется локальный файл контракта, интерактивный сценарий теперь автоматически выводит ограниченный локальный корень.
 - Smart-contract experiment packs теперь могут структурировать bounded static benchmarking, repo-casebook benchmarking, protocol-style benchmark passes, а также более узкие governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style benchmark passes; их выполненные шаги сохраняются в сессии, replay-артефактах и итоговом отчёте.
@@ -227,6 +232,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Отчёт по смарт-контракту также может включать матрицу покрытия casebook, benchmark-статус и более жёсткий validation posture для сильнейших маршрутов обзора по репозиторию, включая bounded repo-casebook-сценарии, которые поддерживают сразу несколько семейств рисков в одном проходе.
 - Когда локальные сигналы это оправдывают, отчёт по смарт-контракту может также включать короткую очередь проверки, строки с остаточным риском для сильнейших маршрутов обзора, критерии завершения для сильнейшего маршрута обзора, статус компиляции, сводку по поверхности контракта, встроенные результаты проверок риск-паттернов, протокольный фокус, заметки по ограниченной проверке защитной доработки, компактную сводку изменений после доработки, приоритеты повторной проверки после доработки, осторожные рекомендации по защитной доработке, внешние результаты статического анализа и сравнение с ограниченными проверочными корпусами или repo-casebook-сценариями, где replay-путь может идти сразу по нескольким совпавшим семействам, если маршрут обзора действительно их объединяет, а также строки сравнения до/после и флаги возможных регрессий, когда к запуску привязана сохранённая baseline-сессия.
 - Завершённые запуски могут сохранять файл сессии, трассировку, сравнительный отчёт и пакет воспроизводимости в `artifacts/`, а пакет воспроизводимости теперь включает `overview.json` с report snapshot-сводками, сводкой фокуса, готовностью к сравнению, экспортными счётчиками и сводками по quality gates / hardening.
+- Сохранённые запуски можно экспортировать в SARIF 2.1.0 для CI или GitHub Code Scanning; SARIF-записи остаются пунктами проверки и не превращают ограниченные сигналы в подтверждённые уязвимости.
 - Кросс-доменный отчёт теперь тоже может сохранять quality gates и hardening summary, чтобы глубина доказательной базы, готовность к сравнению, export posture и остаточные manual-review lanes были видны в одном месте.
 - Manifest и bundle теперь фильтруют ссылки на артефакты, которые разрешаются вне approved local storage roots, а session/trace copies экспортируются только если исходные пути остаются внутри этих разрешённых корней.
 - Unsafe local plugin path layouts блокируются ещё до загрузки в реестр.

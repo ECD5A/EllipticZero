@@ -26,6 +26,7 @@ Useful evaluation paths include:
   casebook, benchmark, comparison, and manual-review lanes
 - provider-backed evaluation with your own configured API keys
 - artifact review for sessions, traces, manifests, bundles, and replay inputs
+- SARIF export from saved runs for CI or GitHub Code Scanning review
 
 `mock` mode is the easiest starting point, not the only evaluation path.
 
@@ -66,6 +67,26 @@ python -m app.main --evaluation-summary --replay-bundle .\artifacts\bundles\sess
 
 Saved-run summaries include a short `review_status` block with evidence depth,
 comparison readiness, missing reviewer artifacts, and manual-review posture.
+
+Export saved-run review items to SARIF:
+
+```powershell
+python -m app.main --replay-bundle .\artifacts\bundles\session_id --export-sarif .\artifacts\sarif\session_id.sarif
+```
+
+SARIF output is intended for CI and Code Scanning review. It preserves
+`reviewRequired=true` because bounded signals still require local evidence and
+human review before they become confirmed findings.
+
+Preview hosted-provider context before a live agent run:
+
+```powershell
+python -m app.main --provider openrouter --provider-context-preview "Review provider privacy before running live agents."
+```
+
+For private contract review, run the preview with the same `--domain`,
+`--contract-file`, `--contract-root`, `--pack`, and provider flags you plan to
+use. The preview does not call the provider.
 
 List built-in golden cases:
 
@@ -115,12 +136,42 @@ fully audited a target by itself.
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, and residual-risk lanes appear when the input justifies them. | The report separates confirmed local signals from manual-review priorities. |
 | Comparison | A saved baseline can be attached with `--compare-session`, `--compare-manifest`, or `--compare-bundle`. | Before/after lines show cautious deltas and possible regression flags. |
 | Export quality | Session, trace, manifest, and bundle artifacts stay inside approved local export roots. | A reviewer can reproduce what was run and inspect the evidence trail. |
+| CI review | Saved runs can export SARIF 2.1.0 review items. | Code Scanning can display bounded findings without treating them as automatic proof. |
+| Provider privacy | `--provider-context-preview` is run before live hosted agents. | The reviewer can see whether contract code or source paths may be sent to hosted routes. |
 | Hosted path | Optional live smoke works only when the evaluator provides valid provider credentials. | Provider output is treated as interpretation, not proof. |
 
 Scorecard misses are useful. If a lane is absent, the reviewer should check
 whether the input did not justify that lane, the local toolchain was not
 installed, the prompt was too narrow, or the project needs deeper coverage in
 that area.
+
+## Benchmark Evidence Checklist
+
+Useful benchmark evidence should show:
+
+- the exact command that was run
+- the selected domain and benchmark pack
+- local tool outputs or saved artifacts
+- report anchors that match the expected shape
+- confidence and manual-review boundaries
+- replay, saved-run summary, or SARIF review paths
+- a clear distinction between local evidence and model interpretation
+
+The built-in golden cases are safe synthetic checks for report shape, pack
+routing, and evidence boundaries:
+
+| Case | Domain | Expected Review Focus |
+| --- | --- | --- |
+| `ecc-secp256k1-domain-completeness` | ECC | Curve-domain assumptions, metadata completeness, bounded confidence. |
+| `ecc-25519-subgroup-hygiene` | ECC | Subgroup/cofactor, twist hygiene, encoding caveats. |
+| `ecc-secp256k1-point-format-edge` | ECC | Point-format inspection and parser/encoding boundaries. |
+| `contract-vault-permission-lane` | Smart contracts | Vault permissions, externally reachable value flow, finding cards. |
+| `contract-governance-timelock-lane` | Smart contracts | Governance, timelock, upgrade-control, and emergency-lane review. |
+| `contract-repo-scale-lending-protocol` | Smart contracts | Repo inventory, protocol lanes, liquidation/collateral/accounting review. |
+
+Missing sections are useful too. They can mean the input did not justify that
+lane, the selected pack was too narrow, the local toolchain was not installed,
+or the report stayed cautious because evidence was insufficient.
 
 ## Smart-Contract Repo-Scale Path
 
@@ -222,6 +273,7 @@ See:
 - [LICENSE_FAQ.md](LICENSE_FAQ.md)
 - [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md)
 - [LICENSE_TRANSITION.md](LICENSE_TRANSITION.md)
+- [SECURITY.md](SECURITY.md)
 
 ## Contact
 

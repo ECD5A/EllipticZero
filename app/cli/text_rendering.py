@@ -66,6 +66,11 @@ def build_evaluation_summary_payload(
             "python -m app.main --list-golden-cases",
             "python -m app.main --golden-case ecc-secp256k1-point-format-edge",
             "python -m app.main --golden-case contract-repo-scale-lending-protocol",
+            "python -m app.main --provider openrouter --provider-context-preview \"Review provider privacy before running live agents.\"",
+        ],
+        "saved_run_checks": [
+            "python -m app.main --evaluation-summary --replay-bundle .\\artifacts\\bundles\\session_id",
+            "python -m app.main --replay-bundle .\\artifacts\\bundles\\session_id --export-sarif .\\artifacts\\sarif\\session_id.sarif",
         ],
         "evaluation_focus": {
             "ecc": [
@@ -94,12 +99,14 @@ def build_evaluation_summary_payload(
             "en": [
                 "README.md",
                 "EVALUATION.md",
+                "SECURITY.md",
                 "examples/SAMPLE_OUTPUTS.md",
                 "COMMERCIAL_LICENSE.md",
             ],
             "ru": [
                 "README.ru.md",
                 "docs/ru/EVALUATION.ru.md",
+                "docs/ru/SECURITY.ru.md",
                 "examples/SAMPLE_OUTPUTS.ru.md",
                 "docs/ru/COMMERCIAL_LICENSE.ru.md",
             ],
@@ -234,6 +241,7 @@ def render_evaluation_summary(
                 "Документы:",
                 "- README.ru.md",
                 "- docs/ru/EVALUATION.ru.md",
+                "- docs/ru/SECURITY.ru.md",
                 "- examples/SAMPLE_OUTPUTS.ru.md",
                 "- docs/ru/COMMERCIAL_LICENSE.ru.md",
                 "",
@@ -271,6 +279,7 @@ def render_evaluation_summary(
             "Docs:",
             "- README.md",
             "- EVALUATION.md",
+            "- SECURITY.md",
             "- examples/SAMPLE_OUTPUTS.md",
             "- COMMERCIAL_LICENSE.md",
             "",

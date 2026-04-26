@@ -62,3 +62,56 @@ EllipticZero is intentionally designed so that:
 - outputs remain inspectable and reproducible
 
 Reports that show a violation of those boundaries are especially valuable.
+
+## Trust And Data Boundary
+
+EllipticZero treats the user seed, agent reasoning, local tools, artifacts, and
+human review as different trust layers. Agent output is interpretation. Local
+tool outputs, saved sessions, traces, manifests, bundles, and reviewer judgment
+carry the evidence trail.
+
+The default provider is `mock`, which is deterministic and does not require API
+keys. This path is intended for first evaluation, golden cases, documentation
+checks, and reproducibility smoke tests.
+
+Hosted providers are optional. Configure `openai`, `openrouter`, `gemini`, or
+`anthropic` only when you intentionally want live model output instead of the
+default `mock` path. When a hosted provider is used, prompts and bounded context
+needed for the agent call may be sent to that provider according to the
+provider's own terms.
+
+Do not use a hosted provider for private contracts, proprietary code, client
+material, or sensitive traces unless that sharing is acceptable for your
+organization. The live-smoke command verifies provider connectivity only; it
+does not prove audit quality, privacy posture, or production readiness.
+
+Before a live hosted-provider run, preview the prepared context:
+
+```powershell
+python -m app.main --provider openrouter --provider-context-preview "Review provider privacy before running live agents."
+```
+
+For private contract review, run the preview with the same contract and routing
+flags you plan to use. The preview does not call the provider.
+
+EllipticZero does not claim OS-grade isolation, malware containment, or safe
+execution of arbitrary untrusted programs. Evaluate hostile targets in an
+environment you already trust for that purpose.
+
+## Artifact, SARIF, And Claim Boundary
+
+Saved session and trace snapshots apply secret redaction for likely credentials,
+but reviewers should still avoid placing secrets in prompts, contract comments,
+local paths, environment dumps, or artifacts.
+
+SARIF export is a CI and Code Scanning bridge for saved runs:
+
+```powershell
+python -m app.main --replay-bundle .\artifacts\bundles\session_id --export-sarif .\artifacts\sarif\session_id.sarif
+```
+
+SARIF results are review items, not vulnerability proof. A local signal is not
+automatically a confirmed vulnerability, a finding card is not a final audit
+verdict, and a benchmark pass is not complete coverage. If evidence is
+insufficient, the correct outcome is manual review, inconclusive status, or a
+narrower follow-up.
