@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
-from app.cli.text_rendering import render_evaluation_summary
+from app.cli.text_rendering import render_evaluation_summary, render_report
 from app.config import AppConfig
 from app.core.experiment_packs import ExperimentPackRegistry
 from app.core.golden_cases import list_golden_cases, prepare_golden_case_run, render_golden_cases
@@ -67,6 +68,95 @@ def _make_config(run_root: Path) -> AppConfig:
             "tool_timeout_seconds": 15,
         }
     )
+
+
+def _minimal_report_kwargs() -> dict[str, Any]:
+    empty_sections = {
+        "recommended_pack_names": [],
+        "executed_pack_steps": [],
+        "evidence_profile": [],
+        "evidence_coverage_summary": [],
+        "validation_posture": [],
+        "shared_follow_up": [],
+        "calibration_blockers": [],
+        "reproducibility_summary": [],
+        "toolchain_fingerprint_summary": [],
+        "secret_redaction_summary": [],
+        "quality_gates": [],
+        "hardening_summary": [],
+        "ecc_triage_snapshot": [],
+        "ecc_benchmark_summary": [],
+        "ecc_benchmark_posture": [],
+        "ecc_family_coverage": [],
+        "ecc_coverage_matrix": [],
+        "ecc_benchmark_case_summaries": [],
+        "ecc_review_focus": [],
+        "ecc_residual_risk": [],
+        "ecc_signal_consensus": [],
+        "ecc_validation_matrix": [],
+        "ecc_comparison_focus": [],
+        "ecc_benchmark_delta": [],
+        "ecc_regression_summary": [],
+        "ecc_review_queue": [],
+        "ecc_exit_criteria": [],
+        "contract_overview": [],
+        "contract_inventory_summary": [],
+        "contract_protocol_map": [],
+        "contract_protocol_invariants": [],
+        "contract_signal_consensus": [],
+        "contract_validation_matrix": [],
+        "contract_benchmark_posture": [],
+        "contract_benchmark_pack_summary": [],
+        "contract_benchmark_case_summaries": [],
+        "contract_repo_priorities": [],
+        "contract_repo_triage": [],
+        "contract_casebook_coverage": [],
+        "contract_casebook_coverage_matrix": [],
+        "contract_casebook_case_studies": [],
+        "contract_casebook_priority_cases": [],
+        "contract_casebook_gaps": [],
+        "contract_casebook_benchmark_support": [],
+        "contract_casebook_triage": [],
+        "contract_toolchain_alignment": [],
+        "contract_review_queue": [],
+        "contract_compile_summary": [],
+        "contract_surface_summary": [],
+        "contract_priority_findings": [],
+        "contract_finding_cards": [],
+        "contract_static_findings": [],
+        "contract_testbed_findings": [],
+        "contract_remediation_validation": [],
+        "contract_review_focus": [],
+        "contract_remediation_guidance": [],
+        "contract_remediation_follow_up": [],
+        "contract_residual_risk": [],
+        "contract_exit_criteria": [],
+        "contract_manual_review_items": [],
+        "contract_triage_snapshot": [],
+        "remediation_delta_summary": [],
+        "before_after_comparison": [],
+        "regression_flags": [],
+        "tested_hypotheses": [],
+        "tool_usage_summary": [],
+        "comparative_findings": [],
+        "anomalies": [],
+        "recommendations": [],
+        "manual_review_items": [],
+        "confidence_rationale": [],
+    }
+    return {
+        "research_mode": "standard",
+        "selected_pack_name": None,
+        "session_path": "artifacts/sessions/session_1.json",
+        "trace_path": "artifacts/traces/session_1.jsonl",
+        "bundle_path": "artifacts/bundles/session_1",
+        "comparative_report_path": None,
+        "comparative_generated": False,
+        "plugin_summary": None,
+        "session_id": "session_1",
+        "confidence": "low",
+        **empty_sections,
+    }
 
 
 def test_golden_manifest_references_existing_inputs_and_known_packs() -> None:
@@ -157,6 +247,22 @@ def test_evaluation_summary_cli_parser_and_renderer_expose_eval_paths() -> None:
     assert payload["experiment_packs"]["count"] == len(pack_names)
     assert "contract-repo-scale-lending-protocol" in payload["golden_cases"]["case_ids"]
     assert payload["license"]["current"] == "FSL-1.1-ALv2"
+
+
+def test_report_renderer_exposes_saved_run_evaluation_command() -> None:
+    rendered = render_report(
+        language="en",
+        report_summary="Bounded report.",
+        **_minimal_report_kwargs(),
+    )
+    rendered_ru = render_report(
+        language="ru",
+        report_summary="Ограниченный отчёт.",
+        **_minimal_report_kwargs(),
+    )
+
+    assert "Saved-run Evaluation: python -m app.main --evaluation-summary --replay-bundle \"artifacts/bundles/session_1\"" in rendered
+    assert "Сводка сохранённого запуска: python -m app.main --evaluation-summary --replay-bundle \"artifacts/bundles/session_1\"" in rendered_ru
 
 
 def test_prepare_golden_case_run_builds_ecc_and_contract_sessions() -> None:

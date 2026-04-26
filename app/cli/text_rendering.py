@@ -827,6 +827,14 @@ def render_report(
             f"{t(lang, 'report.stored_session')}: {session_path}",
             f"{t(lang, 'report.stored_trace')}: {trace_path or t(lang, 'value.unavailable')}",
             f"{t(lang, 'report.bundle')}: {bundle_path or t(lang, 'value.unavailable')}",
+            *(
+                [
+                    f"{t(lang, 'report.saved_run_evaluation')}: "
+                    f"{_saved_run_evaluation_command(bundle_path)}"
+                ]
+                if bundle_path
+                else []
+            ),
             (
                 f"{t(lang, 'report.comparative_analysis')}: "
                 f"{t(lang, 'report.comparative_generated') if comparative_generated else t(lang, 'report.comparative_limited')}"
@@ -1053,6 +1061,11 @@ def render_report(
         lines.extend(["", f"{t(lang, 'report.manual_review_items')}:"])
         lines.extend(f"- {item}" for item in manual_review_items)
     return "\n".join(lines)
+
+
+def _saved_run_evaluation_command(bundle_path: str) -> str:
+    escaped_path = bundle_path.replace('"', '\\"')
+    return f'python -m app.main --evaluation-summary --replay-bundle "{escaped_path}"'
 
 
 def render_replay_result(result: ReplayResult, *, language: str) -> str:

@@ -7,7 +7,10 @@ The project currently follows a source-available release track under
 
 ## Unreleased
 
-No unreleased public changes yet.
+### Added
+
+- Final CLI reports now include the exact saved-run evaluation command whenever
+  a reproducibility bundle was produced.
 
 ## 0.1.2 - 2026-04-21
 
