@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from shutil import copy2
 
+from app.core.report_markdown import build_session_report_markdown
 from app.models.run_manifest import RunManifest
 from app.models.session import ResearchSession
 from app.storage.redaction import redact_sensitive_data, redact_text
@@ -27,6 +28,9 @@ class ReproducibilityBundleStore:
 
     def overview_path_for_session(self, session_id: str) -> Path:
         return self.path_for_session(session_id) / "overview.json"
+
+    def report_markdown_path_for_session(self, session_id: str) -> Path:
+        return self.path_for_session(session_id) / "report.md"
 
     def export(self, *, session: ResearchSession, manifest: RunManifest) -> Path:
         bundle_dir = self.path_for_session(session.session_id)
@@ -69,6 +73,18 @@ class ReproducibilityBundleStore:
                 ),
                 encoding="utf-8",
             )
+        report_markdown_exported = False
+        if session.report is not None:
+            self.report_markdown_path_for_session(session.session_id).write_text(
+                build_session_report_markdown(
+                    session=session,
+                    manifest=manifest,
+                    source_type="bundle",
+                    source_path=str(bundle_dir),
+                ),
+                encoding="utf-8",
+            )
+            report_markdown_exported = True
         self.overview_path_for_session(session.session_id).write_text(
             json.dumps(
                 redact_sensitive_data(
@@ -77,6 +93,7 @@ class ReproducibilityBundleStore:
                         manifest=manifest,
                         copied_session=copied_session,
                         copied_trace=copied_trace,
+                        report_markdown_exported=report_markdown_exported,
                     )
                 ),
                 indent=2,
@@ -90,6 +107,7 @@ class ReproducibilityBundleStore:
                 manifest=manifest,
                 copied_session=copied_session,
                 copied_trace=copied_trace,
+                report_markdown_exported=report_markdown_exported,
             ),
             encoding="utf-8",
         )
@@ -140,6 +158,7 @@ class ReproducibilityBundleStore:
         manifest: RunManifest,
         copied_session: bool,
         copied_trace: bool,
+        report_markdown_exported: bool,
     ) -> str:
         lines = [
             "EllipticZero Reproducibility Bundle",
@@ -154,6 +173,7 @@ class ReproducibilityBundleStore:
             "- trace.jsonl: append-only execution trace when the source path stays inside approved local export roots",
             "- manifest.json: reproducibility manifest",
             "- comparative_report.json: machine-readable comparative reporting snapshot when available",
+            "- report.md: human-readable Markdown report when a session report is available",
             "- artifacts/: copied local research artifacts when available and inside approved local export roots",
             "",
             "Export policy summary:",
@@ -167,6 +187,7 @@ class ReproducibilityBundleStore:
                 "",
                 f"Copied session snapshot: {'yes' if copied_session else 'no'}",
                 f"Copied trace snapshot: {'yes' if copied_trace else 'no'}",
+                f"Exported Markdown report: {'yes' if report_markdown_exported else 'no'}",
             ]
         )
         return "\n".join(lines) + "\n"
@@ -178,6 +199,7 @@ class ReproducibilityBundleStore:
         manifest: RunManifest,
         copied_session: bool,
         copied_trace: bool,
+        report_markdown_exported: bool,
     ) -> dict[str, object]:
         return {
             "session_id": session.session_id,
@@ -208,6 +230,7 @@ class ReproducibilityBundleStore:
                 "session_json": copied_session,
                 "trace_jsonl": copied_trace,
                 "comparative_report_json": manifest.comparative_export_ready,
+                "report_markdown": report_markdown_exported,
                 "artifacts_dir": bool(manifest.artifacts),
             },
         }

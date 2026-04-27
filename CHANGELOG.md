@@ -2,23 +2,29 @@
 
 All notable public changes for EllipticZero are summarized here.
 
-The project currently follows a source-available release track under
-`FSL-1.1-ALv2`. The current package version is `0.1.3`.
+The project follows a source-available release track under `FSL-1.1-ALv2`.
+Package version: `0.1.3`.
 
 ## Unreleased
 
-No unreleased changes yet.
+### Added
+
+- Added saved-run Markdown report export through `--export-report-md`.
+- Added a post-run session-actions menu for one-step `report.md` and
+  `review.sarif` export.
+- Added `report.md` to reproducibility bundles when a session report is
+  available. JSON evidence artifacts remain the source of truth.
 
 ## 0.1.3 - 2026-04-26
 
 ### Added
 
-- Final CLI reports now include the exact saved-run evaluation command whenever
-  a reproducibility bundle was produced.
-- Saved runs can now be exported as SARIF 2.1.0 review output for CI and
+- Final CLI reports include the exact saved-run evaluation command whenever a
+  reproducibility bundle is produced.
+- Added SARIF 2.1.0 saved-run review output for CI and
   GitHub Code Scanning workflows.
-- SARIF results now include stable partial fingerprints, tags, and
-  EllipticZero severity metadata for cleaner CI triage.
+- SARIF results include stable partial fingerprints, tags, and EllipticZero
+  severity metadata for cleaner CI triage.
 - Added a provider context preview CLI path so hosted-provider runs can be
   reviewed for possible context exposure before any live model call.
 - Expanded the existing evaluation and security guides with provider privacy,
@@ -33,9 +39,8 @@ No unreleased changes yet.
   are visible without opening the full session JSON.
 - `--evaluation-summary --replay-session/--replay-manifest/--replay-bundle`
   mode for compact reviewer summaries of saved runs without re-execution.
-- Saved-run evaluation summaries now include a `review_status` block with
-  evidence depth, comparison readiness, missing artifacts, and manual-review
-  posture.
+- Saved-run evaluation summaries include a `review_status` block with evidence
+  depth, comparison readiness, missing artifacts, and manual-review posture.
 
 ## 0.1.1 - 2026-04-15
 

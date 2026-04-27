@@ -32,11 +32,11 @@ Every `ResearchReport` must contain these sections in a clear and stable order:
    Must separate supported findings, unsupported hypotheses, inconclusive branches, deferred items, and manual review items.
 8. Confidence assessment
    Must assign bounded confidence categories and briefly justify them.
-   When useful, it should also preserve a short evidence profile, evidence-coverage summary, compact validation posture, shared bounded follow-up, dominant calibration blockers, reproducibility summary, toolchain fingerprint, secret-redaction summary, quality gates, and a hardening summary so the reader can see what structured the current confidence level.
+   When useful, it should also preserve a short evidence profile, evidence-coverage summary, compact validation posture, shared bounded follow-up, dominant calibration blockers, reproducibility summary, toolchain fingerprint, secret-redaction summary, quality gates, and a hardening summary so the reader can see what shaped the assigned confidence level.
 9. Limitations and risks
    Must record evidence gaps, unresolved contradictions, assumption sensitivity, and methodological risks.
 10. Recommended next actions
-   Must remain bounded and should not exaggerate the current state of knowledge.
+   Must remain bounded and should not exaggerate what the evidence supports.
 
 For smart-contract sessions, the report should also preserve contract-specific detail when it materially informed the session:
 
@@ -47,9 +47,9 @@ For smart-contract sessions, the report should also preserve contract-specific d
 - short protocol invariants when the report can state which protocol assumptions should remain true across the strongest bounded review families and lanes
 - short signal-consensus summaries when the report can show where compile, surface, static, casebook, or invariant paths converge or still leave important gaps
 - a short validation-matrix block when the report can show the current posture, support, and replay gaps for the strongest repository lanes
-- a short benchmark-posture block when the report can state how much bounded repo-casebook support currently backs the strongest repository lanes
+- a short benchmark-posture block when the report can state how much bounded repo-casebook support backs the strongest repository lanes
 - a short benchmark-pack summary when a bounded smart-contract benchmark pack materially structured the local review path
-- bounded confidence-calibration notes when the report can explain which support vectors, replay anchors, or unresolved gaps kept the current confidence level narrow
+- bounded confidence-calibration notes when the report can explain which support vectors, replay anchors, or unresolved gaps kept the assigned confidence level narrow
 - repo-scale strongest priorities when cross-file evidence materially shaped review order
 - repo triage for the first bounded review pass when repository lanes, function families, and casebook alignment materially shaped review order
 - bounded repo-casebook coverage when repository case-study paths materially informed review order
@@ -61,8 +61,8 @@ For smart-contract sessions, the report should also preserve contract-specific d
 - a short casebook-gap block naming which repo review lanes or function-family priorities remain unmatched by the current bounded casebook run
 - benchmark-support summaries when the report can responsibly state which local compile, static, invariant, or structural paths supported the current repo-casebook review
 - a short casebook triage block highlighting the strongest bounded repo-casebook match and its current validation posture
-- a short toolchain-alignment block showing which local compile, surface, static, invariant, structural, or casebook paths currently support the strongest repo lanes, including lanes that span more than one matched family, and where replay gaps remain
-- a short review-queue block naming which repo lane to inspect first, which matched case currently anchors that lane, and which bounded replay path should follow
+- a short toolchain-alignment block showing which local compile, surface, static, invariant, structural, or casebook paths support the strongest repo lanes, including lanes that span more than one matched family, and where replay gaps remain
+- a short review-queue block naming which repo lane to inspect first, which matched case anchors that lane, and which bounded replay path should follow
 - compact finding cards when the report can connect a bounded potential finding to local evidence, why it matters, a defensive fix direction, and a recheck path
 - short residual-risk lines when the report can state which strongest repo lanes remain open, why they remain open, and which matched casebook or toolchain signals still anchor them
 - a short exit-criteria block naming what should weaken, disappear, or remain unresolved before the strongest repo lane can be treated as meaningfully narrowed
@@ -84,8 +84,8 @@ For smart-contract sessions, the report should also preserve contract-specific d
 For ECC-focused sessions, the report should preserve ECC-specific detail when it materially informed the session:
 
 - a short ECC benchmark summary when bounded ECC testbed packs materially shaped review order
-- a short ECC benchmark-posture block when the report can state how much bounded support currently backs the strongest ECC families
-- a short ECC family-coverage block when the report can summarize which ECC review families are currently covered broadly, partially, or narrowly
+- a short ECC benchmark-posture block when the report can state how much bounded support backs the strongest ECC families
+- a short ECC family-coverage block when the report can summarize which ECC review families are covered broadly, partially, or narrowly
 - a short ECC coverage-matrix block when the report can summarize the current support, baseline state, and residual-risk posture for the strongest ECC review families
 - short ECC benchmark-case summaries when bounded ECC packs materially shaped which local family-specific cases mattered first
 - a short ECC review-focus block when local encoding, family-transition, domain, subgroup, cofactor, or twist-style signals narrowed the next defensive checks

@@ -15,7 +15,10 @@ from app.cli.interactive import (
 from app.cli.ui import ASCII_FALLBACK_BANNER, ConsoleTheme, LocalConsoleUI, MenuOption
 from app.config import AppConfig
 from app.main import build_orchestrator, build_parser
-from app.types import make_id
+from app.models.report import ResearchReport
+from app.models.seed import ResearchSeed
+from app.models.session import ResearchSession
+from app.types import ConfidenceLevel, make_id
 
 
 def test_should_launch_interactive_rules() -> None:
@@ -251,6 +254,66 @@ def test_local_console_ui_menu_renders_single_active_arrow() -> None:
 
     panel_text = "\n".join(lines)
     assert panel_text.count(">") == 1
+
+
+def test_i18n_session_action_labels_are_available() -> None:
+    assert t("en", "menu.export_review_files.label") == "EXPORT REVIEW FILES"
+    assert t("en", "hint.open_session_actions").startswith("Enter opens session actions")
+    assert t("ru", "menu.export_review_files.label") == "ВЫГРУЗИТЬ ФАЙЛЫ ПРОВЕРКИ"
+
+
+def test_interactive_session_action_exports_review_files(tmp_path: Path) -> None:
+    run_root = tmp_path / "interactive_exports"
+    orchestrator = build_orchestrator(
+        AppConfig.model_validate(
+            {
+                "llm": {
+                    "default_provider": "mock",
+                    "default_model": "mock-default",
+                    "timeout_seconds": 30,
+                    "max_request_tokens": 2048,
+                    "max_total_requests_per_session": 16,
+                },
+                "storage": {
+                    "artifacts_dir": str(run_root),
+                    "sessions_dir": str(run_root / "sessions"),
+                    "traces_dir": str(run_root / "traces"),
+                    "math_artifacts_dir": str(run_root / "math"),
+                    "bundles_dir": str(run_root / "bundles"),
+                },
+                "log_level": "INFO",
+                "max_hypotheses": 2,
+                "tool_timeout_seconds": 15,
+            }
+        )
+    )
+    console = InteractiveConsole(orchestrator, language="ru")
+    session_id = "session_interactive_export"
+    session = ResearchSession(
+        session_id=session_id,
+        seed=ResearchSeed(raw_text="Review local report export from the interactive console."),
+        report=ResearchReport(
+            session_id=session_id,
+            seed_text="Review local report export from the interactive console.",
+            summary="Interactive export summary.",
+            contract_finding_cards=["Potential finding: exported review files need human review."],
+            confidence=ConfidenceLevel.MANUAL_REVIEW_REQUIRED,
+        ),
+        session_file_path=str(run_root / "sessions" / f"{session_id}.json"),
+        trace_file_path=str(run_root / "traces" / f"{session_id}.jsonl"),
+        bundle_dir=str(run_root / "bundles" / session_id),
+    )
+    console._pause = lambda: None
+
+    console._export_session_review_files(session=session)
+
+    bundle_dir = Path(session.bundle_dir or "")
+    report_path = bundle_dir / "report.md"
+    sarif_path = bundle_dir / "review.sarif"
+
+    assert report_path.exists()
+    assert sarif_path.exists()
+    assert "Interactive export summary." in report_path.read_text(encoding="utf-8")
 
 
 def test_i18n_language_normalization_and_lookup() -> None:

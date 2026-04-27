@@ -72,6 +72,7 @@ def test_manifest_and_bundle_export_without_advanced_artifacts() -> None:
     assert (bundle_dir / "manifest.json").exists()
     assert (bundle_dir / "comparative_report.json").exists()
     assert (bundle_dir / "overview.json").exists()
+    assert (bundle_dir / "report.md").exists()
     assert manifest["session_id"] == session.session_id
     assert manifest["seed_hash"] == hash_text(session.seed.raw_text)
     assert manifest["session_file_path"] == session.session_file_path
@@ -111,6 +112,7 @@ def test_manifest_and_bundle_export_without_advanced_artifacts() -> None:
     assert overview["outputs"]["session_json"] is True
     assert overview["outputs"]["trace_jsonl"] is True
     assert overview["outputs"]["comparative_report_json"] is True
+    assert overview["outputs"]["report_markdown"] is True
     assert overview["quality_gate_count"] == manifest["quality_gate_count"]
     assert overview["hardening_summary_count"] == manifest["hardening_summary_count"]
     assert overview["quality_gate_summary"]
@@ -255,6 +257,7 @@ def test_manifest_filters_artifacts_outside_local_storage_roots() -> None:
     assert overview["filtered_artifact_count"] == 1
     assert overview["outputs"]["session_json"] is True
     assert overview["outputs"]["trace_jsonl"] is True
+    assert overview["outputs"]["report_markdown"] is True
 
 
 def test_bundle_skips_session_and_trace_outside_approved_roots() -> None:
@@ -331,6 +334,7 @@ def test_bundle_skips_session_and_trace_outside_approved_roots() -> None:
     assert not (bundle_dir / "trace.jsonl").exists()
     assert overview["outputs"]["session_json"] is False
     assert overview["outputs"]["trace_jsonl"] is False
+    assert overview["outputs"]["report_markdown"] is True
     assert overview["outputs"]["artifacts_dir"] is True
 
 

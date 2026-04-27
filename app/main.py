@@ -55,6 +55,10 @@ from app.core.provider_privacy import (
 )
 from app.core.replay_loader import ReplayLoader
 from app.core.replay_planner import ReplayPlanner
+from app.core.report_markdown import (
+    render_report_markdown_export_result,
+    write_report_markdown_file,
+)
 from app.core.research_targets import ResearchTargetRegistry
 from app.core.sandbox_executor import SandboxExecutor
 from app.core.sarif_export import render_sarif_export_result, write_sarif_file
@@ -353,6 +357,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write SARIF 2.1.0 review output from one saved session, manifest, or bundle and exit.",
     )
     parser.add_argument(
+        "--export-report-md",
+        help="Write a human-readable Markdown report from one saved session, manifest, or bundle and exit.",
+    )
+    parser.add_argument(
         "--golden-case",
         help="Run a safe built-in golden evaluator case by case id",
     )
@@ -504,6 +512,7 @@ def main() -> int:
             or args.contract_root
             or args.contract_language
             or args.export_sarif
+            or args.export_report_md
             or args.provider_context_preview
         ):
             parser.exit(
@@ -556,10 +565,11 @@ def main() -> int:
             or args.list_synthetic_targets
             or args.synthetic_target
             or args.export_sarif
+            or args.export_report_md
         ):
             parser.exit(
                 status=2,
-                message="Provider context preview is a direct no-call path and cannot be combined with interactive, replay, comparison, doctor, live-smoke, listing, synthetic target, or SARIF export arguments.\n",
+                message="Provider context preview is a direct no-call path and cannot be combined with interactive, replay, comparison, doctor, live-smoke, listing, synthetic target, or export arguments.\n",
             )
         try:
             preview_seed, preview_pack = _prepare_preview_seed(args)
@@ -579,7 +589,7 @@ def main() -> int:
         )
         return 0
 
-    if args.export_sarif:
+    if args.export_sarif or args.export_report_md:
         if (
             args.idea
             or args.interactive
@@ -599,12 +609,12 @@ def main() -> int:
         ):
             parser.exit(
                 status=2,
-                message="SARIF export requires exactly one replay source and cannot be combined with run, provider, contract, pack, comparison, doctor, or listing arguments.\n",
+                message="Saved-run export requires exactly one replay source and cannot be combined with run, provider, contract, pack, comparison, doctor, or listing arguments.\n",
             )
         if len(selected_replay) != 1:
             parser.exit(
                 status=2,
-                message="SARIF export requires exactly one of --replay-session, --replay-manifest, or --replay-bundle.\n",
+                message="Saved-run export requires exactly one of --replay-session, --replay-manifest, or --replay-bundle.\n",
             )
         source_type, source_path = selected_replay[0]
         request = ReplayRequest(
@@ -616,19 +626,33 @@ def main() -> int:
         )
         try:
             loaded = ReplayLoader().load(request)
-            output_path, result_count = write_sarif_file(
-                loaded_source=loaded,
-                output_path=args.export_sarif,
-            )
+            rendered_messages: list[str] = []
+            if args.export_sarif:
+                output_path, result_count = write_sarif_file(
+                    loaded_source=loaded,
+                    output_path=args.export_sarif,
+                )
+                rendered_messages.append(
+                    render_sarif_export_result(
+                        output_path=output_path,
+                        result_count=result_count,
+                        language=language,
+                    )
+                )
+            if args.export_report_md:
+                output_path = write_report_markdown_file(
+                    loaded_source=loaded,
+                    output_path=args.export_report_md,
+                )
+                rendered_messages.append(
+                    render_report_markdown_export_result(
+                        output_path=output_path,
+                        language=language,
+                    )
+                )
         except ValueError as exc:
             parser.exit(status=2, message=t(language, "cli.error.replay_rejected", error=str(exc)))
-        print(
-            render_sarif_export_result(
-                output_path=output_path,
-                result_count=result_count,
-                language=language,
-            )
-        )
+        print("\n\n".join(rendered_messages))
         return 0
 
     if args.live_provider_smoke and args.interactive:

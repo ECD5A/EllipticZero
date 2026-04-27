@@ -71,6 +71,7 @@ def build_evaluation_summary_payload(
         "saved_run_checks": [
             "python -m app.main --evaluation-summary --replay-bundle .\\artifacts\\bundles\\session_id",
             "python -m app.main --replay-bundle .\\artifacts\\bundles\\session_id --export-sarif .\\artifacts\\sarif\\session_id.sarif",
+            "python -m app.main --replay-bundle .\\artifacts\\bundles\\session_id --export-report-md .\\artifacts\\reports\\session_id.md",
         ],
         "evaluation_focus": {
             "ecc": [

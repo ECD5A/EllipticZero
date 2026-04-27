@@ -104,6 +104,10 @@ Saved session and trace snapshots apply secret redaction for likely credentials,
 but reviewers should still avoid placing secrets in prompts, contract comments,
 local paths, environment dumps, or artifacts.
 
+Markdown report export is a review layer for saved runs. It does
+not intentionally embed the full seed or contract source, and it does not
+replace session, trace, manifest, bundle, SARIF, or local tool evidence.
+
 SARIF export is a CI and Code Scanning bridge for saved runs:
 
 ```powershell

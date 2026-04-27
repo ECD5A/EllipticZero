@@ -78,6 +78,20 @@ SARIF output is intended for CI and Code Scanning review. It preserves
 `reviewRequired=true` because bounded signals still require local evidence and
 human review before they become confirmed findings.
 
+Export a saved-run Markdown report:
+
+```powershell
+python -m app.main --replay-bundle .\artifacts\bundles\session_id --export-report-md .\artifacts\reports\session_id.md
+```
+
+Markdown reports are for review, sharing, and archive. They intentionally avoid
+embedding the full seed or contract source; the session, trace, manifest, bundle,
+and local tool outputs remain the evidence trail.
+
+For the menu-first path, run the interactive console and choose
+`EXPORT REVIEW FILES` after a session completes. It writes `report.md` and
+`review.sarif` into the session bundle without requiring export flags.
+
 Preview hosted-provider context before a live agent run:
 
 ```powershell
@@ -135,7 +149,7 @@ fully audited a target by itself.
 | ECC coverage | Point formats, curve metadata, subgroup/cofactor checks, twist hygiene, curve-family transitions, and domain-completeness surfaces are visible in the report. | Local compute evidence and report interpretation agree without overstating confidence. |
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, and residual-risk lanes appear when the input justifies them. | The report separates confirmed local signals from manual-review priorities. |
 | Comparison | A saved baseline can be attached with `--compare-session`, `--compare-manifest`, or `--compare-bundle`. | Before/after lines show cautious deltas and possible regression flags. |
-| Export quality | Session, trace, manifest, and bundle artifacts stay inside approved local export roots. | A reviewer can reproduce what was run and inspect the evidence trail. |
+| Export quality | Session, trace, manifest, bundle, and `report.md` artifacts stay inside approved local export roots. | A reviewer can reproduce the run, inspect the evidence trail, and share a Markdown report. |
 | CI review | Saved runs can export SARIF 2.1.0 review items. | Code Scanning can display bounded findings without treating them as automatic proof. |
 | Provider privacy | `--provider-context-preview` is run before live hosted agents. | The reviewer can see whether contract code or source paths may be sent to hosted routes. |
 | Hosted path | Optional live smoke works only when the evaluator provides valid provider credentials. | Provider output is treated as interpretation, not proof. |
@@ -154,7 +168,7 @@ Useful benchmark evidence should show:
 - local tool outputs or saved artifacts
 - report anchors that match the expected shape
 - confidence and manual-review boundaries
-- replay, saved-run summary, or SARIF review paths
+- replay, saved-run summary, Markdown report, or SARIF review paths
 - a clear distinction between local evidence and model interpretation
 
 The built-in golden cases are safe synthetic checks for report shape, pack

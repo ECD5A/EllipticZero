@@ -85,6 +85,7 @@ def test_smoke_flow() -> None:
     assert (bundle_dir / "trace.jsonl").exists()
     assert (bundle_dir / "manifest.json").exists()
     assert (bundle_dir / "comparative_report.json").exists()
+    assert (bundle_dir / "report.md").exists()
 
     session_payload = json.loads(session_path.read_text(encoding="utf-8"))
     manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -107,6 +108,7 @@ def test_smoke_flow() -> None:
     assert manifest_payload["report_snapshot_count"] == len(manifest_payload["report_snapshot_summary"])
     assert overview_payload["report_snapshot_summary"] == manifest_payload["report_snapshot_summary"]
     assert overview_payload["report_snapshot_count"] == manifest_payload["report_snapshot_count"]
+    assert overview_payload["outputs"]["report_markdown"] is True
     assert session_payload["evidence"][0]["tool_name"] == session.evidence[0].tool_name
     assert session_payload["jobs"][0]["tool_plan"]["tool_name"] == session.jobs[0].tool_plan.tool_name
     assert session_payload["report"]["tested_hypotheses"]

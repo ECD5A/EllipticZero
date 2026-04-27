@@ -18,11 +18,13 @@ from app.cli.interactive_support import (
 from app.cli.interactive_support import (
     tool_summary_lines as build_tool_summary_lines,
 )
-from app.cli.ui import CYAN, GRAY, RED, WHITE, LocalConsoleUI, MenuOption
+from app.cli.ui import CYAN, GRAY, GREEN, RED, WHITE, LocalConsoleUI, MenuOption
 from app.core.doctor import SystemDoctor
 from app.core.orchestrator import ResearchOrchestrator
-from app.core.replay_loader import ReplayLoader
+from app.core.replay_loader import LoadedReplaySource, ReplayLoader
 from app.core.replay_planner import ReplayPlanner
+from app.core.report_markdown import write_report_markdown_file
+from app.core.sarif_export import write_sarif_file
 from app.core.seed_parsing import build_smart_contract_seed, infer_contract_root_from_source_path
 from app.llm.router import build_route_overview, summarize_route_mode
 from app.models.replay_request import ReplayRequest
@@ -230,12 +232,124 @@ class InteractiveConsole:
 
         self._print_session_result(session=session, helper_curve=helper_curve)
         while True:
-            action = self._pause_or_toggle()
+            action = self.ui.wait_action(self.t("hint.open_session_actions"))
             if action == "toggle_language":
                 self._toggle_language()
                 self._print_session_result(session=session, helper_curve=helper_curve)
                 continue
             break
+        while True:
+            action = self._session_action_menu(session=session, helper_curve=helper_curve)
+            if action == "toggle_language":
+                self._toggle_language()
+                self._print_session_result(session=session, helper_curve=helper_curve)
+                continue
+            break
+
+    def _session_action_menu(self, *, session: ResearchSession, helper_curve: str | None) -> str:
+        start_index = 0
+        while True:
+            selection = self.ui.choose_menu(
+                header_lines=self._screen_header_lines(
+                    self.t("screen.session_actions.title"),
+                    self.t("screen.session_actions.subtitle"),
+                ),
+                options=[
+                    MenuOption(
+                        self.t("menu.export_review_files.label"),
+                        self.t("menu.export_review_files.desc"),
+                    ),
+                    MenuOption(
+                        self.t("menu.show_output_paths.label"),
+                        self.t("menu.show_output_paths.desc"),
+                    ),
+                    MenuOption(self.t("menu.return.label"), self.t("menu.return.desc")),
+                ],
+                start_index=start_index,
+                hint=self.t("hint.session_actions") + " " + self.t("hint.toggle_language"),
+            )
+            if selection == "toggle_language":
+                return "toggle_language"
+            if selection is None or selection == 2:
+                return "return"
+            if isinstance(selection, int):
+                start_index = selection
+            if selection == 0:
+                self._export_session_review_files(session=session)
+            elif selection == 1:
+                self._show_session_output_paths(session=session, helper_curve=helper_curve)
+
+    def _export_session_review_files(self, *, session: ResearchSession) -> None:
+        if not session.bundle_dir:
+            print(self.ui.center_text(self.t("message.export_unavailable"), color=RED, bold=True))
+            self._pause()
+            return
+        bundle_dir = Path(session.bundle_dir)
+        loaded_source = self._loaded_source_from_session(session)
+        report_path = bundle_dir / "report.md"
+        sarif_path = bundle_dir / "review.sarif"
+        try:
+            write_report_markdown_file(
+                loaded_source=loaded_source,
+                output_path=report_path,
+            )
+            _, sarif_result_count = write_sarif_file(
+                loaded_source=loaded_source,
+                output_path=sarif_path,
+            )
+        except ValueError as exc:
+            print(self.ui.center_text(self.t("message.export_failed", error=str(exc)), color=RED, bold=True))
+            self._pause()
+            return
+        self.ui.clear()
+        for line in self._screen_header_lines(
+            self.t("screen.session_actions.title"),
+            self.t("screen.session_actions.subtitle"),
+        ):
+            print(line)
+        self._print_panel_block(
+            self.t("block.export_outputs"),
+            [
+                self._summary_row(self.t("label.markdown_report"), str(report_path)),
+                self._summary_row(self.t("label.sarif_file"), str(sarif_path)),
+                self._summary_row(self.t("label.sarif_results"), str(sarif_result_count)),
+            ],
+            title_color=GREEN,
+        )
+        print(self.ui.center_text(self.t("message.export_complete"), color=GREEN, bold=True))
+        self._pause()
+
+    def _show_session_output_paths(self, *, session: ResearchSession, helper_curve: str | None) -> None:
+        self._print_session_result(session=session, helper_curve=helper_curve)
+        self._pause()
+
+    def _loaded_source_from_session(self, session: ResearchSession) -> LoadedReplaySource:
+        return LoadedReplaySource(
+            source_type="bundle" if session.bundle_dir else "session",
+            source_path=session.bundle_dir or session.session_file_path or session.session_id,
+            session=session,
+            bundle_dir=session.bundle_dir,
+            recovered_seed=session.seed.raw_text,
+            original_session_id=session.original_session_id or session.session_id,
+            tool_names=[job.tool_name for job in session.jobs if job.tool_name],
+            experiment_types=[
+                evidence.experiment_type for evidence in session.evidence if evidence.experiment_type
+            ],
+            artifact_paths=[
+                artifact
+                for evidence in session.evidence
+                for artifact in evidence.artifact_paths
+            ],
+            trace_file_path=session.trace_file_path,
+            research_mode=session.research_mode.value,
+            exploration_profile=(
+                session.sandbox_spec.exploration_profile.value
+                if session.sandbox_spec is not None
+                else None
+            ),
+            selected_pack_name=session.selected_pack_name,
+            notes=["Loaded directly from the completed interactive session."],
+        )
 
     def _run_advanced_menu(self) -> None:
         advanced_start_index = 0
