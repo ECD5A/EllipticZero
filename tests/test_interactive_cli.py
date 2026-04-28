@@ -154,8 +154,9 @@ def test_tool_summary_lines_include_builtin_and_plugin_tools() -> None:
     lines = tool_summary_lines(orchestrator)
 
     assert MENU_OPTIONS["1"] == "Start Research"
-    assert MENU_OPTIONS["2"] == "Advanced / Internal"
-    assert MENU_OPTIONS["3"] == "Exit"
+    assert MENU_OPTIONS["2"] == "Evaluation Lab"
+    assert MENU_OPTIONS["3"] == "System / Tools"
+    assert MENU_OPTIONS["4"] == "Exit"
     assert any("ecc_curve_parameter_tool" in line for line in lines)
     assert any("plugin_note_normalizer_tool" in line for line in lines)
 

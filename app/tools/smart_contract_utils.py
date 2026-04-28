@@ -472,6 +472,12 @@ def detect_contract_patterns(outline: ContractOutline) -> tuple[list[str], list[
                 issues.append(f"unguarded_pause_control_surface:{item.name}")
         if _looks_upgrade_function(item.name) and not access_guarded:
             issues.append(f"unguarded_upgrade_surface:{item.name}")
+        if _looks_immediate_upgrade_execution_path(item) and not _has_upgrade_delay_or_governance_control(
+            item.signature,
+            item.body,
+            item.modifiers,
+        ):
+            issues.append(f"upgrade_timelock_review_required:{item.name}")
         if _looks_initializer_function(item.name) and item.visibility in {"public", "external"} and not access_guarded:
             issues.append(f"public_initializer_surface:{item.name}")
         if item.payable and item.visibility in {"public", "external"} and not access_guarded:
@@ -500,6 +506,12 @@ def detect_contract_patterns(outline: ContractOutline) -> tuple[list[str], list[
                 notes.append(f"checked_token_transfer_from_surface:{item.name}")
             else:
                 issues.append(f"unchecked_token_transfer_from_surface:{item.name}")
+            if (
+                _looks_deposit_like_function(item.name, item.body)
+                and _contains_accounting_mutation(item.body)
+                and not _has_token_balance_delta_check(item.body)
+            ):
+                issues.append(f"token_balance_delta_review_required:{item.name}")
             if _contains_parameter_transfer_from(signature=item.signature, body=item.body):
                 issues.append(f"arbitrary_from_transfer_surface:{item.name}")
         if _contains_erc20_approve_like(item.body):
@@ -510,6 +522,8 @@ def detect_contract_patterns(outline: ContractOutline) -> tuple[list[str], list[
             issues.append(f"approve_race_review_required:{item.name}")
         if _contains_ecrecover(item.body):
             notes.append(f"signature_validation_surface:{item.name}")
+            if not _contains_signature_domain_separator(item.signature, item.body):
+                issues.append(f"signature_domain_separation_review_required:{item.name}")
             if not _contains_signature_nonce_guard(item.signature, item.body):
                 issues.append(f"signature_replay_review_required:{item.name}")
             if not _contains_signature_expiry_guard(item.signature, item.body):
@@ -518,6 +532,10 @@ def detect_contract_patterns(outline: ContractOutline) -> tuple[list[str], list[
             notes.append(f"oracle_dependency_review:{item.name}")
             if not _has_oracle_freshness_check(item.body):
                 issues.append(f"oracle_staleness_review_required:{item.name}")
+            if _contains_chainlink_oracle_read(item.body) and not _has_oracle_answer_bounds_check(item.body):
+                issues.append(f"oracle_answer_bounds_review_required:{item.name}")
+            if _contains_oracle_price_math(item.body) and not _has_oracle_scaling_context(item.body):
+                issues.append(f"oracle_decimal_scaling_review_required:{item.name}")
         if _looks_collateral_management_function(item.name, item.signature, item.body):
             notes.append(f"collateral_management_review:{item.name}")
             if _requires_collateral_ratio_check(item.name, item.signature, item.body) and not _has_collateral_ratio_validation(
@@ -774,7 +792,9 @@ def contract_issue_priority(issue: str) -> str:
         "liquidation_fee_allocation_review_required",
         "bad_debt_socialization_review_required",
         "signature_replay_review_required",
+        "signature_domain_separation_review_required",
         "oracle_staleness_review_required",
+        "oracle_answer_bounds_review_required",
         "unvalidated_implementation_target",
         "proxy_storage_collision_review_required",
         "selfdestruct_usage",
@@ -788,12 +808,15 @@ def contract_issue_priority(issue: str) -> str:
         "unchecked_token_transfer_from_surface",
         "unchecked_approve_surface",
         "approve_race_review_required",
+        "token_balance_delta_review_required",
         "vault_conversion_review_required",
         "reserve_spot_dependency_review_required",
+        "oracle_decimal_scaling_review_required",
         "arbitrary_from_transfer_surface",
         "assembly_review_required",
         "entropy_source_review_required",
         "missing_zero_address_validation",
+        "upgrade_timelock_review_required",
         "delegatecall_usage",
         "proxy_fallback_delegatecall_review_required",
         "storage_slot_write_review_required",
@@ -882,10 +905,14 @@ def contract_issue_summary(issue: str) -> str:
         return f"ERC20 approve return handling in `{target}` should be reviewed"
     if family == "approve_race_review_required" and target:
         return f"allowance reset and approve race behavior in `{target}` should be reviewed"
+    if family == "token_balance_delta_review_required" and target:
+        return f"token balance-delta accounting in `{target}` should be reviewed"
     if family == "vault_conversion_review_required" and target:
         return f"asset and share conversion assumptions in `{target}` should be reviewed"
     if family == "signature_replay_review_required" and target:
         return f"replay protection and nonce use in `{target}` should be reviewed"
+    if family == "signature_domain_separation_review_required" and target:
+        return f"signature domain separation in `{target}` should be reviewed"
     if family == "arbitrary_from_transfer_surface" and target:
         return f"arbitrary `from` transfer behavior in `{target}` should be reviewed"
     if family == "assembly_review_required" and target:
@@ -894,12 +921,18 @@ def contract_issue_summary(issue: str) -> str:
         return f"randomness and entropy assumptions in `{target}` should be reviewed"
     if family == "oracle_staleness_review_required" and target:
         return f"oracle freshness and staleness handling in `{target}` should be reviewed"
+    if family == "oracle_answer_bounds_review_required" and target:
+        return f"oracle answer bounds and non-positive price handling in `{target}` should be reviewed"
+    if family == "oracle_decimal_scaling_review_required" and target:
+        return f"oracle decimal scaling and price precision in `{target}` should be reviewed"
     if family == "reserve_spot_dependency_review_required" and target:
         return f"reserve-derived spot price assumptions in `{target}` should be reviewed"
     if family == "missing_zero_address_validation" and target:
         return f"zero-address validation in `{target}` should be reviewed"
     if family == "unvalidated_implementation_target" and target:
         return f"implementation target validation in `{target}` should be reviewed"
+    if family == "upgrade_timelock_review_required" and target:
+        return f"upgrade delay, queue, or governance controls in `{target}` should be reviewed"
     if family == "proxy_fallback_delegatecall_review_required" and target:
         return f"proxy-style fallback delegatecall behavior in `{target}` should be reviewed"
     if family == "proxy_storage_collision_review_required" and target:
@@ -1258,6 +1291,24 @@ def _contains_signature_expiry_guard(signature: str, body: str) -> bool:
     )
 
 
+def _contains_signature_domain_separator(signature: str, body: str) -> bool:
+    combined = f"{signature} {body}".lower()
+    return any(
+        token in combined
+        for token in (
+            "domain_separator",
+            "domainseparator",
+            "eip712",
+            "_hashTypedDataV4".lower(),
+            "hashTypedDataV4".lower(),
+            "verifyingcontract",
+            "block.chainid",
+            "chainid",
+            "address(this)",
+        )
+    )
+
+
 def _contains_oracle_read(body: str) -> bool:
     lowered = body.lower()
     return any(
@@ -1271,6 +1322,100 @@ def _contains_oracle_read(body: str) -> bool:
             "aggregatorv3interface",
             "pricefeed",
             "oracle.",
+        )
+    )
+
+
+def _contains_chainlink_oracle_read(body: str) -> bool:
+    lowered = body.lower()
+    return any(
+        token in lowered
+        for token in (
+            ".latestrounddata(",
+            ".getrounddata(",
+            ".latestanswer(",
+            "aggregatorv3interface",
+            "pricefeed",
+        )
+    )
+
+
+def _has_oracle_answer_bounds_check(body: str) -> bool:
+    lowered = body.lower()
+    if any(token in lowered for token in ("minprice", "maxprice", "minanswer", "maxanswer")):
+        return True
+    value_names = set(
+        re.findall(r"\b(?:int|uint)(?:8|16|32|64|96|128|160|192|224|256)?\s+([A-Za-z_][A-Za-z0-9_]*)", body)
+    )
+    value_names.update({"answer", "price", "value"})
+    review_names = [name for name in value_names if any(token in name.lower() for token in ("answer", "price", "value"))]
+    for raw_name in review_names:
+        name = raw_name.lower()
+        patterns = (
+            rf"\b(require|assert)\s*\([^)]*\b{name}\b\s*>\s*0\b",
+            rf"\b(require|assert)\s*\([^)]*0\s*<\s*\b{name}\b",
+            rf"\bif\s*\([^)]*\b{name}\b\s*<=\s*0\b[^)]*\)\s*\{{?\s*revert\b",
+            rf"\bif\s*\([^)]*0\s*>=\s*\b{name}\b[^)]*\)\s*\{{?\s*revert\b",
+        )
+        if any(re.search(pattern, lowered) for pattern in patterns):
+            return True
+    return False
+
+
+def _contains_oracle_price_math(body: str) -> bool:
+    lowered = body.lower()
+    price_names = ("price", "answer", "rate", "quote")
+    return any(
+        re.search(rf"\b{name}\b[^;\n]*[*\/]", lowered) or re.search(rf"[*\/][^;\n]*\b{name}\b", lowered)
+        for name in price_names
+    )
+
+
+def _has_oracle_scaling_context(body: str) -> bool:
+    lowered = body.lower()
+    return any(
+        token in lowered
+        for token in (
+            ".decimals(",
+            "decimals()",
+            "priceprecision",
+            "price_precision",
+            "price scale",
+            "pricescale",
+            "oracle_scale",
+            "oraclescale",
+            "scale",
+            "1e8",
+            "1e18",
+            "10 **",
+            "10**",
+            "wad",
+            "ray",
+        )
+    )
+
+
+def _has_token_balance_delta_check(body: str) -> bool:
+    lowered = body.lower()
+    if ".balanceof(address(this))" in lowered or ".balanceof(this)" in lowered:
+        return True
+    return any(
+        token in lowered
+        for token in (
+            "balancebefore",
+            "balance_before",
+            "beforebalance",
+            "before_balance",
+            "balanceafter",
+            "balance_after",
+            "afterbalance",
+            "after_balance",
+            "actualreceived",
+            "actual_received",
+            "receivedamount",
+            "received_amount",
+            "amountreceived",
+            "amount_received",
         )
     )
 
@@ -1897,6 +2042,45 @@ def _contains_implementation_slot_constant(text: str) -> bool:
 
 def _contains_storage_gap(text: str) -> bool:
     return re.search(r"\b__gap\b", text, flags=re.IGNORECASE) is not None
+
+
+def _looks_immediate_upgrade_execution_path(item: ContractFunction) -> bool:
+    lowered_name = item.name.lower()
+    if any(token in lowered_name for token in ("queue", "schedule", "propose", "request", "commit")):
+        return False
+    combined = f"{item.signature}\n{item.body}"
+    if not _looks_upgrade_function(item.name):
+        return False
+    return _looks_state_change(item.body) and (
+        _contains_implementation_reference(combined)
+        or _contains_storage_slot_write(item.body)
+        or _contains_delegatecall(item.body)
+        or re.search(r"\b(?:implementation|beacon|logic)\b\s*=", item.body, flags=re.IGNORECASE) is not None
+    )
+
+
+def _has_upgrade_delay_or_governance_control(signature: str, body: str, modifiers: list[str]) -> bool:
+    combined = f"{signature}\n{body}\n{' '.join(modifiers)}".lower()
+    return any(
+        token in combined
+        for token in (
+            "timelock",
+            "time_lock",
+            "delay",
+            "eta",
+            "queued",
+            "queue",
+            "schedule",
+            "proposal",
+            "governance",
+            "governor",
+            "multisig",
+            "safe",
+            "onlytimelock",
+            "onlygovernance",
+            "onlygovernor",
+        )
+    )
 
 
 def _has_explicit_role_guard(modifiers: list[str], body: str) -> bool:

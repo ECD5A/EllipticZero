@@ -6,7 +6,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "menu.hint": "Arrow keys move selection. Enter confirms.",
         "menu.start_research.label": "START RESEARCH",
         "menu.start_research.desc": "Choose domain, optional curve, enter your idea, and run.",
-        "menu.advanced.label": "ADVANCED / INTERNAL",
+        "menu.advanced.label": "SYSTEM / TOOLS",
         "menu.advanced.desc": "Replay, routing, registries, and system check.",
         "menu.new_session.label": "NEW RESEARCH SESSION",
         "menu.new_session.desc": "Start from a free-form seed and run a bounded local research flow.",
@@ -35,8 +35,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hint.curve_helper": "Arrow keys move selection. Enter confirms. Esc returns to domain selection.",
         "hint.toggle_language": "F2 or L switches language.",
         "hint.return_toggle": "Enter returns. F2 or L switches language.",
-        "screen.advanced.title": "ADVANCED / INTERNAL",
-        "screen.advanced.subtitle": "Internal research surfaces stay available, but the main product flow remains language, curve, idea, run, and report.",
+        "screen.advanced.title": "SYSTEM / TOOLS",
+        "screen.advanced.subtitle": "Operational views for replay, routing, registries, curves, and system readiness.",
         "screen.new_session.title": "NEW RESEARCH SESSION",
         "screen.new_session.subtitle": "Free-form seed stays primary. Optional helpers only add context.",
         "screen.replay.title": "REPLAY SESSION",
@@ -438,8 +438,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "menu.hint": "Стрелки меняют выбор. Enter подтверждает.",
         "menu.start_research.label": "ЗАПУСК ИССЛЕДОВАНИЯ",
         "menu.start_research.desc": "Выбрать домен, кривую при желании, ввести идею и запустить.",
-        "menu.advanced.label": "РАСШИРЕННОЕ / СЛУЖЕБНОЕ",
-        "menu.advanced.desc": "Повтор, маршрутизация, реестры и проверка системы.",
+        "menu.advanced.label": "СИСТЕМА / ИНСТРУМЕНТЫ",
+        "menu.advanced.desc": "Повтор запусков, маршрутизация, реестры и проверка системы.",
         "menu.new_session.label": "НОВАЯ СЕССИЯ",
         "menu.new_session.desc": "Запустить новую исследовательскую сессию на основе свободной идеи.",
         "menu.replay.label": "ПОВТОР СЕССИИ",
@@ -467,8 +467,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hint.curve_helper": "Стрелки меняют выбор. Enter подтверждает. Esc возвращает к выбору домена.",
         "hint.toggle_language": "F2 или L переключает язык.",
         "hint.return_toggle": "Enter возвращает назад. F2 или L переключает язык.",
-        "screen.advanced.title": "РАСШИРЕННЫЕ РЕЖИМЫ",
-        "screen.advanced.subtitle": "Внутренние и служебные экраны остаются доступными, но главный цикл остаётся простым: язык, кривая, идея, запуск, отчёт.",
+        "screen.advanced.title": "СИСТЕМА / ИНСТРУМЕНТЫ",
+        "screen.advanced.subtitle": "Служебные экраны для повтора запусков, маршрутизации, реестров, кривых и проверки готовности.",
         "screen.new_session.title": "НОВАЯ СЕССИЯ",
         "screen.new_session.subtitle": "Свободная идея остаётся основой. Подсказки лишь добавляют контекст.",
         "screen.replay.title": "ПОВТОР СЕССИИ",
@@ -1139,7 +1139,7 @@ TRANSLATIONS["ru"].update(
 TRANSLATIONS["en"].update(
     {
         "menu.evaluation.label": "EVALUATION LAB",
-        "menu.evaluation.desc": "Golden cases, packs, summaries, comparison, and provider preview.",
+        "menu.evaluation.desc": "Safe examples, benchmark packs, known cases, summaries, and previews.",
         "menu.golden_cases.label": "GOLDEN CASES",
         "menu.golden_cases.desc": "Run a safe built-in example and inspect the report.",
         "menu.golden_case.desc": "domain={domain}; pack={pack}",
@@ -1192,7 +1192,7 @@ TRANSLATIONS["en"].update(
 TRANSLATIONS["ru"].update(
     {
         "menu.evaluation.label": "ЛАБОРАТОРИЯ ОЦЕНКИ",
-        "menu.evaluation.desc": "Golden cases, пакеты, сводки, сравнение и контекст провайдера.",
+        "menu.evaluation.desc": "Примеры, пакеты проверок, известные кейсы, сводки и контекст провайдера.",
         "menu.golden_cases.label": "GOLDEN CASES",
         "menu.golden_cases.desc": "Запустить безопасный пример и открыть отчёт.",
         "menu.golden_case.desc": "домен={domain}; пакет={pack}",
@@ -1240,6 +1240,43 @@ TRANSLATIONS["ru"].update(
         "label.baseline_path": "ПУТЬ BASELINE",
         "message.golden_case_failed": "Golden case не запустился: {error}",
         "message.compare_baseline_missing": "В выбранном baseline нет восстановимого снимка сессии.",
+    }
+)
+
+
+TRANSLATIONS["en"].update(
+    {
+        "menu.threat_intel.label": "KNOWN CASES",
+        "menu.threat_intel.desc": "Update or inspect local cached vulnerability-profile metadata.",
+        "menu.threat_intel_update.label": "UPDATE PROFILES",
+        "menu.threat_intel_update.desc": "Fetch compact metadata profiles from allowlisted public sources.",
+        "menu.threat_intel_cache.label": "SHOW CACHE",
+        "menu.threat_intel_cache.desc": "Inspect cached profile count, sources, and local cache path.",
+        "menu.threat_intel_sources.label": "ALLOWED SOURCES",
+        "menu.threat_intel_sources.desc": "Show the allowlisted metadata sources and adapter modes.",
+        "screen.threat_intel.title": "KNOWN CASES",
+        "screen.threat_intel.subtitle": "Metadata only: profiles guide local checks; remote code is never executed.",
+        "message.threat_intel_update_failed": "Threat-intel update failed: {error}",
+        "block.contract_known_case_matches": "KNOWN-CASE MATCHES",
+        "report.contract_known_case_matches": "Known-Case Matches",
+    }
+)
+
+TRANSLATIONS["ru"].update(
+    {
+        "menu.threat_intel.label": "ИЗВЕСТНЫЕ КЕЙСЫ",
+        "menu.threat_intel.desc": "Обновить или посмотреть локальный кэш профилей риска.",
+        "menu.threat_intel_update.label": "ОБНОВИТЬ ПРОФИЛИ",
+        "menu.threat_intel_update.desc": "Скачать короткие профили метаданных из разрешённых источников.",
+        "menu.threat_intel_cache.label": "ПОКАЗАТЬ КЭШ",
+        "menu.threat_intel_cache.desc": "Показать число профилей, источники и локальный путь.",
+        "menu.threat_intel_sources.label": "РАЗРЕШЁННЫЕ ИСТОЧНИКИ",
+        "menu.threat_intel_sources.desc": "Показать список разрешённых источников и режимы адаптеров.",
+        "screen.threat_intel.title": "ИЗВЕСТНЫЕ КЕЙСЫ",
+        "screen.threat_intel.subtitle": "Только метаданные: профили направляют локальные проверки; удалённый код не запускается.",
+        "message.threat_intel_update_failed": "Не удалось обновить профили известных кейсов: {error}",
+        "block.contract_known_case_matches": "СОВПАДЕНИЯ С ИЗВЕСТНЫМИ КЕЙСАМИ",
+        "report.contract_known_case_matches": "Совпадения с известными кейсами",
     }
 )
 

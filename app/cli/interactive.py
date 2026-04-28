@@ -39,6 +39,13 @@ from app.core.replay_planner import ReplayPlanner
 from app.core.report_markdown import write_report_markdown_file
 from app.core.sarif_export import write_sarif_file
 from app.core.seed_parsing import build_smart_contract_seed, infer_contract_root_from_source_path
+from app.core.threat_intel import (
+    ThreatIntelCache,
+    render_threat_intel_cache_summary,
+    render_threat_intel_sources,
+    render_threat_intel_update_summary,
+    update_threat_intel_cache,
+)
 from app.llm.providers import SUPPORTED_PROVIDER_NAMES
 from app.llm.router import build_route_overview, summarize_route_mode
 from app.models.replay_request import ReplayRequest
@@ -49,8 +56,9 @@ from app.tools.smart_contract_utils import infer_contract_language
 
 MENU_OPTIONS: dict[str, str] = {
     "1": "Start Research",
-    "2": "Advanced / Internal",
-    "3": "Exit",
+    "2": "Evaluation Lab",
+    "3": "System / Tools",
+    "4": "Exit",
 }
 
 _SESSION_FLOW_BACK = object()
@@ -129,8 +137,10 @@ class InteractiveConsole:
             if selection == 0:
                 self._run_new_session()
             elif selection == 1:
-                self._run_advanced_menu()
+                self._run_evaluation_menu()
             elif selection == 2:
+                self._run_advanced_menu()
+            elif selection == 3:
                 self.ui.clear()
                 for line in self._home_header_lines():
                     print(line)
@@ -171,6 +181,7 @@ class InteractiveConsole:
     def _home_options(self) -> list[MenuOption]:
         return [
             MenuOption(self.t("menu.start_research.label"), self.t("menu.start_research.desc")),
+            MenuOption(self.t("menu.evaluation.label"), self.t("menu.evaluation.desc")),
             MenuOption(self.t("menu.advanced.label"), self.t("menu.advanced.desc")),
             MenuOption(self.t("menu.exit.label"), self.t("menu.exit.desc")),
         ]
@@ -394,26 +405,23 @@ class InteractiveConsole:
                 self._toggle_language()
                 advanced_start_index = self.ui.last_menu_index
                 continue
-            if selection is None or selection == 6:
+            if selection is None or selection == 5:
                 return
             if isinstance(selection, int):
                 advanced_start_index = selection
             if selection == 0:
-                self._run_evaluation_menu()
-            elif selection == 1:
                 self._run_replay()
-            elif selection == 2:
+            elif selection == 1:
                 self._show_routing()
-            elif selection == 3:
+            elif selection == 2:
                 self._show_tools()
-            elif selection == 4:
+            elif selection == 3:
                 self._show_curves()
-            elif selection == 5:
+            elif selection == 4:
                 self._show_system_check()
 
     def _advanced_options(self) -> list[MenuOption]:
         return [
-            MenuOption(self.t("menu.evaluation.label"), self.t("menu.evaluation.desc")),
             MenuOption(self.t("menu.replay.label"), self.t("menu.replay.desc")),
             MenuOption(self.t("menu.routing.label"), self.t("menu.routing.desc")),
             MenuOption(self.t("menu.tools.label"), self.t("menu.tools.desc")),
@@ -438,7 +446,7 @@ class InteractiveConsole:
                 self._toggle_language()
                 evaluation_start_index = self.ui.last_menu_index
                 continue
-            if selection is None or selection == 5:
+            if selection is None or selection == 6:
                 return
             if isinstance(selection, int):
                 evaluation_start_index = selection
@@ -451,6 +459,8 @@ class InteractiveConsole:
             elif selection == 3:
                 self._run_baseline_compare()
             elif selection == 4:
+                self._run_threat_intel_menu()
+            elif selection == 5:
                 self._show_provider_context_preview()
 
     def _evaluation_options(self) -> list[MenuOption]:
@@ -459,9 +469,63 @@ class InteractiveConsole:
             MenuOption(self.t("menu.experiment_packs.label"), self.t("menu.experiment_packs.desc")),
             MenuOption(self.t("menu.evaluation_summary.label"), self.t("menu.evaluation_summary.desc")),
             MenuOption(self.t("menu.compare_baseline.label"), self.t("menu.compare_baseline.desc")),
+            MenuOption(self.t("menu.threat_intel.label"), self.t("menu.threat_intel.desc")),
             MenuOption(self.t("menu.provider_context_preview.label"), self.t("menu.provider_context_preview.desc")),
             MenuOption(self.t("menu.return.label"), self.t("menu.return.desc")),
         ]
+
+    def _run_threat_intel_menu(self) -> None:
+        threat_start_index = 0
+        cache = ThreatIntelCache()
+        while True:
+            selection = self.ui.choose_menu(
+                header_lines=self._screen_header_lines(
+                    self.t("screen.threat_intel.title"),
+                    self.t("screen.threat_intel.subtitle"),
+                ),
+                options=[
+                    MenuOption(self.t("menu.threat_intel_update.label"), self.t("menu.threat_intel_update.desc")),
+                    MenuOption(self.t("menu.threat_intel_cache.label"), self.t("menu.threat_intel_cache.desc")),
+                    MenuOption(self.t("menu.threat_intel_sources.label"), self.t("menu.threat_intel_sources.desc")),
+                    MenuOption(self.t("menu.return.label"), self.t("menu.return.desc")),
+                ],
+                start_index=threat_start_index,
+                hint=self.t("hint.replay") + " " + self.t("hint.toggle_language"),
+            )
+            if selection == "toggle_language":
+                self._toggle_language()
+                threat_start_index = self.ui.last_menu_index
+                continue
+            if selection is None or selection == 3:
+                return
+            if isinstance(selection, int):
+                threat_start_index = selection
+            if selection == 0:
+                try:
+                    summary = update_threat_intel_cache(cache=cache)
+                    body = render_threat_intel_update_summary(summary, language=self.language)
+                except Exception as exc:  # pragma: no cover - interactive network boundary.
+                    body = self.t("message.threat_intel_update_failed", error=str(exc))
+                self._show_text_document(
+                    title=self.t("screen.threat_intel.title"),
+                    subtitle=self.t("screen.threat_intel.subtitle"),
+                    body=body,
+                )
+                self._pause()
+            elif selection == 1:
+                self._show_text_document(
+                    title=self.t("screen.threat_intel.title"),
+                    subtitle=self.t("screen.threat_intel.subtitle"),
+                    body=render_threat_intel_cache_summary(cache=cache, language=self.language),
+                )
+                self._pause()
+            elif selection == 2:
+                self._show_text_document(
+                    title=self.t("screen.threat_intel.title"),
+                    subtitle=self.t("screen.threat_intel.subtitle"),
+                    body=render_threat_intel_sources(language=self.language),
+                )
+                self._pause()
 
     def _run_golden_case_menu(self) -> None:
         golden_start_index = 0

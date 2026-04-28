@@ -58,6 +58,7 @@ from app.core.reporting_helpers import (
     build_contract_exit_criteria,
     build_contract_finding_cards,
     build_contract_inventory_summary,
+    build_contract_known_case_matches,
     build_contract_manual_review_items,
     build_contract_overview,
     build_contract_priority_findings,
@@ -458,6 +459,7 @@ class ResearchOrchestrator:
         session.report.contract_compile_summary = build_contract_compile_summary(session)
         session.report.contract_surface_summary = build_contract_surface_summary(session)
         session.report.contract_priority_findings = build_contract_priority_findings(session)
+        session.report.contract_known_case_matches = build_contract_known_case_matches(session)
         session.report.contract_static_findings = build_contract_static_findings(session)
         session.report.contract_testbed_findings = build_contract_testbed_findings(session)
         session.report.contract_remediation_validation = build_contract_remediation_validation(session)

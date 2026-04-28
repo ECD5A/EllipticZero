@@ -72,6 +72,7 @@ class ResearchReport(BaseModel):
     contract_surface_summary: list[str] = Field(default_factory=list)
     contract_priority_findings: list[str] = Field(default_factory=list)
     contract_finding_cards: list[str] = Field(default_factory=list)
+    contract_known_case_matches: list[str] = Field(default_factory=list)
     contract_static_findings: list[str] = Field(default_factory=list)
     contract_testbed_findings: list[str] = Field(default_factory=list)
     contract_remediation_validation: list[str] = Field(default_factory=list)

@@ -983,6 +983,7 @@ def main() -> int:
             contract_surface_summary=session.report.contract_surface_summary,
             contract_priority_findings=session.report.contract_priority_findings,
             contract_finding_cards=session.report.contract_finding_cards,
+            contract_known_case_matches=session.report.contract_known_case_matches,
             contract_static_findings=session.report.contract_static_findings,
             contract_testbed_findings=session.report.contract_testbed_findings,
             contract_remediation_validation=session.report.contract_remediation_validation,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -71,6 +72,7 @@ class FoundryRunner:
         contract_code: str,
         language: str = "solidity",
         source_label: str | None = None,
+        contract_root: str | None = None,
     ) -> dict[str, Any]:
         if not self.enabled:
             return self._result(
@@ -147,18 +149,26 @@ class FoundryRunner:
 
         outline = build_contract_outline(contract_code=contract_code, language="solidity")
         contract_names = outline.contract_names[:4]
+        project_root = self._resolve_project_root(contract_root)
+        project_mode = project_root is not None
+        root = project_root or self._create_workspace_temp_dir("ellipticzero_foundry_")
+        temp_root = None if project_mode else root
+        tests_succeeded: bool | None = None
+        test_return_code: int | None = None
+        failing_tests: list[str] = []
+        test_output_summary: list[str] = []
 
-        root = self._create_workspace_temp_dir("ellipticzero_foundry_")
         try:
-            src_dir = root / "src"
-            src_dir.mkdir(parents=True, exist_ok=True)
-            source_name = self._source_name(source_label)
-            source_path = src_dir / source_name
-            source_path.write_text(contract_code, encoding="utf-8")
-            (root / "foundry.toml").write_text(
-                '[profile.default]\nsrc = "src"\nout = "out"\nlibs = []\ncache_path = "cache"\n',
-                encoding="utf-8",
-            )
+            if not project_mode:
+                src_dir = root / "src"
+                src_dir.mkdir(parents=True, exist_ok=True)
+                source_name = self._source_name(source_label)
+                source_path = src_dir / source_name
+                source_path.write_text(contract_code, encoding="utf-8")
+                (root / "foundry.toml").write_text(
+                    '[profile.default]\nsrc = "src"\nout = "out"\nlibs = []\ncache_path = "cache"\n',
+                    encoding="utf-8",
+                )
             build_completed = subprocess.run(
                 self._build_command(
                     binary=forge_binary,
@@ -198,6 +208,13 @@ class FoundryRunner:
                         "method_identifier_counts": {},
                         "storage_entry_counts": {},
                         "storage_layout_present": False,
+                        "project_mode": project_mode,
+                        "foundry_toml_present": project_mode,
+                        "contract_root": str(root) if project_mode else contract_root,
+                        "test_return_code": test_return_code,
+                        "tests_succeeded": tests_succeeded,
+                        "failing_tests": failing_tests,
+                        "test_output_summary": test_output_summary,
                     },
                 )
 
@@ -205,6 +222,30 @@ class FoundryRunner:
             storage_entry_counts: dict[str, int] = {}
             notes: list[str] = []
             inspect_contracts_succeeded = 0
+
+            if project_mode:
+                test_completed = subprocess.run(
+                    self._test_command(
+                        binary=forge_binary,
+                        root=root,
+                        solc_binary=solc_binary,
+                    ),
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    timeout=self.timeout_seconds,
+                    check=False,
+                )
+                test_return_code = test_completed.returncode
+                tests_succeeded = test_completed.returncode == 0
+                combined_test_output = "\n".join(
+                    value for value in (test_completed.stdout, test_completed.stderr) if value
+                )
+                failing_tests = self._extract_failing_tests(combined_test_output)
+                test_output_summary = self._summarize_process_output(combined_test_output)
+                if test_completed.returncode != 0 and not failing_tests:
+                    notes.extend(test_output_summary[:2])
+
             for contract_name in contract_names:
                 methods_payload = self._run_inspect(
                     forge_binary=forge_binary,
@@ -265,7 +306,8 @@ class FoundryRunner:
                 ),
             )
         finally:
-            shutil.rmtree(root, ignore_errors=True)
+            if temp_root is not None:
+                shutil.rmtree(temp_root, ignore_errors=True)
 
         storage_layout_present = any(count > 0 for count in storage_entry_counts.values())
         result_data = {
@@ -285,7 +327,21 @@ class FoundryRunner:
             "method_identifier_counts": method_identifier_counts,
             "storage_entry_counts": storage_entry_counts,
             "storage_layout_present": storage_layout_present,
+            "project_mode": project_mode,
+            "foundry_toml_present": project_mode,
+            "contract_root": str(root) if project_mode else contract_root,
+            "test_return_code": test_return_code,
+            "tests_succeeded": tests_succeeded,
+            "failing_tests": failing_tests,
+            "test_output_summary": test_output_summary,
         }
+        if tests_succeeded is False:
+            return self._result(
+                status="observed_issue",
+                conclusion="The bounded Foundry project build completed, but Forge tests surfaced failing checks.",
+                notes=notes[:6],
+                result_data=result_data,
+            )
         if inspect_contracts_succeeded == 0 and contract_names:
             return self._result(
                 status="observed_issue",
@@ -334,6 +390,52 @@ class FoundryRunner:
             "--use",
             solc_binary,
         ]
+
+    def _test_command(self, *, binary: str, root: Path, solc_binary: str) -> list[str]:
+        return [
+            binary,
+            "test",
+            "--root",
+            str(root),
+            "--offline",
+            "--use",
+            solc_binary,
+        ]
+
+    def _resolve_project_root(self, contract_root: str | None) -> Path | None:
+        if not contract_root:
+            return None
+        try:
+            root = Path(contract_root).expanduser().resolve()
+        except OSError:
+            return None
+        if root.is_file():
+            root = root.parent
+        if not root.is_dir():
+            return None
+        if not (root / "foundry.toml").is_file():
+            return None
+        return root
+
+    def _summarize_process_output(self, output: str) -> list[str]:
+        lines = [" ".join(line.strip().split()) for line in output.splitlines()]
+        meaningful = [line for line in lines if line]
+        return meaningful[:8]
+
+    def _extract_failing_tests(self, output: str) -> list[str]:
+        failing: list[str] = []
+        for line in output.splitlines():
+            lowered = line.lower()
+            if "[fail" not in lowered and "fail:" not in lowered and "failing" not in lowered:
+                continue
+            for match in re.findall(r"\btest[A-Za-z0-9_]*(?:\([^)]*\))?", line):
+                if match not in failing:
+                    failing.append(match)
+            if not failing:
+                cleaned = " ".join(line.strip().split())
+                if cleaned and cleaned not in failing:
+                    failing.append(cleaned[:180])
+        return failing[:12]
 
     def _run_inspect(
         self,

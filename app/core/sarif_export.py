@@ -22,6 +22,10 @@ RULE_DEFINITIONS: dict[str, dict[str, str]] = {
         "name": "Smart-contract static signal",
         "description": "A parser, compile, static, surface, or testbed signal that should be reviewed.",
     },
+    "EZ-CONTRACT-KNOWN-CASE": {
+        "name": "Smart-contract known-case profile match",
+        "description": "A cached threat-intel profile matched local contract context or bounded signals.",
+    },
     "EZ-CONTRACT-MANUAL-REVIEW": {
         "name": "Smart-contract manual review item",
         "description": "A manual-review lane or residual risk that the run did not fully prove.",
@@ -159,6 +163,7 @@ def _results_from_report(
 ) -> list[dict[str, Any]]:
     sections: tuple[tuple[str, str, str], ...] = (
         ("contract_finding_cards", "EZ-CONTRACT-FINDING", "warning"),
+        ("contract_known_case_matches", "EZ-CONTRACT-KNOWN-CASE", "note"),
         ("contract_priority_findings", "EZ-CONTRACT-FINDING", "warning"),
         ("contract_static_findings", "EZ-CONTRACT-STATIC-SIGNAL", "warning"),
         ("contract_testbed_findings", "EZ-CONTRACT-STATIC-SIGNAL", "warning"),

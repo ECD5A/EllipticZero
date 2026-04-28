@@ -260,6 +260,11 @@ class InteractiveRenderer:
         self.print_list_block(self.t("block.confidence_rationale"), session.report.confidence_rationale, color=GREEN)
         self.print_list_block(self.t("block.contract_overview"), session.report.contract_overview, color=CYAN)
         self.print_list_block(self.t("block.contract_finding_cards"), session.report.contract_finding_cards, color=AMBER)
+        self.print_list_block(
+            self.t("block.contract_known_case_matches"),
+            session.report.contract_known_case_matches,
+            color=AMBER,
+        )
         self.print_list_block(self.t("block.ecc_benchmark_summary"), session.report.ecc_benchmark_summary, color=CYAN)
         self.print_list_block(self.t("block.evidence_profile"), session.report.evidence_profile, color=CYAN)
         self.print_list_block(

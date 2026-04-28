@@ -799,6 +799,7 @@ def render_report(
     contract_surface_summary: list[str],
     contract_priority_findings: list[str],
     contract_finding_cards: list[str],
+    contract_known_case_matches: list[str],
     contract_static_findings: list[str],
     contract_testbed_findings: list[str],
     contract_remediation_validation: list[str],
@@ -881,6 +882,9 @@ def render_report(
     if contract_finding_cards:
         lines.extend(["", f"{t(lang, 'report.contract_finding_cards')}:"])
         lines.extend(f"- {item}" for item in contract_finding_cards)
+    if contract_known_case_matches:
+        lines.extend(["", f"{t(lang, 'report.contract_known_case_matches')}:"])
+        lines.extend(f"- {item}" for item in contract_known_case_matches)
     if ecc_benchmark_summary:
         lines.extend(["", f"{t(lang, 'report.ecc_benchmark_summary')}:"])
         lines.extend(f"- {item}" for item in ecc_benchmark_summary)

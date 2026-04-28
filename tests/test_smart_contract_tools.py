@@ -19,6 +19,7 @@ from app.core.seed_parsing import (
     extract_contract_source_label,
     infer_contract_root_from_source_path,
 )
+from app.core.threat_intel import ThreatIntelProfile
 from app.main import build_orchestrator, build_parser
 from app.tools.builtin import (
     ContractInventoryTool,
@@ -1019,9 +1020,216 @@ contract SignatureOracleSurface {
     issues = result["result_data"]["issues"]
     notes = result["result_data"]["notes"]
     assert any(item.startswith("signature_replay_review_required:permitAction") for item in issues)
+    assert any(item.startswith("signature_domain_separation_review_required:permitAction") for item in issues)
     assert any(item.startswith("oracle_staleness_review_required:quote") for item in issues)
+    assert any(item.startswith("oracle_answer_bounds_review_required:quote") for item in issues)
     assert any(item.startswith("signature_validation_surface:permitAction") for item in notes)
     assert any(item.startswith("oracle_dependency_review:quote") for item in notes)
+
+
+def test_contract_pattern_check_tool_accepts_bounded_signature_and_oracle_guards() -> None:
+    tool = ContractPatternCheckTool()
+    payload = tool.validate_payload(
+        {
+            "contract_code": """
+pragma solidity ^0.8.20;
+interface AggregatorV3Interface {
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80);
+}
+contract GuardedSignatureOracleSurface {
+    AggregatorV3Interface public priceFeed;
+    mapping(bytes32 => bool) public usedDigest;
+
+    function permitAction(
+        address owner,
+        address target,
+        uint256 nonce,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external returns (address) {
+        require(deadline >= block.timestamp, "expired");
+        bytes32 digest = keccak256(abi.encode(block.chainid, address(this), owner, target, nonce));
+        require(!usedDigest[digest], "used");
+        usedDigest[digest] = true;
+        return ecrecover(digest, v, r, s);
+    }
+
+    function quote() external view returns (uint256) {
+        (uint80 roundId, int256 price,, uint256 updatedAt, uint80 answeredInRound) = priceFeed.latestRoundData();
+        require(price > 0, "bad price");
+        require(updatedAt != 0 && answeredInRound >= roundId, "stale");
+        return uint256(price);
+    }
+}
+""".strip(),
+            "language": "solidity",
+        }
+    )
+    result = tool.run(payload)
+
+    issues = result["result_data"]["issues"]
+    assert not any(item.startswith("signature_replay_review_required:permitAction") for item in issues)
+    assert not any(item.startswith("signature_domain_separation_review_required:permitAction") for item in issues)
+    assert not any(item.startswith("oracle_staleness_review_required:quote") for item in issues)
+    assert not any(item.startswith("oracle_answer_bounds_review_required:quote") for item in issues)
+
+
+def test_contract_pattern_check_tool_flags_immediate_upgrade_without_timelock() -> None:
+    tool = ContractPatternCheckTool()
+    payload = tool.validate_payload(
+        {
+            "contract_code": """
+pragma solidity ^0.8.20;
+contract UpgradeSurface {
+    address public implementation;
+    address public owner;
+    modifier onlyOwner() { require(msg.sender == owner, "owner"); _; }
+    modifier onlyTimelock() { require(msg.sender == address(0x123), "timelock"); _; }
+
+    function upgradeTo(address newImplementation) external onlyOwner {
+        require(newImplementation != address(0), "zero");
+        require(newImplementation.code.length > 0, "not contract");
+        implementation = newImplementation;
+    }
+
+    function executeScheduledUpgrade(address newImplementation) external onlyTimelock {
+        require(newImplementation != address(0), "zero");
+        require(newImplementation.code.length > 0, "not contract");
+        implementation = newImplementation;
+    }
+}
+""".strip(),
+            "language": "solidity",
+        }
+    )
+    result = tool.run(payload)
+
+    issues = result["result_data"]["issues"]
+    assert any(item.startswith("upgrade_timelock_review_required:upgradeTo") for item in issues)
+    assert not any(item.startswith("upgrade_timelock_review_required:executeScheduledUpgrade") for item in issues)
+
+
+def test_contract_pattern_check_tool_flags_token_delta_and_oracle_scaling_review() -> None:
+    tool = ContractPatternCheckTool()
+    payload = tool.validate_payload(
+        {
+            "contract_code": """
+pragma solidity ^0.8.20;
+interface IERC20 {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+}
+interface AggregatorV3Interface {
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80);
+}
+contract FeeTokenOracleVault {
+    IERC20 public asset;
+    AggregatorV3Interface public priceFeed;
+    mapping(address => uint256) public shares;
+
+    function deposit(uint256 amount) external {
+        require(asset.transferFrom(msg.sender, address(this), amount), "transfer");
+        shares[msg.sender] += amount;
+    }
+
+    function quote(uint256 amount) external view returns (uint256) {
+        (, int256 price,, uint256 updatedAt,) = priceFeed.latestRoundData();
+        require(price > 0, "bad price");
+        require(updatedAt != 0, "stale");
+        return amount * uint256(price) / 1 ether;
+    }
+}
+""".strip(),
+            "language": "solidity",
+        }
+    )
+    result = tool.run(payload)
+
+    issues = result["result_data"]["issues"]
+    assert any(item.startswith("token_balance_delta_review_required:deposit") for item in issues)
+    assert any(item.startswith("oracle_decimal_scaling_review_required:quote") for item in issues)
+
+
+def test_contract_pattern_check_tool_accepts_balance_delta_and_oracle_scaling_guards() -> None:
+    tool = ContractPatternCheckTool()
+    payload = tool.validate_payload(
+        {
+            "contract_code": """
+pragma solidity ^0.8.20;
+interface IERC20 {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+}
+interface AggregatorV3Interface {
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80);
+    function decimals() external view returns (uint8);
+}
+contract GuardedFeeTokenOracleVault {
+    IERC20 public asset;
+    AggregatorV3Interface public priceFeed;
+    mapping(address => uint256) public shares;
+
+    function deposit(uint256 amount) external {
+        uint256 balanceBefore = asset.balanceOf(address(this));
+        require(asset.transferFrom(msg.sender, address(this), amount), "transfer");
+        uint256 receivedAmount = asset.balanceOf(address(this)) - balanceBefore;
+        shares[msg.sender] += receivedAmount;
+    }
+
+    function quote(uint256 amount) external view returns (uint256) {
+        (uint80 roundId, int256 price,, uint256 updatedAt, uint80 answeredInRound) = priceFeed.latestRoundData();
+        require(price > 0, "bad price");
+        require(updatedAt != 0 && answeredInRound >= roundId, "stale");
+        uint8 decimals = priceFeed.decimals();
+        return amount * uint256(price) / (10 ** decimals);
+    }
+}
+""".strip(),
+            "language": "solidity",
+        }
+    )
+    result = tool.run(payload)
+
+    issues = result["result_data"]["issues"]
+    assert not any(item.startswith("token_balance_delta_review_required:deposit") for item in issues)
+    assert not any(item.startswith("oracle_decimal_scaling_review_required:quote") for item in issues)
+
+
+def test_contract_pattern_check_tool_attaches_known_case_profile_matches() -> None:
+    profile = ThreatIntelProfile(
+        profile_id="permit-replay-known-case",
+        title="Permit replay known-case profile",
+        family="permit / signature replay",
+        source_id="unit-test",
+        source_url="https://example.invalid/permit",
+        risk_hint="high",
+        match_terms=["permit", "ecrecover", "nonce"],
+        local_checks=["signature_replay_review_required"],
+        evidence_required=["signature entrypoint", "nonce guard"],
+    )
+    tool = ContractPatternCheckTool(threat_intel_profiles=[profile])
+    payload = tool.validate_payload(
+        {
+            "contract_code": """
+pragma solidity ^0.8.20;
+contract PermitSurface {
+    function permitAction(address owner, uint8 v, bytes32 r, bytes32 s) external pure returns (address) {
+        bytes32 digest = keccak256(abi.encodePacked(owner));
+        return ecrecover(digest, v, r, s);
+    }
+}
+""".strip(),
+            "language": "solidity",
+        }
+    )
+    result = tool.run(payload)
+    data = result["result_data"]
+
+    assert data["known_case_profile_count"] == 1
+    assert data["known_case_match_count"] == 1
+    assert data["known_case_matches"][0]["profile_id"] == "permit-replay-known-case"
+    assert data["known_case_matches"][0]["evidence_strength"] == "local_signal"
 
 
 def test_contract_pattern_check_tool_flags_collateral_and_liquidation_review_signals() -> None:
@@ -1929,6 +2137,166 @@ def test_orchestrator_can_select_foundry_for_foundry_focused_contract_seed(monke
     assert "foundry_audit_tool" in tool_names
     assert session.report is not None
     assert any("Foundry reviewed" in item for item in session.report.contract_static_findings)
+
+
+def test_slither_runner_normalizes_finding_location_and_summary(monkeypatch) -> None:
+    def fake_resolve_local_binary(binary: str) -> str | None:
+        if binary in {"slither", "solc"}:
+            return binary
+        return None
+
+    def fake_run(
+        args,
+        *,
+        capture_output,
+        text,
+        encoding,
+        timeout,
+        check,
+        input=None,
+    ):
+        if "--version" in args:
+            if args[0] == "slither":
+                return subprocess.CompletedProcess(
+                    args=args,
+                    returncode=0,
+                    stdout="slither 0.10.4",
+                    stderr="",
+                )
+            return subprocess.CompletedProcess(
+                args=args,
+                returncode=0,
+                stdout="solc, the solidity compiler commandline interface\nVersion: 0.8.20",
+                stderr="",
+            )
+        if args and args[0] == "slither":
+            return subprocess.CompletedProcess(
+                args=args,
+                returncode=0,
+                stdout=json.dumps(
+                    {
+                        "results": {
+                            "detectors": [
+                                {
+                                    "check": "controlled-delegatecall",
+                                    "impact": "Medium",
+                                    "confidence": "High",
+                                    "description": "delegatecall target should be reviewed",
+                                    "elements": [
+                                        {
+                                            "type": "function",
+                                            "name": "execute",
+                                            "source_mapping": {
+                                                "filename_relative": "contracts/Proxy.sol",
+                                                "lines": [42],
+                                                "starting_column": 9,
+                                            },
+                                        }
+                                    ],
+                                }
+                            ]
+                        }
+                    }
+                ),
+                stderr="",
+            )
+        raise AssertionError(f"Unexpected subprocess args: {args}")
+
+    monkeypatch.setattr(slither_runner_module, "resolve_local_binary", fake_resolve_local_binary)
+    monkeypatch.setattr(slither_runner_module, "resolve_managed_solc_binary", lambda **_: (None, None))
+    monkeypatch.setattr(slither_runner_module.subprocess, "run", fake_run)
+
+    runner = slither_runner_module.SlitherRunner()
+    result = runner.run_audit(
+        contract_code=SAMPLE_CONTRACT,
+        language="solidity",
+        source_label="contracts/Proxy.sol",
+    )
+
+    result_data = result["result_data"]
+    finding = result_data["findings"][0]
+    assert result["status"] == "observed_issue"
+    assert finding["severity"] == "medium"
+    assert finding["source_file"] == "contracts/Proxy.sol"
+    assert finding["source_line"] == "42"
+    assert "controlled-delegatecall severity=medium" in result_data["finding_summaries"][0]
+
+
+def test_foundry_runner_runs_project_tests_for_foundry_root(tmp_path, monkeypatch) -> None:
+    project_root = tmp_path / "foundry-project"
+    (project_root / "src").mkdir(parents=True)
+    (project_root / "foundry.toml").write_text(
+        '[profile.default]\nsrc = "src"\nout = "out"\nlibs = []\n',
+        encoding="utf-8",
+    )
+    (project_root / "src" / "Broken.sol").write_text(
+        "pragma solidity ^0.8.20; contract Broken { function ping() external pure returns (uint256) { return 1; } }",
+        encoding="utf-8",
+    )
+
+    def fake_resolve_local_binary(binary: str) -> str | None:
+        if binary in {"forge", "solc"}:
+            return binary
+        return None
+
+    def fake_run(
+        args,
+        *,
+        capture_output,
+        text,
+        encoding,
+        timeout,
+        check,
+        input=None,
+    ):
+        if "--version" in args:
+            if args[0] == "forge":
+                return subprocess.CompletedProcess(args=args, returncode=0, stdout="forge 1.0.0", stderr="")
+            return subprocess.CompletedProcess(
+                args=args,
+                returncode=0,
+                stdout="solc, the solidity compiler commandline interface\nVersion: 0.8.20",
+                stderr="",
+            )
+        if len(args) >= 2 and args[1] == "build":
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout="build completed", stderr="")
+        if len(args) >= 2 and args[1] == "test":
+            return subprocess.CompletedProcess(
+                args=args,
+                returncode=1,
+                stdout="[FAIL. Reason: invariant broke] testInvariant()\nSuite result: FAILED",
+                stderr="",
+            )
+        if len(args) >= 4 and args[1] == "inspect" and args[3] == "methodIdentifiers":
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout=json.dumps({"ping()": "5c36b186"}), stderr="")
+        if len(args) >= 4 and args[1] == "inspect" and args[3] == "storageLayout":
+            return subprocess.CompletedProcess(
+                args=args,
+                returncode=0,
+                stdout=json.dumps({"storage": [{"slot": "0", "label": "owner"}]}),
+                stderr="",
+            )
+        raise AssertionError(f"Unexpected subprocess args: {args}")
+
+    monkeypatch.setattr(foundry_runner_module, "resolve_local_binary", fake_resolve_local_binary)
+    monkeypatch.setattr(foundry_runner_module, "resolve_managed_solc_binary", lambda **_: (None, None))
+    monkeypatch.setattr(foundry_runner_module.subprocess, "run", fake_run)
+
+    runner = foundry_runner_module.FoundryRunner()
+    result = runner.run_audit(
+        contract_code="pragma solidity ^0.8.20; contract Broken { function ping() external pure returns (uint256) { return 1; } }",
+        language="solidity",
+        source_label="src/Broken.sol",
+        contract_root=str(project_root),
+    )
+
+    result_data = result["result_data"]
+    assert result["status"] == "observed_issue"
+    assert result_data["project_mode"] is True
+    assert result_data["foundry_toml_present"] is True
+    assert result_data["tests_succeeded"] is False
+    assert result_data["failing_tests"] == ["testInvariant()"]
+    assert result_data["inspect_contracts_succeeded"] == 1
 
 
 def test_orchestrator_can_select_echidna_for_invariant_focused_contract_seed(monkeypatch) -> None:

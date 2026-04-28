@@ -101,8 +101,11 @@ EllipticZero сделан для локальных исследований, г
 - локальные изолированные раннеры для символьных, формальных, property-based, фаззинг- и ECC testbed-проверок
 - встроенные ECC benchmark-наборы для point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor и twist hygiene, а также bounded domain completeness
 - инструменты аудита смарт-контрактов: разбор кода, компиляция, инвентаризация репозитория контрактов, ограниченный анализ импортов и зависимостей, карта протокольных модулей, маршруты обзора, приоритизация семейств функций и сведение межфайловых сигналов в общие приоритеты
+- локальные сигналы аудита смарт-контрактов для проверок подписей, оракулов, upgrade-путей и token-accounting
+- локальное сопоставление с кэшированными профилями известных кейсов из разрешённых источников метаданных, включая SmartBugs и семейства детекторов Slither; удалённый код не запускается
 - встроенные проверочные корпуса для asset-flow, vault/share, oracle freshness, collateral/liquidation и liquidation-fee review, protocol-fee/reserve-buffer/debt accounting, bad-debt socialization и смежных protocol-style семейств обзора
 - ограниченные repo-casebook сценарии для upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery и vault/permit, а также опциональные адаптеры `Slither`, `Foundry` и `Echidna`, если они установлены локально
+- находки Slither нормализуются по severity и source location; Foundry-проекты с `foundry.toml` могут добавлять локальные build/test-сигналы
 - встроенные smart-contract benchmark-пакеты для static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, а также для governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style проходов
 - golden/synthetic примеры с ожидаемыми формами отчётов для быстрой оценки ECC- и smart-contract smoke-checks
 - трассировки, манифесты, пакеты воспроизводимости, повторный запуск и `doctor`
@@ -144,11 +147,11 @@ pip install -e .[lab]
 python -m app.main --interactive
 ```
 
-Для оценки без API-ключей открой в консоли `ADVANCED / INTERNAL` ->
-`ЛАБОРАТОРИЯ ОЦЕНКИ`. Там можно запускать golden cases, выбирать experiment
+Для оценки без API-ключей открой `ЛАБОРАТОРИЯ ОЦЕНКИ` прямо из главного
+интерактивного меню. Там можно запускать golden cases, выбирать experiment
 packs, смотреть сводку проекта или сохранённого запуска, сравнивать новый запуск
-с baseline bundle и заранее видеть, какой контекст может уйти провайдеру перед
-live-агентами.
+с baseline bundle, обновлять профили известных кейсов и заранее видеть, какой контекст
+может уйти провайдеру перед live-агентами.
 
 Проверка готовности системы:
 

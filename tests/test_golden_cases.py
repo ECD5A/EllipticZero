@@ -123,6 +123,7 @@ def _minimal_report_kwargs() -> dict[str, Any]:
         "contract_surface_summary": [],
         "contract_priority_findings": [],
         "contract_finding_cards": [],
+        "contract_known_case_matches": [],
         "contract_static_findings": [],
         "contract_testbed_findings": [],
         "contract_remediation_validation": [],

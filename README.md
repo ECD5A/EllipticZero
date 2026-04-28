@@ -52,6 +52,7 @@ risk lanes, confidence, and follow-up guidance.
 - a local-first workflow for ECC research and smart-contract audits
 - tool-backed evidence instead of model-only claims
 - compact smart-contract finding cards for risk, evidence, fix direction, and recheck path
+- bounded smart-contract signals for signature, oracle, upgrade, and token-accounting review lanes
 - reproducible sessions, traces, manifests, bundles, and replay
 - evidence coverage, toolchain fingerprints, and secret-redacted JSON exports
 - benchmark packs and golden cases for evaluator-facing smoke checks
@@ -93,8 +94,10 @@ commercial partner, start with:
 - sandboxed local runners for symbolic, formal, property-based, fuzz, and ECC testbed checks
 - built-in ECC benchmark packs for point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor and twist hygiene, and bounded domain completeness
 - smart-contract audit tools for parser, compile, repo-scale inventory, first-party vs dependency scoping, protocol maps, review lanes, function-family prioritization, and cross-file priority fusion
+- cached known-case profile matching from allowlisted metadata sources such as SmartBugs and Slither detector families; remote code is not executed
 - built-in smart-contract corpora for asset-flow, vault/share, oracle freshness, collateral/liquidation and liquidation-fee review, protocol-fee/reserve-buffer/debt accounting, bad-debt socialization, and related protocol-style review families
 - bounded repo-scale casebooks for upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, and vault/permit lanes, plus optional `Slither`, `Foundry`, and `Echidna` adapters when installed locally
+- Slither findings are normalized with severity and source locations; Foundry projects with `foundry.toml` can contribute local build/test evidence
 - built-in smart-contract benchmark packs for static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, upgrade/control benchmarking, governance/timelock benchmarking, rewards/distribution benchmarking, stablecoin/collateral benchmarking, AMM/liquidity benchmarking, bridge/custody benchmarking, staking/rebase benchmarking, keeper/auction benchmarking, treasury/vesting benchmarking, insurance/recovery benchmarking, vault/permission benchmarking, and lending-style protocol benchmarking
 - golden/synthetic example cases with expected report shapes for evaluator-facing ECC and smart-contract smoke checks
 - traces, manifests, bundles, replay, and doctor/self-check
@@ -136,10 +139,11 @@ Launch the interface:
 python -m app.main --interactive
 ```
 
-For no-key evaluation from the console, open `ADVANCED / INTERNAL` ->
-`EVALUATION LAB`. From there you can run golden cases, choose
+For no-key evaluation from the console, open `EVALUATION LAB` from the
+main interactive menu. From there you can run golden cases, choose
 experiment packs, inspect project or saved-run summaries, compare against a
-baseline bundle, and preview hosted-provider context before live agents.
+baseline bundle, update known-case metadata, and preview hosted-provider
+context before live agents.
 
 Run the self-check:
 

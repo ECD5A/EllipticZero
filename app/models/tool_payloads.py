@@ -25,6 +25,7 @@ class SmartContractAuditPayload(BaseModel):
     contract_code: str
     language: str | None = None
     source_label: str | None = None
+    contract_root: str | None = None
 
     @field_validator("contract_code")
     @classmethod
@@ -49,6 +50,14 @@ class SmartContractAuditPayload(BaseModel):
     @field_validator("source_label")
     @classmethod
     def normalize_source_label(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+    @field_validator("contract_root")
+    @classmethod
+    def normalize_contract_root(cls, value: str | None) -> str | None:
         if value is None:
             return None
         stripped = value.strip()

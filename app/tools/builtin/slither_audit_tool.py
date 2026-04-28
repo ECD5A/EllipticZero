@@ -33,4 +33,5 @@ class SlitherAuditTool(BaseTool):
             contract_code=str(payload.get("contract_code", "")),
             language=language,
             source_label=str(payload.get("source_label", "")).strip() or None,
+            contract_root=str(payload.get("contract_root", "")).strip() or None,
         )

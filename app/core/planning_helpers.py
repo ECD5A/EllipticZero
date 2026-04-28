@@ -1982,6 +1982,7 @@ def build_tool_payload(
             "contract_code": contract_code or source_seed_text,
             "language": extract_contract_language(source_seed_text) or "solidity",
             "source_label": extract_contract_source_label(source_seed_text) or experiment_spec.target_reference,
+            "contract_root": extract_contract_root(source_seed_text),
         }
     if tool_plan.tool_name == "contract_testbed_tool":
         return {

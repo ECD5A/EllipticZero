@@ -36,6 +36,7 @@ REPORT_SECTIONS: tuple[tuple[str, str], ...] = (
     ("confidence_rationale", "Confidence Rationale"),
     ("contract_overview", "Contract Overview"),
     ("contract_finding_cards", "Finding Cards"),
+    ("contract_known_case_matches", "Known-Case Matches"),
     ("ecc_benchmark_summary", "ECC Benchmark Summary"),
     ("evidence_profile", "Evidence Profile"),
     ("evidence_coverage_summary", "Evidence Coverage"),
@@ -216,6 +217,7 @@ def build_review_snapshot_items(
         [
             report.contract_triage_snapshot,
             report.contract_finding_cards,
+            report.contract_known_case_matches,
             report.contract_priority_findings,
             report.ecc_triage_snapshot,
             report.ecc_benchmark_summary,

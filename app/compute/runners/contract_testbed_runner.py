@@ -518,6 +518,45 @@ contract RescueSurface {
 """.strip(),
             ),
             self._build_contract_case(
+                case_id="fee_token_deposit_without_balance_delta",
+                variant_group="token_balance_delta_accounting",
+                variant_role="signal",
+                validation_focus="fee-on-transfer token balance-delta accounting",
+                contract_code="""
+pragma solidity ^0.8.20;
+interface IERC20 { function transferFrom(address from, address to, uint256 amount) external returns (bool); }
+contract FeeTokenVault {
+    mapping(address => uint256) public shares;
+    function deposit(address token, uint256 amount) external {
+        require(IERC20(token).transferFrom(msg.sender, address(this), amount), "transfer");
+        shares[msg.sender] += amount;
+    }
+}
+""".strip(),
+            ),
+            self._build_contract_case(
+                case_id="fee_token_deposit_with_balance_delta",
+                variant_group="token_balance_delta_accounting",
+                variant_role="control",
+                validation_focus="fee-on-transfer token balance-delta accounting",
+                contract_code="""
+pragma solidity 0.8.20;
+interface IERC20 {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+}
+contract GuardedFeeTokenVault {
+    mapping(address => uint256) public shares;
+    function deposit(address token, uint256 amount) external {
+        uint256 balanceBefore = IERC20(token).balanceOf(address(this));
+        require(IERC20(token).transferFrom(msg.sender, address(this), amount), "transfer");
+        uint256 receivedAmount = IERC20(token).balanceOf(address(this)) - balanceBefore;
+        shares[msg.sender] += receivedAmount;
+    }
+}
+""".strip(),
+            ),
+            self._build_contract_case(
                 case_id="checked_token_transfer",
                 variant_group="token_transfer_validation",
                 variant_role="control",
@@ -1050,6 +1089,50 @@ contract CheckedOracleSurface {
         (, int256 price,, uint256 updatedAt,) = priceFeed.latestRoundData();
         require(block.timestamp - updatedAt <= maxDelay, "stale");
         return price;
+    }
+}
+""".strip(),
+            ),
+            self._build_contract_case(
+                case_id="oracle_price_math_without_decimal_scaling",
+                variant_group="oracle_decimal_scaling",
+                variant_role="signal",
+                validation_focus="oracle decimal scaling and price precision",
+                contract_code="""
+pragma solidity ^0.8.20;
+interface AggregatorV3Interface {
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80);
+}
+contract PriceMathSurface {
+    AggregatorV3Interface public priceFeed;
+    function quote(uint256 amount) external view returns (uint256) {
+        (, int256 price,, uint256 updatedAt,) = priceFeed.latestRoundData();
+        require(price > 0, "bad price");
+        require(updatedAt != 0, "stale");
+        return amount * uint256(price) / 1 ether;
+    }
+}
+""".strip(),
+            ),
+            self._build_contract_case(
+                case_id="oracle_price_math_with_decimal_scaling",
+                variant_group="oracle_decimal_scaling",
+                variant_role="control",
+                validation_focus="oracle decimal scaling and price precision",
+                contract_code="""
+pragma solidity 0.8.20;
+interface AggregatorV3Interface {
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80);
+    function decimals() external view returns (uint8);
+}
+contract GuardedPriceMathSurface {
+    AggregatorV3Interface public priceFeed;
+    function quote(uint256 amount) external view returns (uint256) {
+        (uint80 roundId, int256 price,, uint256 updatedAt, uint80 answeredInRound) = priceFeed.latestRoundData();
+        require(price > 0, "bad price");
+        require(updatedAt != 0 && answeredInRound >= roundId, "stale");
+        uint8 decimals = priceFeed.decimals();
+        return amount * uint256(price) / (10 ** decimals);
     }
 }
 """.strip(),

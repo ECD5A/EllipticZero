@@ -24,6 +24,8 @@ Useful evaluation paths include:
   cofactor, twist, and domain-completeness surfaces
 - smart-contract audit review across parser, compile, repo inventory,
   casebook, benchmark, comparison, and manual-review lanes
+- known-case profile review using cached metadata from allowlisted sources;
+  profiles guide local checks and never execute remote code
 - provider-backed evaluation with your own configured API keys
 - artifact review for sessions, traces, manifests, bundles, and replay inputs
 - SARIF export from saved runs for CI or GitHub Code Scanning review
@@ -96,7 +98,7 @@ For the menu-first path, run the interactive console and choose
 
 The same interactive console also exposes `EVALUATION LAB` for no-key
 review paths: golden cases, experiment packs, project or saved-run summaries,
-baseline comparison, and provider context preview.
+baseline comparison, known-case metadata, and provider context preview.
 
 Preview hosted-provider context before a live agent run:
 
@@ -153,7 +155,9 @@ fully audited a target by itself.
 | --- | --- | --- |
 | Golden cases | Built-in ECC and smart-contract cases run cleanly and produce expected report shapes. | Stable smoke output across repeated local runs. |
 | ECC coverage | Point formats, curve metadata, subgroup/cofactor checks, twist hygiene, curve-family transitions, and domain-completeness surfaces are visible in the report. | Local compute evidence and report interpretation agree without overstating confidence. |
-| Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, and residual-risk lanes appear when the input justifies them. | The report separates confirmed local signals from manual-review priorities. |
+| Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, signature, oracle, upgrade, token-accounting, and residual-risk lanes appear when the input justifies them. | The report separates confirmed local signals from manual-review priorities. |
+| Local analyzer evidence | Optional Slither output is normalized with severity and source locations; Foundry projects can add local build/test evidence when `foundry.toml` is present. | External analyzer signals are tied to report priorities without being treated as proof by themselves. |
+| Known-case metadata | `EVALUATION LAB` -> `KNOWN CASES` can update or inspect cached metadata profiles from allowlisted sources. | The report shows known-case matches only as context or local-signal-backed review items, not as automatic exploit claims. |
 | Comparison | A saved baseline can be attached with `--compare-session`, `--compare-manifest`, or `--compare-bundle`. | Before/after lines show cautious deltas and possible regression flags. |
 | Export quality | Session, trace, manifest, bundle, and `report.md` artifacts stay inside approved local export roots. | A reviewer can reproduce the run, inspect the evidence trail, and share a Markdown report. |
 | CI review | Saved runs can export SARIF 2.1.0 review items. | Code Scanning can display bounded findings without treating them as automatic proof. |

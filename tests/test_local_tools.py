@@ -806,10 +806,12 @@ def test_contract_testbed_reports_token_and_assembly_review_signals() -> None:
     assert token_result["result_data"]["testbed_name"] == "token_interaction_corpus"
     assert "unchecked_token_sweep" in token_result["result_data"]["anomaly_case_ids"]
     assert "arbitrary_from_transfer" in token_result["result_data"]["anomaly_case_ids"]
+    assert "fee_token_deposit_without_balance_delta" in token_result["result_data"]["anomaly_case_ids"]
     assert any(
         "unchecked_token_transfer_surface:sweep" in issue
         or "unchecked_token_transfer_from_surface:rescue" in issue
         or "arbitrary_from_transfer_surface:rescue" in issue
+        or "token_balance_delta_review_required:deposit" in issue
         for issue in token_result["result_data"]["issue_type_counts"]
     )
 
@@ -879,8 +881,10 @@ def test_contract_testbed_reports_signature_oracle_and_loop_signals() -> None:
     assert oracle_result["status"] in {"ok", "observed_issue"}
     assert oracle_result["result_data"]["testbed_name"] == "oracle_review_corpus"
     assert "price_feed_without_staleness_check" in oracle_result["result_data"]["anomaly_case_ids"]
+    assert "oracle_price_math_without_decimal_scaling" in oracle_result["result_data"]["anomaly_case_ids"]
     assert any(
         "oracle_staleness_review_required:quote" in issue
+        or "oracle_decimal_scaling_review_required:quote" in issue
         for issue in oracle_result["result_data"]["issue_type_counts"]
     )
 

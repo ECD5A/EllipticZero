@@ -1710,6 +1710,15 @@ def build_contract_repo_priorities(session: ResearchSession) -> list[str]:
                     )
                 )
         elif evidence.tool_name == "foundry_audit_tool":
+            failing_tests = _as_str_list(result_data.get("failing_tests"))
+            if result_data.get("tests_succeeded") is False or failing_tests:
+                repo_scope_items.append(
+                    (
+                        _contract_repo_priority_rank("high"),
+                        9,
+                        "High priority repo scope: inspect failing Foundry tests before treating the scoped project as locally reproduced.",
+                    )
+                )
             if int(result_data.get("inspect_contracts_succeeded", 0) or 0) > 0:
                 repo_scope_items.append(
                     (
@@ -2489,12 +2498,51 @@ def build_contract_priority_findings(session: ResearchSession) -> list[str]:
                     f"Medium priority: compare the contract against anomaly-bearing cases from {testbed_name} before stronger conclusions."
                 )
         elif evidence.tool_name == "foundry_audit_tool":
+            failing_tests = _as_str_list(result_data.get("failing_tests"))
+            if result_data.get("tests_succeeded") is False or failing_tests:
+                items.append(
+                    "High priority: inspect failing Foundry tests before treating the current contract state as locally reproduced."
+                )
             if int(result_data.get("inspect_contracts_succeeded", 0) or 0) == 0 and bool(
                 result_data.get("contract_names")
             ):
                 items.append(
                     "Medium priority: review Foundry structural inspection gaps before relying on build-only results."
                 )
+    return ordered_unique(items)[:8]
+
+
+def build_contract_known_case_matches(session: ResearchSession) -> list[str]:
+    if not _is_smart_contract_session(session):
+        return []
+    items: list[str] = []
+    for evidence in session.evidence:
+        if evidence.tool_name != "contract_pattern_check_tool":
+            continue
+        _, result_data = _extract_result(evidence)
+        matches = result_data.get("known_case_matches")
+        if not isinstance(matches, list):
+            continue
+        for match in matches[:6]:
+            if not isinstance(match, dict):
+                continue
+            title = _as_optional_str(match.get("title")) or _as_optional_str(match.get("profile_id")) or "known case"
+            family = _as_optional_str(match.get("family")) or "unknown family"
+            source_id = _as_optional_str(match.get("source_id")) or "unknown source"
+            risk = _as_optional_str(match.get("risk_hint")) or "medium"
+            strength = _as_optional_str(match.get("evidence_strength")) or "context"
+            checks = _as_str_list(match.get("matched_checks"))
+            terms = _as_str_list(match.get("matched_terms"))
+            evidence_bits: list[str] = []
+            if checks:
+                evidence_bits.append("local checks=" + ", ".join(checks[:4]))
+            if terms:
+                evidence_bits.append("terms=" + ", ".join(terms[:4]))
+            evidence_text = "; ".join(evidence_bits) if evidence_bits else "no local match detail recorded"
+            items.append(
+                f"Known-case profile match: {title}; family={family}; source={source_id}; "
+                f"risk-hint={risk}; evidence={strength}; {evidence_text}."
+            )
     return ordered_unique(items)[:8]
 
 
@@ -2506,6 +2554,7 @@ def build_contract_finding_cards(session: ResearchSession) -> list[str]:
     potential_findings = ordered_unique(
         [
             *sources.contract_priority_findings,
+            *sources.contract_known_case_matches,
             *sources.contract_review_queue,
             *sources.contract_residual_risk,
             *sources.contract_review_focus,
@@ -2514,6 +2563,7 @@ def build_contract_finding_cards(session: ResearchSession) -> list[str]:
     evidence_lines = ordered_unique(
         [
             *sources.contract_static_findings,
+            *sources.contract_known_case_matches,
             *sources.contract_testbed_findings,
             *sources.contract_surface_summary,
             *sources.contract_compile_summary,
@@ -2704,6 +2754,9 @@ def build_contract_static_findings(session: ResearchSession) -> list[str]:
                 if confidence_counts:
                     line += f" Confidence: {confidence_counts}."
                 items.append(line)
+                summaries = _as_str_list(result_data.get("finding_summaries"))
+                if summaries:
+                    items.append("Slither evidence samples: " + " | ".join(summaries[:3]) + ".")
             elif result.get("status") == "unavailable":
                 items.append(evidence.conclusion or evidence.summary)
         elif evidence.tool_name == "echidna_audit_tool":
@@ -2731,6 +2784,8 @@ def build_contract_static_findings(session: ResearchSession) -> list[str]:
             inspect_succeeded = int(result_data.get("inspect_contracts_succeeded", 0) or 0)
             method_counts = _as_count_summary(result_data.get("method_identifier_counts"))
             storage_counts = _as_count_summary(result_data.get("storage_entry_counts"))
+            failing_tests = _as_str_list(result_data.get("failing_tests"))
+            tests_succeeded = result_data.get("tests_succeeded")
             if contract_names or inspect_succeeded:
                 line = (
                     f"Foundry reviewed {len(contract_names)} contract(s)"
@@ -2742,6 +2797,11 @@ def build_contract_static_findings(session: ResearchSession) -> list[str]:
                 if storage_counts:
                     line += f" Storage layout entries: {storage_counts}."
                 items.append(line)
+            if tests_succeeded is not None:
+                test_line = "Foundry tests: " + ("passed." if tests_succeeded else "failed.")
+                if failing_tests:
+                    test_line += f" Failing checks: {', '.join(failing_tests[:4])}."
+                items.append(test_line)
             elif result.get("status") == "unavailable":
                 items.append(evidence.conclusion or evidence.summary)
     return ordered_unique(items)
@@ -2782,10 +2842,22 @@ def build_contract_remediation_validation(session: ResearchSession) -> list[str]
         return []
     items: list[str] = []
     for evidence in session.evidence:
-        if evidence.tool_name != "contract_testbed_tool":
-            continue
         _, result_data = _extract_result(evidence)
-        items.extend(_as_str_list(result_data.get("remediation_validation")))
+        if evidence.tool_name == "contract_testbed_tool":
+            items.extend(_as_str_list(result_data.get("remediation_validation")))
+        elif evidence.tool_name == "slither_audit_tool" and int(result_data.get("finding_count", 0) or 0) > 0:
+            summaries = _as_str_list(result_data.get("finding_summaries"))
+            sample = f" Sample: {summaries[0]}" if summaries else ""
+            items.append(
+                "Re-run Slither after hardening and confirm the same detector families no longer appear."
+                + sample
+            )
+        elif evidence.tool_name == "foundry_audit_tool":
+            failing_tests = _as_str_list(result_data.get("failing_tests"))
+            if result_data.get("tests_succeeded") is False or failing_tests:
+                items.append(
+                    "Use failing Foundry tests as reproduction gates, then re-run Forge build/test after each fix."
+                )
     return ordered_unique(items)[:6]
 
 
@@ -3223,6 +3295,9 @@ def build_contract_review_focus(session: ResearchSession) -> list[str]:
                 if int(result_data.get("failing_test_count", 0) or 0) > 0:
                     items.append("Inspect Echidna counterexamples before treating any failing check as a security claim.")
         elif evidence.tool_name == "foundry_audit_tool":
+            failing_tests = _as_str_list(result_data.get("failing_tests"))
+            if result_data.get("tests_succeeded") is False or failing_tests:
+                items.append("Focus failing Forge tests as local reproduction evidence before widening manual review.")
             if int(result_data.get("inspect_contracts_succeeded", 0) or 0) > 0:
                 items.append("Use Foundry method identifiers and storage layout output to validate structural assumptions.")
         elif evidence.tool_name == "contract_testbed_tool":
@@ -3294,6 +3369,12 @@ def build_contract_remediation_guidance(session: ResearchSession) -> list[str]:
                     "Treat failing bounded invariant checks as remediation gates and re-run them after each candidate hardening change."
                 )
         elif evidence.tool_name == "foundry_audit_tool":
+            failing_tests = _as_str_list(result_data.get("failing_tests"))
+            if result_data.get("tests_succeeded") is False or failing_tests:
+                rerun_signals = True
+                guidance.append(
+                    "Treat failing Foundry tests as reproduction gates and re-run Forge build/test after each candidate fix."
+                )
             if int(result_data.get("inspect_contracts_succeeded", 0) or 0) > 0:
                 guidance.append(
                     "Use Foundry structural output to confirm that hardening changes preserve intended method exposure and storage layout assumptions."
@@ -4845,10 +4926,14 @@ def _manual_review_item_for_contract_issue(issue: str) -> str | None:
         return f"Manually review ERC20 approve return handling in `{target}`."
     if family == "approve_race_review_required" and target:
         return f"Manually review allowance reset and approve race conditions in `{target}`."
+    if family == "token_balance_delta_review_required" and target:
+        return f"Manually review token balance-delta accounting in `{target}`."
     if family == "vault_conversion_review_required" and target:
         return f"Manually review asset-share conversion assumptions in `{target}`."
     if family == "signature_replay_review_required" and target:
         return f"Manually review replay protection, nonce use, and signature invalidation in `{target}`."
+    if family == "signature_domain_separation_review_required" and target:
+        return f"Manually review signature domain separation in `{target}`."
     if family == "collateral_ratio_review_required" and target:
         return f"Manually review collateral-ratio and health-factor validation in `{target}`."
     if family == "liquidation_without_fresh_price_review" and target:
@@ -4861,12 +4946,18 @@ def _manual_review_item_for_contract_issue(issue: str) -> str | None:
         return f"Manually review randomness and entropy assumptions in `{target}`."
     if family == "oracle_staleness_review_required" and target:
         return f"Manually review oracle freshness and staleness handling in `{target}`."
+    if family == "oracle_answer_bounds_review_required" and target:
+        return f"Manually review oracle answer bounds and non-positive price handling in `{target}`."
+    if family == "oracle_decimal_scaling_review_required" and target:
+        return f"Manually review oracle decimal scaling and price precision in `{target}`."
     if family == "reserve_spot_dependency_review_required" and target:
         return f"Manually review reserve-derived spot pricing assumptions in `{target}`."
     if family == "missing_zero_address_validation" and target:
         return f"Manually review zero-address validation in `{target}`."
     if family == "unvalidated_implementation_target" and target:
         return f"Manually review implementation target validation in `{target}`."
+    if family == "upgrade_timelock_review_required" and target:
+        return f"Manually review upgrade delay, queue, or governance controls in `{target}`."
     return None
 
 
@@ -5327,12 +5418,16 @@ def _normalize_contract_repo_family(label: str | None) -> str | None:
         "unchecked_token_transfer_from_surface": "token/allowance",
         "unchecked_approve_surface": "token/allowance",
         "approve_race_review_required": "token/allowance",
+        "token_balance_delta_review_required": "token/allowance",
         "arbitrary_from_transfer_surface": "token/allowance",
         "share_mint_without_asset_backing_review": "vault/share",
         "share_redeem_without_share_validation": "vault/share",
         "vault_conversion_review_required": "vault/share",
         "signature_replay_review_required": "permit/signature",
+        "signature_domain_separation_review_required": "permit/signature",
         "oracle_staleness_review_required": "oracle/price",
+        "oracle_answer_bounds_review_required": "oracle/price",
+        "oracle_decimal_scaling_review_required": "oracle/price",
         "collateral_ratio_review_required": "collateral/liquidation",
         "liquidation_without_fresh_price_review": "collateral/liquidation",
         "liquidation_fee_allocation_review_required": "collateral/liquidation",
@@ -5668,6 +5763,8 @@ def _is_smart_contract_session(session: ResearchSession) -> bool:
         (evidence.target_kind or "").startswith("smart_contract")
         or (evidence.tool_name or "").startswith("contract_")
         or evidence.tool_name == "slither_audit_tool"
+        or evidence.tool_name == "foundry_audit_tool"
+        or evidence.tool_name == "echidna_audit_tool"
         for evidence in session.evidence
     )
 

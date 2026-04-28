@@ -88,6 +88,7 @@ class SlitherRunner:
         contract_code: str,
         language: str = "solidity",
         source_label: str | None = None,
+        contract_root: str | None = None,
     ) -> dict[str, Any]:
         if not self.enabled:
             return self._result(
@@ -283,11 +284,13 @@ class SlitherRunner:
                 "detector_selection": list(self.detectors),
                 "finding_count": finding_count,
                 "findings": findings[:24],
+                "finding_summaries": [self._finding_summary(finding) for finding in findings[:12]],
                 "detector_name_counts": detector_name_counts,
                 "impact_counts": impact_counts,
                 "confidence_counts": confidence_counts,
                 "high_severity_present": impact_counts.get("high", 0) > 0,
                 "medium_severity_present": impact_counts.get("medium", 0) > 0,
+                "contract_root": contract_root,
             },
         )
 
@@ -355,15 +358,83 @@ class SlitherRunner:
         for item in items:
             if not isinstance(item, dict):
                 continue
+            impact = str(item.get("impact", "informational")).strip().lower()
+            confidence = str(item.get("confidence", "unknown")).strip().lower()
+            location = self._finding_location(item)
             findings.append(
                 {
                     "check": str(item.get("check", "")).strip() or "unknown",
-                    "impact": str(item.get("impact", "informational")).strip().lower(),
-                    "confidence": str(item.get("confidence", "unknown")).strip().lower(),
+                    "impact": impact,
+                    "severity": self._normalize_severity(impact),
+                    "confidence": confidence,
                     "description": str(item.get("description", "")).strip(),
+                    "source_file": location["source_file"],
+                    "source_line": location["source_line"],
+                    "source_column": location["source_column"],
+                    "element_type": location["element_type"],
+                    "element_name": location["element_name"],
                 }
             )
         return findings
+
+    def _finding_location(self, item: dict[str, Any]) -> dict[str, str]:
+        empty = {
+            "source_file": "",
+            "source_line": "",
+            "source_column": "",
+            "element_type": "",
+            "element_name": "",
+        }
+        elements = item.get("elements")
+        if not isinstance(elements, list):
+            return empty
+        for element in elements:
+            if not isinstance(element, dict):
+                continue
+            mapping = element.get("source_mapping")
+            if not isinstance(mapping, dict):
+                continue
+            filename = (
+                str(mapping.get("filename_relative") or "").strip()
+                or str(mapping.get("filename_short") or "").strip()
+                or Path(str(mapping.get("filename_absolute") or "")).name
+            )
+            lines = mapping.get("lines")
+            if isinstance(lines, list) and lines:
+                line = str(lines[0])
+            else:
+                line = str(mapping.get("start") or "").strip()
+            column = str(mapping.get("starting_column") or "").strip()
+            return {
+                "source_file": filename,
+                "source_line": line,
+                "source_column": column,
+                "element_type": str(element.get("type") or "").strip(),
+                "element_name": str(element.get("name") or "").strip(),
+            }
+        return empty
+
+    def _normalize_severity(self, impact: str) -> str:
+        normalized = impact.strip().lower()
+        if normalized in {"high", "medium", "low"}:
+            return normalized
+        if normalized in {"optimization", "informational", "info"}:
+            return "note"
+        return "unknown"
+
+    def _finding_summary(self, finding: dict[str, str]) -> str:
+        location = finding.get("source_file", "")
+        if finding.get("source_line"):
+            location = f"{location}:{finding['source_line']}" if location else f"line {finding['source_line']}"
+        if not location:
+            location = "unknown location"
+        description = " ".join((finding.get("description") or "").split())
+        if len(description) > 160:
+            description = description[:157].rstrip() + "..."
+        return (
+            f"{finding.get('check', 'unknown')} severity={finding.get('severity', 'unknown')} "
+            f"confidence={finding.get('confidence', 'unknown')} location={location}: {description}"
+        )
 
     def _base_result_data(
         self,

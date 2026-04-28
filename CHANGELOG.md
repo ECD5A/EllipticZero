@@ -7,6 +7,31 @@ Package version: `0.1.4`.
 
 ## Unreleased
 
+### Added
+
+- Added a lightweight known-case threat-intel layer: allowlisted SmartBugs
+  metadata and Slither detector-family profiles can be cached locally, matched
+  against smart-contract review signals, and shown in reports without executing
+  remote code.
+- Added `KNOWN CASES` to the interactive evaluation lab for updating profiles,
+  inspecting the local cache, and reviewing allowed metadata sources.
+- Added deeper bounded smart-contract review signals for signature domain
+  separation, Chainlink-style oracle answer bounds, and immediate upgrade paths
+  that lack an explicit delay, queue, or governance control.
+- Added token balance-delta and oracle decimal-scaling review signals for
+  fee-on-transfer style accounting and price-precision checks.
+- Added matching built-in corpus cases for token balance-delta and oracle
+  decimal-scaling review so the new families are covered by local benchmark
+  sweeps.
+- Added richer Slither/Foundry evidence ingestion: Slither findings now keep
+  normalized severity and source-location summaries, while Foundry projects can
+  contribute local `forge test` results when `foundry.toml` is present.
+
+### Changed
+
+- Moved `EVALUATION LAB` to the main interactive menu and renamed the former
+  advanced area to `SYSTEM / TOOLS` to reduce nested navigation.
+
 ## 0.1.4 - 2026-04-28
 
 ### Added

@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from app.core.threat_intel import ThreatIntelCache, ThreatIntelProfile, match_threat_intel_profiles
 from app.models.tool_payloads import SmartContractAuditPayload
 from app.tools.base import BaseTool
 from app.tools.smart_contract_utils import (
@@ -24,17 +25,41 @@ class ContractPatternCheckTool(BaseTool):
     output_schema_hint = "Bounded smart-contract pattern findings"
     payload_model = SmartContractAuditPayload
 
+    def __init__(
+        self,
+        *,
+        threat_intel_cache: ThreatIntelCache | None = None,
+        threat_intel_profiles: list[ThreatIntelProfile] | None = None,
+    ) -> None:
+        self.threat_intel_cache = threat_intel_cache or ThreatIntelCache()
+        self.threat_intel_profiles = threat_intel_profiles
+
     def run(self, payload: Mapping[str, Any]) -> dict[str, Any]:
+        contract_code = str(payload.get("contract_code", ""))
         language = infer_contract_language(
             source_label=str(payload.get("source_label", "")).strip() or None,
             hinted_language=str(payload.get("language", "")).strip() or None,
-            contract_code=str(payload.get("contract_code", "")),
+            contract_code=contract_code,
         )
         outline = build_contract_outline(
-            contract_code=str(payload.get("contract_code", "")),
+            contract_code=contract_code,
             language=language,
         )
         issues, notes = detect_contract_patterns(outline)
+        profiles = self.threat_intel_profiles
+        if profiles is None:
+            profiles = self.threat_intel_cache.load_profiles()
+        known_case_matches = match_threat_intel_profiles(
+            profiles=profiles,
+            contract_code=contract_code,
+            issues=issues,
+            notes=notes,
+        )
+        if known_case_matches:
+            notes.extend(
+                f"known_case_match:{match.profile_id}:{match.evidence_strength}"
+                for match in known_case_matches[:8]
+            )
         manual_review = bool(issues)
         issue_counts: dict[str, int] = {}
         for issue in issues:
@@ -72,6 +97,10 @@ class ContractPatternCheckTool(BaseTool):
                 "prioritized_issues": prioritized_issues[:12],
                 "priority_counts": priority_counts,
                 "highest_priority": prioritized_issues[0]["priority"] if prioritized_issues else None,
+                "known_case_profile_count": len(profiles),
+                "known_case_match_count": len(known_case_matches),
+                "known_case_matches": [match.to_mapping() for match in known_case_matches],
+                "known_case_sources": sorted({match.source_id for match in known_case_matches}),
                 "notes": notes,
                 "note_type_counts": note_type_counts,
                 "manual_review_recommended": manual_review,
