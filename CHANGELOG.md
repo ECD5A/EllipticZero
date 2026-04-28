@@ -3,9 +3,11 @@
 All notable public changes for EllipticZero are summarized here.
 
 The project follows a source-available release track under `FSL-1.1-ALv2`.
-Package version: `0.1.3`.
+Package version: `0.1.4`.
 
 ## Unreleased
+
+## 0.1.4 - 2026-04-28
 
 ### Added
 
