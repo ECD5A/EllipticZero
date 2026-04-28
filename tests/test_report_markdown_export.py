@@ -64,6 +64,10 @@ def test_saved_run_markdown_report_avoids_embedded_contract_code(tmp_path: Path)
 
     assert markdown.startswith("# EllipticZero Report")
     assert "Bounded smart-contract review." in markdown
+    assert "## Review Snapshot" in markdown
+    assert "Primary signal" in markdown
+    assert "Next review step" in markdown
+    assert "Evidence posture" in markdown
     assert "## Finding Cards" in markdown
     assert "externally reachable value-flow" in markdown
     assert "## Evidence Boundary" in markdown

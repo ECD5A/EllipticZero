@@ -34,6 +34,12 @@ from app.tools.smart_contract_utils import (
 )
 from app.types import BranchType
 
+FIXED_TARGET_ORIGINS = {"synthetic", "explicit_domain"}
+
+
+def uses_fixed_research_target(research_target: ResearchTarget | None) -> bool:
+    return research_target is not None and research_target.target_origin in FIXED_TARGET_ORIGINS
+
 
 def build_tool_plan(
     *,
@@ -46,7 +52,7 @@ def build_tool_plan(
     combined_text = f"{seed_text} {hypothesis.summary} {hypothesis.planned_test or ''}"
     target_kind = (
         research_target.target_kind
-        if research_target is not None and research_target.target_origin == "synthetic"
+        if uses_fixed_research_target(research_target)
         else determine_target_kind(
             seed_text=seed_text,
             planned_test=hypothesis.planned_test or "",
@@ -65,9 +71,9 @@ def build_tool_plan(
         reason=(
             f"Selected {tool_name} because the hypothesis appears "
             f"{target_kind}-oriented under bounded local analysis."
-            if research_target is None or research_target.target_origin != "synthetic"
+            if not uses_fixed_research_target(research_target)
             else (
-                f"Selected {tool_name} because synthetic target "
+                f"Selected {tool_name} because fixed target "
                 f"{research_target.synthetic_target_name or research_target.target_reference} "
                 f"declared a bounded {target_kind} profile."
             )
@@ -105,7 +111,7 @@ def build_standard_smart_contract_tool_plans(
     combined_text = f"{seed_text} {hypothesis.summary} {hypothesis.planned_test or ''}"
     target_kind = (
         research_target.target_kind
-        if research_target is not None and research_target.target_origin == "synthetic"
+        if uses_fixed_research_target(research_target)
         else determine_target_kind(
             seed_text=seed_text,
             planned_test=hypothesis.planned_test or "",
@@ -240,7 +246,7 @@ def build_experiment_spec(
 ) -> ExperimentSpec:
     target_kind = (
         research_target.target_kind
-        if research_target is not None and research_target.target_origin == "synthetic"
+        if uses_fixed_research_target(research_target)
         else determine_target_kind(
             seed_text=seed_text,
             planned_test=hypothesis.planned_test or "",
@@ -294,7 +300,7 @@ def build_experiment_spec(
         target_kind = "smart_contract_testbed"
         target_reference = (
             research_target.target_reference
-            if research_target is not None and research_target.target_origin == "synthetic"
+            if uses_fixed_research_target(research_target)
             else select_smart_contract_testbed_reference(
                 text=f"{seed_text} {formalization} {hypothesis.summary} {hypothesis.planned_test or ''}",
                 preferred_testbeds=normalized_testbed_hints(session),
@@ -310,7 +316,7 @@ def build_experiment_spec(
     else:
         target_reference = (
             research_target.target_reference
-            if research_target is not None and research_target.target_origin == "synthetic"
+            if uses_fixed_research_target(research_target)
             else target_reference_for_kind(
                 target_kind=target_kind,
                 seed_text=seed_text,
@@ -352,7 +358,7 @@ def build_pack_experiment_spec(
 ) -> ExperimentSpec:
     inferred_target_kind = (
         research_target.target_kind
-        if research_target is not None and research_target.target_origin == "synthetic"
+        if uses_fixed_research_target(research_target)
         else determine_target_kind(
             seed_text=seed_text,
             planned_test=hypothesis.planned_test or "",
@@ -370,7 +376,7 @@ def build_pack_experiment_spec(
             step.target_reference_override
             or (
                 research_target.target_reference
-                if research_target is not None and research_target.target_origin == "synthetic"
+                if uses_fixed_research_target(research_target)
                 else select_smart_contract_testbed_reference(
                     text=f"{seed_text} {formalization} {hypothesis.summary} {hypothesis.planned_test or ''} {pack.description}",
                     prefer_repo_casebooks=bool(
@@ -390,7 +396,7 @@ def build_pack_experiment_spec(
             step.target_reference_override
             or (
                 research_target.target_reference
-                if research_target is not None and research_target.target_origin == "synthetic"
+                if uses_fixed_research_target(research_target)
                 else target_reference_for_kind(
                     target_kind=target_kind,
                     seed_text=seed_text,
@@ -430,6 +436,11 @@ def determine_target_kind(
 ) -> str:
     combined = f"{seed_text} {planned_test} {summary}"
     lowered = combined.lower()
+    if (
+        not _seed_has_direct_domain_signal(seed_text)
+        and _looks_like_generic_agent_scaffold(planned_test=planned_test, summary=summary)
+    ):
+        return "generic"
     contract_like = extract_contract_code(combined) is not None or any(
         token in lowered
         for token in (
@@ -445,6 +456,10 @@ def determine_target_kind(
             "selfdestruct",
             "access control",
             "payable function",
+            "контракт",
+            "смарт",
+            "солидити",
+            "права доступа",
         )
     )
     if contract_like and any(token in lowered for token in ("corpus", "suite", "testbed")):
@@ -459,16 +474,27 @@ def determine_target_kind(
     if contract_like:
         return "smart_contract"
     if extract_modular_payload(combined) is not None or any(
-        token in lowered for token in ("finite field", "modular", "modulo", " mod ")
+        token in lowered for token in ("finite field", "modular", "modulo", " mod ", "конечное поле", "модуль")
     ):
         return "finite_field"
     if extract_public_key_hex(combined) is not None or any(
         token in lowered
-        for token in ("public key", "pubkey", "compressed", "uncompressed", "prefix", "on-curve")
+        for token in (
+            "public key",
+            "pubkey",
+            "compressed",
+            "uncompressed",
+            "prefix",
+            "on-curve",
+            "сжат",
+            "несжат",
+            "префикс",
+            "на кривой",
+        )
     ):
         return "ecc_consistency" if any(
             token in lowered
-            for token in ("consistency", "check", "on-curve", "shape", "prefix", "malformed")
+            for token in ("consistency", "check", "on-curve", "shape", "prefix", "malformed", "провер", "префикс")
         ) else "point"
     if extract_curve_name(combined):
         if any(
@@ -481,19 +507,100 @@ def determine_target_kind(
         ):
             return "ecc_consistency"
         return "curve"
+    if any(token in lowered for token in ("curve", "крив", "ecc", "montgomery", "edwards", "weierstrass")):
+        return "ecc_consistency" if any(
+            token in lowered for token in ("consistency", "check", "shape", "on-curve", "format", "провер", "формат")
+        ) else "curve"
     if extract_point_coordinates(combined) != (None, None):
         return "ecc_consistency" if any(
             token in lowered for token in ("consistency", "check", "on-curve", "shape")
         ) else "point"
     if extract_expression(combined):
         return "symbolic"
-    if any(token in lowered for token in ("point", "coordinate")):
+    if any(token in lowered for token in ("point", "coordinate", "точк", "координат")):
         return "ecc_consistency" if any(
-            token in lowered for token in ("consistency", "check", "shape")
+            token in lowered for token in ("consistency", "check", "shape", "провер", "формат")
         ) else "point"
     if any(token in lowered for token in ("repeat", "deterministic", "consistency", "normalize")):
         return "experiment"
     return "generic"
+
+
+def _seed_has_direct_domain_signal(seed_text: str) -> bool:
+    """Return whether the original seed itself contains a recognizable anchor."""
+
+    lowered = seed_text.lower()
+    if (
+        extract_contract_code(seed_text) is not None
+        or extract_modular_payload(seed_text) is not None
+        or extract_public_key_hex(seed_text) is not None
+        or extract_curve_name(seed_text) is not None
+        or extract_point_coordinates(seed_text) != (None, None)
+        or extract_expression(seed_text) is not None
+    ):
+        return True
+    direct_tokens = (
+        "curve",
+        "ecc",
+        "family",
+        "montgomery",
+        "edwards",
+        "weierstrass",
+        "point",
+        "coordinate",
+        "compressed",
+        "uncompressed",
+        "prefix",
+        "on-curve",
+        "signature",
+        "ecdsa",
+        "ecdh",
+        "scalar",
+        "subgroup",
+        "cofactor",
+        "torsion",
+        "finite field",
+        "modular",
+        "contract",
+        "solidity",
+        "vyper",
+        "reentrancy",
+        "delegatecall",
+        "tx.origin",
+        "access control",
+        "крив",
+        "точк",
+        "координат",
+        "сжат",
+        "несжат",
+        "префикс",
+        "подпис",
+        "скаляр",
+        "подгрупп",
+        "кофактор",
+        "конечное поле",
+        "модуль",
+        "контракт",
+        "смарт",
+        "солидити",
+        "реентерабель",
+        "права доступа",
+    )
+    return any(token in lowered for token in direct_tokens)
+
+
+def _looks_like_generic_agent_scaffold(*, planned_test: str, summary: str) -> bool:
+    """Detect generic fallback wording so unknown seeds stay neutral."""
+
+    combined = f"{planned_test} {summary}".lower()
+    generic_markers = (
+        "seed can be reduced to a bounded and testable property",
+        "preliminary text-level local classification",
+        "detect technical focus terms",
+        "ambiguous terminology",
+        "underspecified implementation context",
+    )
+    return any(marker in combined for marker in generic_markers)
 
 
 def tool_name_for_target_kind(

@@ -107,9 +107,17 @@ REPORT_SECTIONS: tuple[tuple[str, str], ...] = (
     ("manual_review_items", "Manual Review Items"),
 )
 
+REVIEW_SNAPSHOT_LABELS: dict[str, str] = {
+    "primary_signal": "Primary signal",
+    "next_review_step": "Next review step",
+    "evidence_posture": "Evidence posture",
+    "residual_risk": "Residual risk",
+    "replay_export": "Replay / export",
+}
+
 
 def build_saved_run_report_markdown(*, loaded_source: LoadedReplaySource) -> str:
-    """Build a human-readable Markdown report from a saved replay source."""
+    """Build a Markdown report from a saved replay source."""
 
     session = loaded_source.session
     manifest = loaded_source.manifest
@@ -142,6 +150,7 @@ def build_session_report_markdown(
         raise ValueError("Session does not contain a report.")
 
     report = session.report
+    snapshot_items = build_review_snapshot_items(report)
     lines = [
         "# EllipticZero Report",
         "",
@@ -163,6 +172,13 @@ def build_session_report_markdown(
         "",
         f"`{report.confidence.value}`",
     ]
+    if snapshot_items:
+        lines.extend(["", "## Review Snapshot", ""])
+        lines.append(
+            _metadata_table(
+                {REVIEW_SNAPSHOT_LABELS[key]: value for key, value in snapshot_items}
+            )
+        )
 
     for field_name, title in REPORT_SECTIONS:
         items = _string_items(getattr(report, field_name, []))
@@ -184,6 +200,71 @@ def build_session_report_markdown(
         ]
     )
     return _redact_text("\n".join(lines)).rstrip() + "\n"
+
+
+def build_review_snapshot_items(
+    report: ResearchReport,
+    *,
+    max_items: int = 5,
+) -> list[tuple[str, str]]:
+    """Return compact reviewer-facing highlights for console and Markdown output."""
+
+    items: list[tuple[str, str]] = []
+    _append_first(
+        items,
+        "primary_signal",
+        [
+            report.contract_triage_snapshot,
+            report.contract_finding_cards,
+            report.contract_priority_findings,
+            report.ecc_triage_snapshot,
+            report.ecc_benchmark_summary,
+        ],
+    )
+    _append_first(
+        items,
+        "next_review_step",
+        [
+            report.contract_review_queue,
+            report.contract_manual_review_items,
+            report.manual_review_items,
+            report.ecc_review_queue,
+            report.shared_follow_up,
+            report.recommendations,
+            report.contract_remediation_follow_up,
+            report.next_defensive_leads,
+        ],
+    )
+    _append_first(
+        items,
+        "evidence_posture",
+        [
+            report.evidence_coverage_summary,
+            report.validation_posture,
+            report.quality_gates,
+            report.confidence_rationale,
+        ],
+    )
+    _append_first(
+        items,
+        "residual_risk",
+        [
+            report.contract_residual_risk,
+            report.ecc_residual_risk,
+            report.calibration_blockers,
+            report.regression_flags,
+        ],
+    )
+    _append_first(
+        items,
+        "replay_export",
+        [
+            report.reproducibility_summary,
+            report.hardening_summary,
+            report.toolchain_fingerprint_summary,
+        ],
+    )
+    return items[:max_items]
 
 
 def build_manifest_report_markdown(
@@ -250,7 +331,7 @@ def render_report_markdown_export_result(*, output_path: Path, language: str) ->
             [
                 "Markdown report export complete",
                 f"- Файл: {output_path}",
-                "- Назначение: человекочитаемый saved-run отчёт для review, обмена и архива.",
+                "- Назначение: saved-run Markdown-отчёт для review, обмена и архива.",
                 "- Граница: Markdown не заменяет session/trace/manifest/bundle и ручную проверку.",
             ]
         )
@@ -258,7 +339,7 @@ def render_report_markdown_export_result(*, output_path: Path, language: str) ->
         [
             "Markdown report export complete",
             f"- File: {output_path}",
-            "- Purpose: human-readable saved-run report for review, sharing, and archive.",
+            "- Purpose: saved-run Markdown report for review, sharing, and archive.",
             "- Boundary: Markdown does not replace session/trace/manifest/bundle evidence or review.",
         ]
     )
@@ -324,6 +405,17 @@ def _extend_section(lines: list[str], title: str, items: list[str]) -> None:
         return
     lines.extend(["", f"## {title}", ""])
     lines.extend(f"- {item}" for item in clean_items)
+
+
+def _append_first(
+    target: list[tuple[str, str]],
+    key: str,
+    sections: list[list[str]],
+) -> None:
+    for section in sections:
+        for item in _string_items(section):
+            target.append((key, item))
+            return
 
 
 def _string_items(items: list[str]) -> list[str]:

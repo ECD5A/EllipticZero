@@ -10,8 +10,14 @@ Package version: `0.1.3`.
 ### Added
 
 - Added saved-run Markdown report export through `--export-report-md`.
+- Added a compact review snapshot near the top of console and Markdown reports.
+- Added clearer mock-mode onboarding: localized validation errors, semantic-light
+  seed validation, compact seed examples, and boxed console summaries.
 - Added a post-run session-actions menu for one-step `report.md` and
   `review.sarif` export.
+- Added an interactive `EVALUATION LAB` menu for golden cases,
+  experiment packs, project or saved-run summaries, baseline comparison, and
+  provider context preview.
 - Added `report.md` to reproducibility bundles when a session report is
   available. JSON evidence artifacts remain the source of truth.
 

@@ -37,6 +37,7 @@ from app.core.planning_helpers import (
     strategy_guidance_text,
     target_reference_for_kind,
     tool_name_for_target_kind,
+    uses_fixed_research_target,
 )
 from app.core.reporting_helpers import (
     append_result_note,
@@ -201,6 +202,7 @@ class ResearchOrchestrator:
         *,
         seed_text: str,
         author: str | None = None,
+        domain: str | None = None,
         research_mode: ResearchMode | str | None = None,
         synthetic_target_name: str | None = None,
         experiment_pack_name: str | None = None,
@@ -216,6 +218,7 @@ class ResearchOrchestrator:
         return self._run_session_internal(
             seed_text=seed_text,
             author=author,
+            domain=domain,
             research_mode=research_mode,
             synthetic_target_name=synthetic_target_name,
             experiment_pack_name=experiment_pack_name,
@@ -234,6 +237,7 @@ class ResearchOrchestrator:
         *,
         seed_text: str,
         author: str | None = None,
+        domain: str | None = None,
         research_mode: ResearchMode | str | None = None,
         synthetic_target_name: str | None = None,
         experiment_pack_name: str | None = None,
@@ -247,7 +251,7 @@ class ResearchOrchestrator:
         comparison_baseline_source_path: str | None = None,
     ) -> ResearchSession:
         normalized_seed = validate_seed_text(seed_text)
-        seed = ResearchSeed(raw_text=normalized_seed, author=author)
+        seed = ResearchSeed(raw_text=normalized_seed, author=author, domain=domain)
         resolved_research_mode = self._resolve_research_mode(research_mode)
         sandbox_spec = self._build_sandbox_spec(
             research_mode=resolved_research_mode,
@@ -1824,6 +1828,11 @@ class ResearchOrchestrator:
             planned_test=reference_hypothesis.planned_test or "",
             summary=reference_hypothesis.summary,
         )
+        target_kind = self._apply_explicit_domain_to_target_kind(
+            domain=session.seed.domain,
+            target_kind=target_kind,
+            seed_text=seed_text,
+        )
         target_reference = self._target_reference_for_kind(
             target_kind=target_kind,
             seed_text=seed_text,
@@ -1838,10 +1847,16 @@ class ResearchOrchestrator:
             ResearchTarget(
                 target_kind=target_kind,
                 target_reference=target_reference,
+                target_origin="explicit_domain" if session.seed.domain else "inferred",
                 curve_name=curve_name,
                 notes=[
                     "Research target was inferred from the validated seed plus the strongest formalized branch.",
                     "This target is descriptive and bounded; it does not authorize unrestricted execution.",
+                    (
+                        f"Explicit session domain: {session.seed.domain}."
+                        if session.seed.domain
+                        else "Session domain was inferred from the seed."
+                    ),
                 ],
             )
         )
@@ -1891,6 +1906,24 @@ class ResearchOrchestrator:
             return
 
         transition_hypothesis(hypothesis, HypothesisStatus.CLOSED)
+
+    def _apply_explicit_domain_to_target_kind(
+        self,
+        *,
+        domain: str | None,
+        target_kind: str,
+        seed_text: str,
+    ) -> str:
+        if domain == "smart_contract_audit":
+            if target_kind in {"smart_contract", "smart_contract_testbed"}:
+                return target_kind
+            return "smart_contract"
+        if domain == "ecc_research" and target_kind in {"smart_contract", "smart_contract_testbed"}:
+            lowered = seed_text.lower()
+            if any(token in lowered for token in ("ecdsa", "ecdh", "signature", "подпис", "curve", "крив")):
+                return "ecc_consistency"
+            return "generic"
+        return target_kind
 
     def _resolve_experiment_pack(
         self,
@@ -1954,7 +1987,7 @@ class ResearchOrchestrator:
     ) -> list[ToolPlan]:
         target_kind = (
             research_target.target_kind
-            if research_target is not None and research_target.target_origin == "synthetic"
+            if uses_fixed_research_target(research_target)
             else self._determine_target_kind(
                 seed_text=seed_text,
                 planned_test=hypothesis.planned_test or "",

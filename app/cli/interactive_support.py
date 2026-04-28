@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import textwrap
 from collections.abc import Callable
 from dataclasses import dataclass
 
 from app.cli.ui import AMBER, CYAN, GRAY, GREEN, RED, WHITE, LocalConsoleUI
 from app.core.orchestrator import ResearchOrchestrator
+from app.core.report_markdown import build_review_snapshot_items
 from app.models.replay_result import ReplayResult
 from app.models.session import ResearchSession
 from app.tools.curve_registry import CURVE_REGISTRY, CurveRegistryEntry
@@ -137,6 +139,36 @@ class InteractiveRenderer:
     def summary_row(self, label: str, value: str) -> str:
         return f"{label:<28} | {value}"
 
+    def wrapped_panel_rows(self, text: str, *, width: int = 76) -> list[str]:
+        stripped = text.strip()
+        if not stripped:
+            return []
+        return textwrap.wrap(stripped, width=width) or [stripped]
+
+    def localized_summary(self, summary: str) -> str:
+        if self.get_language() != "ru":
+            return summary
+
+        normalized = " ".join(summary.split())
+        known_mock_summaries = {
+            self.t("summary.mock.ecc"): self.t("summary.mock.ecc"),
+            self.t("summary.mock.contract"): self.t("summary.mock.contract"),
+            (
+                "The session preserved the original seed, produced bounded hypotheses, ran a registry-controlled "
+                "local compute job, and recorded preliminary evidence without claiming a validated mathematical or "
+                "cryptographic result."
+            ): self.t("summary.mock.ecc"),
+            (
+                "The session preserved the original smart-contract audit seed, ran bounded local static analysis, "
+                "and recorded review-oriented evidence without claiming a validated exploit path."
+            ): self.t("summary.mock.contract"),
+            (
+                "The session preserved the original seed, ran a neutral bounded local classification pass, "
+                "and avoided forcing the idea into a known ECC or smart-contract pattern."
+            ): self.t("summary.mock.generic"),
+        }
+        return known_mock_summaries.get(normalized, summary)
+
     def doctor_status_color(self, status: str) -> str:
         if status == "error":
             return RED
@@ -199,6 +231,16 @@ class InteractiveRenderer:
             summary_rows,
             title_color=GREEN,
         )
+        snapshot_rows = [
+            self.summary_row(self.t(f"label.{key}"), value)
+            for key, value in build_review_snapshot_items(session.report)
+        ]
+        if snapshot_rows:
+            self.print_panel_block(
+                self.t("block.review_snapshot"),
+                snapshot_rows,
+                title_color=AMBER,
+            )
         self.print_panel_block(
             self.t("block.local_outputs"),
             [
@@ -211,8 +253,10 @@ class InteractiveRenderer:
                 ),
             ],
         )
-        print(self.ui.center_text(self.t("block.summary"), color=WHITE, bold=True))
-        print(self.ui.center_text(session.report.summary, color=WHITE))
+        summary_text = self.localized_summary(session.report.summary)
+        summary_rows = self.wrapped_panel_rows(summary_text)
+        if summary_rows:
+            self.print_panel_block(self.t("block.summary"), summary_rows)
         self.print_list_block(self.t("block.confidence_rationale"), session.report.confidence_rationale, color=GREEN)
         self.print_list_block(self.t("block.contract_overview"), session.report.contract_overview, color=CYAN)
         self.print_list_block(self.t("block.contract_finding_cards"), session.report.contract_finding_cards, color=AMBER)

@@ -25,10 +25,24 @@ risk lanes, confidence, and follow-up guidance.
 </p>
 
 <details>
-<summary>Session report preview</summary>
+<summary>Session report and export preview</summary>
 
 <p align="center">
-  <img src="docs/assets/session-report.png" alt="EllipticZero session report screen" width="820">
+  <img src="docs/assets/session-report.png" alt="EllipticZero session report summary screen" width="820">
+</p>
+
+<p align="center">
+  <img src="docs/assets/session-report-details.png" alt="EllipticZero session report evidence and quality sections" width="820">
+</p>
+
+<p align="center">
+  <img src="docs/assets/session-report-tail.png" alt="EllipticZero session report agent and recommendation sections" width="820">
+</p>
+
+<p align="center"><em>Report export action</em></p>
+
+<p align="center">
+  <img src="docs/assets/session-export.png" alt="EllipticZero session export action screen" width="820">
 </p>
 
 </details>
@@ -41,6 +55,7 @@ risk lanes, confidence, and follow-up guidance.
 - reproducible sessions, traces, manifests, bundles, and replay
 - evidence coverage, toolchain fingerprints, and secret-redacted JSON exports
 - benchmark packs and golden cases for evaluator-facing smoke checks
+- menu-first golden cases, experiment packs, evaluation summaries, baseline comparison, and provider context preview
 - cautious reports with manual-review boundaries and remediation direction
 
 **License TL;DR:** Read, evaluate, run locally, and use for research or internal
@@ -120,6 +135,11 @@ Launch the interface:
 ```powershell
 python -m app.main --interactive
 ```
+
+For no-key evaluation from the console, open `ADVANCED / INTERNAL` ->
+`EVALUATION LAB`. From there you can run golden cases, choose
+experiment packs, inspect project or saved-run summaries, compare against a
+baseline bundle, and preview hosted-provider context before live agents.
 
 Run the self-check:
 
@@ -210,7 +230,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - OpenRouter is supported as an OpenAI-compatible hosted path. Direct smoke checks use `openrouter/auto` unless a model is pinned.
 - Local tooling can include `SymPy`, `Hypothesis`, `z3-solver`, managed `solc`, bounded mutation probes, ECC testbeds, smart-contract checks, optional `SageMath`, and optional static analyzers.
 - Inputs stay simple: free-form ECC seeds, pasted smart-contract code, inline code, or local `.sol` / `.vy` files. Local contract files can derive a bounded repository root automatically.
-- Reports cover ECC triage, benchmark posture, family coverage, comparison/regression notes, smart-contract repo triage, inventories, protocol maps, casebook matches, finding cards, review queues, remediation notes, and residual-risk lanes when local evidence supports them.
+- Reports start with a compact review snapshot, then cover ECC triage, benchmark posture, family coverage, comparison/regression notes, smart-contract repo triage, inventories, protocol maps, casebook matches, finding cards, review queues, remediation notes, and residual-risk lanes when local evidence supports them.
 - Comparison flags (`--compare-session`, `--compare-manifest`, `--compare-bundle`) attach saved baselines to fresh bounded runs for cautious before/after and regression-oriented notes.
 - Completed runs can store session JSON, trace JSONL, reproducibility bundles, `overview.json`, comparative reports, `report.md`, and `review.sarif` under `artifacts/`.
 - The interactive console can export `report.md` and `review.sarif` from the session-actions menu without requiring export commands.

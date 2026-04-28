@@ -173,7 +173,7 @@ class LocalConsoleUI:
             prefix = self.style(">", CYAN, bold=True) if active else " "
             label = self.style(option.label, CYAN if active else WHITE, bold=active)
             description = self.style(option.description, WHITE if active else GRAY, dim=not active)
-            label_block = self._pad_visible(f"{prefix} {label}", 28)
+            label_block = self._pad_visible(self._fit_visible(f"{prefix} {label}", 28), 28)
             panel_rows.append(f"{label_block} | {description}")
         lines.extend(self.panel(panel_rows))
         lines.append(self.center_text(options[selected_index].label, color=CYAN, bold=True))

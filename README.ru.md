@@ -26,10 +26,24 @@ EllipticZero — локальная source-available лаборатория дл
 </p>
 
 <details>
-<summary>Предпросмотр итогового отчёта</summary>
+<summary>Предпросмотр итогового отчёта и выгрузки</summary>
 
 <p align="center">
-  <img src="docs/assets/session-report-ru.png" alt="Экран итогового отчёта EllipticZero" width="820">
+  <img src="docs/assets/session-report-ru.png" alt="Сводка итогового отчёта EllipticZero" width="820">
+</p>
+
+<p align="center">
+  <img src="docs/assets/session-report-ru-details.png" alt="Разделы доказательной базы и качества отчёта EllipticZero" width="820">
+</p>
+
+<p align="center">
+  <img src="docs/assets/session-report-ru-tail.png" alt="Разделы агентов, гипотез и рекомендаций отчёта EllipticZero" width="820">
+</p>
+
+<p align="center"><em>Выгрузка отчёта</em></p>
+
+<p align="center">
+  <img src="docs/assets/session-export-ru.png" alt="Экран выгрузки отчёта EllipticZero" width="820">
 </p>
 
 </details>
@@ -42,6 +56,8 @@ EllipticZero — локальная source-available лаборатория дл
 - воспроизводимые сессии, трассировки, манифесты, bundle-пакеты и replay
 - сводки покрытия доказательной базы, отпечатки toolchain и JSON-экспорт с редактированием секретов
 - benchmark-пакеты и golden cases для быстрой оценки проекта
+- запуск из меню для golden cases, experiment packs, сводок оценки,
+  baseline-сравнения и предварительного просмотра контекста провайдера
 - осторожные отчёты с границами ручной проверки и направлением исправлений
 
 **Коротко о лицензии:** код можно читать, оценивать и запускать локально.
@@ -127,6 +143,12 @@ pip install -e .[lab]
 ```powershell
 python -m app.main --interactive
 ```
+
+Для оценки без API-ключей открой в консоли `ADVANCED / INTERNAL` ->
+`ЛАБОРАТОРИЯ ОЦЕНКИ`. Там можно запускать golden cases, выбирать experiment
+packs, смотреть сводку проекта или сохранённого запуска, сравнивать новый запуск
+с baseline bundle и заранее видеть, какой контекст может уйти провайдеру перед
+live-агентами.
 
 Проверка готовности системы:
 
@@ -217,7 +239,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - OpenRouter поддерживается как OpenAI-compatible hosted path. Прямые smoke-проверки используют `openrouter/auto`, если модель не указана явно.
 - Локальная среда может включать `SymPy`, `Hypothesis`, `z3-solver`, управляемый `solc`, bounded mutation probes, ECC-тестбеды, smart-contract проверки, опциональный `SageMath` и опциональные статические анализаторы.
 - Входы остаются простыми: свободная ECC-идея, вставленный код смарт-контракта, inline-код или локальный файл `.sol` / `.vy`. Для локального файла контрактного репозитория может автоматически выводиться ограниченный repo root.
-- Отчёты покрывают ECC-триаж, benchmark-статус, покрытие семейств, сравнение и регрессии, а также smart-contract repo triage, inventory, protocol maps, casebook matches, finding cards, review queues, remediation notes и residual-risk lanes, когда это подтверждается локальными данными.
+- Отчёты начинаются с короткой сводки проверки, а затем покрывают ECC-триаж, benchmark-статус, покрытие семейств, сравнение и регрессии, smart-contract repo triage, inventory, protocol maps, casebook matches, finding cards, review queues, remediation notes и residual-risk lanes, когда это подтверждается локальными данными.
 - Флаги сравнения (`--compare-session`, `--compare-manifest`, `--compare-bundle`) привязывают сохранённый baseline к новому bounded-запуску для осторожных строк до/после и регрессионных заметок.
 - Завершённые запуски могут сохранять session JSON, trace JSONL, пакеты воспроизводимости, `overview.json`, сравнительные отчёты, `report.md` и `review.sarif` в `artifacts/`.
 - Интерактивная консоль выгружает `report.md` и `review.sarif` из меню действий сессии без ручного ввода export-команд.

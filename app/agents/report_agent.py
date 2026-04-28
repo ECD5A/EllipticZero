@@ -22,10 +22,11 @@ class ReportAgent(BaseAgent):
         response = self.gateway.generate(
             agent_name=self.route_name,
             system_prompt=self.load_prompt(),
-            user_prompt=session.seed.raw_text,
+            user_prompt=self.seed_prompt(session.seed),
             metadata={
                 "agent": "report",
                 "seed": session.seed.raw_text,
+                "domain": session.seed.domain or "",
                 "evidence_summary": evidence_summary,
                 "keyword_hit_count": sum(
                     int(

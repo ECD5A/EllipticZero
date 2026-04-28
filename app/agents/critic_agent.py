@@ -27,7 +27,7 @@ class CriticAgent(BaseAgent):
         round_index: int = 1,
         follow_up_context: str | None = None,
     ) -> CriticAgentResult:
-        user_prompt = seed.raw_text
+        user_prompt = self.seed_prompt(seed)
         guidance_parts: list[str] = []
         if cryptography_profile is not None:
             guidance_parts.append(
@@ -42,7 +42,7 @@ class CriticAgent(BaseAgent):
                 f"Follow-up context for exploratory round {round_index}: {follow_up_context}"
             )
         if guidance_parts:
-            user_prompt = f"{seed.raw_text}\n\n" + "\n".join(guidance_parts)
+            user_prompt = f"{self.seed_prompt(seed)}\n\n" + "\n".join(guidance_parts)
         response = self.gateway.generate(
             agent_name=self.route_name,
             system_prompt=self.load_prompt(),
@@ -50,6 +50,7 @@ class CriticAgent(BaseAgent):
             metadata={
                 "agent": "critic",
                 "seed": seed.raw_text,
+                "domain": seed.domain or "",
                 "math_summary": math_formalization.formalization_summary,
                 "crypto_surface_summary": (
                     cryptography_profile.surface_summary

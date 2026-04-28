@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.cli.i18n import normalize_language, t
+from app.cli.i18n import localize_error, normalize_language, t
 from app.cli.interactive import (
     _SESSION_FLOW_BACK,
     MENU_OPTIONS,
@@ -12,6 +12,7 @@ from app.cli.interactive import (
     should_launch_interactive,
     tool_summary_lines,
 )
+from app.cli.interactive_support import InteractiveRenderer
 from app.cli.ui import ASCII_FALLBACK_BANNER, ConsoleTheme, LocalConsoleUI, MenuOption
 from app.config import AppConfig
 from app.main import build_orchestrator, build_parser
@@ -256,10 +257,80 @@ def test_local_console_ui_menu_renders_single_active_arrow() -> None:
     assert panel_text.count(">") == 1
 
 
+def test_local_console_ui_menu_truncates_long_labels_without_breaking_panel() -> None:
+    ui = LocalConsoleUI(theme=ConsoleTheme(top_margin=0))
+    ui.color_enabled = False
+
+    lines = ui.render_menu_screen(
+        header_lines=["header"],
+        options=[
+            MenuOption(
+                "contract-repo-scale-lending-protocol",
+                "Run the long golden case safely.",
+            ),
+            MenuOption("RETURN", "Go back."),
+        ],
+        selected_index=0,
+    )
+    panel_lines = [line.strip() for line in lines if line.strip().startswith(("+", "|"))]
+    panel_widths = {len(line) for line in panel_lines}
+
+    assert len(panel_widths) == 1
+    assert any("contract-repo-scale-len..." in line for line in panel_lines)
+
+
 def test_i18n_session_action_labels_are_available() -> None:
     assert t("en", "menu.export_review_files.label") == "EXPORT REVIEW FILES"
+    assert t("en", "menu.evaluation.label") == "EVALUATION LAB"
+    assert t("en", "menu.provider_context_preview.label") == "PROVIDER PREVIEW"
     assert t("en", "hint.open_session_actions").startswith("Enter opens session actions")
-    assert t("ru", "menu.export_review_files.label") == "ВЫГРУЗИТЬ ФАЙЛЫ ПРОВЕРКИ"
+    assert t("ru", "menu.export_review_files.label") == "ВЫГРУЗИТЬ ОТЧЁТ И SARIF"
+    assert t("ru", "block.review_snapshot") == "КРАТКАЯ СВОДКА ПРОВЕРКИ"
+    assert t("ru", "prompt.seed_example.ecc").startswith("Пример: secp256k1")
+
+
+def test_i18n_localizes_common_validation_errors() -> None:
+    error = (
+        "Research idea is too vague. Include a curve, contract behavior, point behavior, "
+        "implementation detail, anomaly, or testable mathematical/security property."
+    )
+
+    assert "Идея слишком общая" in localize_error("ru", ValueError(error))
+
+
+def test_interactive_renderer_localizes_and_wraps_known_mock_summary() -> None:
+    renderer = InteractiveRenderer(
+        ui=LocalConsoleUI(theme=ConsoleTheme(top_margin=0)),
+        translate=lambda key, **kwargs: t("ru", key, **kwargs),
+        get_language=lambda: "ru",
+        get_provider=lambda: "mock",
+    )
+    summary = (
+        "The session preserved the original seed, produced bounded hypotheses, ran a registry-controlled "
+        "local compute job, and recorded preliminary evidence without claiming a validated mathematical or "
+        "cryptographic result."
+    )
+
+    localized = renderer.localized_summary(summary)
+    rows = renderer.wrapped_panel_rows(localized, width=44)
+
+    assert localized.startswith("Сессия сохранила")
+    assert len(rows) > 1
+
+
+def test_interactive_renderer_localizes_generic_mock_summary() -> None:
+    renderer = InteractiveRenderer(
+        ui=LocalConsoleUI(theme=ConsoleTheme(top_margin=0)),
+        translate=lambda key, **kwargs: t("ru", key, **kwargs),
+        get_language=lambda: "ru",
+        get_provider=lambda: "mock",
+    )
+    summary = (
+        "The session preserved the original seed, ran a neutral bounded local classification pass, "
+        "and avoided forcing the idea into a known ECC or smart-contract pattern."
+    )
+
+    assert "не стала насильно подгонять" in renderer.localized_summary(summary)
 
 
 def test_interactive_session_action_exports_review_files(tmp_path: Path) -> None:
@@ -314,6 +385,15 @@ def test_interactive_session_action_exports_review_files(tmp_path: Path) -> None
     assert report_path.exists()
     assert sarif_path.exists()
     assert "Interactive export summary." in report_path.read_text(encoding="utf-8")
+
+
+def test_interactive_saved_source_path_accepts_back() -> None:
+    console = object.__new__(InteractiveConsole)
+    console._prompt_raw = lambda _label: "/back"
+    console.t = lambda key, **_kwargs: key
+    console._pause = lambda: None
+
+    assert console._prompt_saved_source_path() is None
 
 
 def test_i18n_language_normalization_and_lookup() -> None:

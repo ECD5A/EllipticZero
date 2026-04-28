@@ -13,6 +13,7 @@ class ResearchSeed(BaseModel):
     seed_id: str = Field(default_factory=lambda: make_id("seed"))
     raw_text: str
     author: str | None = None
+    domain: str | None = None
 
     @field_validator("raw_text")
     @classmethod
@@ -29,3 +30,15 @@ class ResearchSeed(BaseModel):
             return None
         stripped = value.strip()
         return stripped or None
+
+    @field_validator("domain")
+    @classmethod
+    def normalize_domain(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip().lower()
+        if not normalized:
+            return None
+        if normalized not in {"ecc_research", "smart_contract_audit"}:
+            raise ValueError("Research seed domain must be ecc_research or smart_contract_audit.")
+        return normalized

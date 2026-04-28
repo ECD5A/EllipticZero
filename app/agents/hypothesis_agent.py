@@ -29,7 +29,7 @@ class HypothesisAgent(BaseAgent):
         follow_up_context: str | None = None,
     ) -> HypothesisAgentResult:
         branches: list[HypothesisBranch] = []
-        user_prompt = seed.raw_text
+        user_prompt = self.seed_prompt(seed)
         guidance_parts: list[str] = []
         if cryptography_profile is not None:
             guidance_parts.append(
@@ -44,7 +44,7 @@ class HypothesisAgent(BaseAgent):
                 f"Follow-up context for exploratory round {round_index}: {follow_up_context}"
             )
         if guidance_parts:
-            user_prompt = f"{seed.raw_text}\n\n" + "\n".join(guidance_parts)
+            user_prompt = f"{self.seed_prompt(seed)}\n\n" + "\n".join(guidance_parts)
 
         for variant_index in range(1, max_hypotheses + 1):
             response = self.gateway.generate(
@@ -54,6 +54,7 @@ class HypothesisAgent(BaseAgent):
                 metadata={
                     "agent": "hypothesis",
                     "seed": seed.raw_text,
+                    "domain": seed.domain or "",
                     "math_summary": math_formalization.formalization_summary,
                     "crypto_surface_summary": (
                         cryptography_profile.surface_summary

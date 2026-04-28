@@ -27,9 +27,23 @@ class MockLLMProvider(BaseLLMProvider):
         data = dict(metadata or {})
         agent = str(data.get("agent", "")).strip().lower()
         seed = str(data.get("seed", "")).strip()
+        domain = str(data.get("domain", "")).strip().lower()
         round_index = int(data.get("round_index", 1))
         follow_up_context = str(data.get("follow_up_context", "")).strip()
-        smart_contract_seed = self._is_smart_contract_seed(seed)
+        explicit_ecc_seed = domain == "ecc_research"
+        smart_contract_seed = domain == "smart_contract_audit" or self._is_smart_contract_seed(seed)
+        symbolic_seed = (
+            not smart_contract_seed
+            and not explicit_ecc_seed
+            and self._is_symbolic_or_formal_seed(seed)
+            and not self._has_ecc_domain_signal(seed)
+        )
+        generic_seed = (
+            not smart_contract_seed
+            and not explicit_ecc_seed
+            and not symbolic_seed
+            and not self._has_direct_domain_signal(seed)
+        )
 
         if agent == "math":
             if smart_contract_seed:
@@ -57,6 +71,32 @@ class MockLLMProvider(BaseLLMProvider):
                     "- parse the contract into a structural outline\n"
                     "- map the exposed surface before deeper pattern checks\n"
                     "- keep initial findings descriptive and review-oriented"
+                )
+            if generic_seed:
+                return (
+                    "Formalization Summary: Preserve the seed as a domain-ambiguous research lead without forcing it "
+                    "into a known ECC or smart-contract pattern.\n"
+                    "Key Objects:\n"
+                    "- original seed wording\n"
+                    "- unknown, novel, or underspecified terminology\n"
+                    "- bounded local classification signal\n"
+                    "Testable Elements:\n"
+                    "- classify seed-level signals without rewriting the idea\n"
+                    "- record that no direct ECC or smart-contract anchor was established yet\n"
+                    "- keep conclusions inconclusive until the domain surface is clarified"
+                )
+            if symbolic_seed:
+                return (
+                    "Formalization Summary: Formalize the seed as a bounded symbolic, property, or formal-check "
+                    "question while preserving the original expression or invariant language.\n"
+                    "Key Objects:\n"
+                    "- symbolic expression, invariant, or solver-facing property\n"
+                    "- bounded local formalization assumptions\n"
+                    "- null explanation for algebraic or wording ambiguity\n"
+                    "Testable Elements:\n"
+                    "- run a symbolic, property, or formal local check when applicable\n"
+                    "- compare the result against a simple null formulation\n"
+                    "- avoid treating solver-style evidence as broader proof"
                 )
             focus = self._focus_label(seed)
             if round_index > 1 and follow_up_context:
@@ -106,6 +146,25 @@ class MockLLMProvider(BaseLLMProvider):
                     "- which contract surfaces are externally reachable and privilege-sensitive\n"
                     "- which bounded pattern checks can be run locally first\n"
                     "- where should findings stay manual-review only"
+                )
+            if generic_seed:
+                return (
+                    "Surface Summary: Treat the seed as a domain-neutral bounded research lead until evidence or "
+                    "user context establishes an ECC or smart-contract surface.\n"
+                    "Focus Areas:\n"
+                    "- preserve novel terminology instead of mapping it to a familiar vulnerability class\n"
+                    "- identify whether the seed contains enough structure for a domain-specific follow-up\n"
+                    "- keep any local signal at orientation level only\n"
+                    "Preferred Tool Families:\n"
+                    "- generic\n"
+                    "Preferred Local Tools:\n"
+                    "- placeholder_math_tool\n"
+                    "Preferred Testbeds:\n"
+                    "- none\n"
+                    "Defensive Questions:\n"
+                    "- what domain, artifact, curve, contract, or implementation context is still missing\n"
+                    "- what can be said from local evidence without inventing a known pattern\n"
+                    "- should the next pass be ECC-specific, smart-contract-specific, or remain generic"
                 )
             preferred_tool_families, preferred_local_tools, preferred_testbeds = self._cryptography_preferences(seed)
             if round_index > 1 and follow_up_context:
@@ -172,6 +231,24 @@ class MockLLMProvider(BaseLLMProvider):
                     "- only generic contract structure was observed\n"
                     "- no bounded static finding rises above manual-review level"
                 )
+            if generic_seed:
+                return (
+                    "Strategy Summary: Run a neutral orientation pass first, preserve the original wording, and do not "
+                    "escalate into ECC or smart-contract tooling until the seed exposes a domain anchor.\n"
+                    "Primary Checks:\n"
+                    "- classify the seed text through the generic local signal scanner\n"
+                    "- record missing domain anchors as a limitation, not a rejection\n"
+                    "- keep the first report inconclusive and evidence-first\n"
+                    "Escalation Local Tools:\n"
+                    "- placeholder_math_tool\n"
+                    "- deterministic_experiment_tool\n"
+                    "Null Controls:\n"
+                    "- unfamiliar terminology with no local artifact yet\n"
+                    "- insufficient domain context\n"
+                    "Stop Conditions:\n"
+                    "- no ECC, smart-contract, mathematical, or implementation surface is established\n"
+                    "- only an orientation report is justified"
+                )
             escalation_tools = self._strategy_escalation_tools(seed)
             if round_index > 1 and follow_up_context:
                 return (
@@ -230,6 +307,47 @@ class MockLLMProvider(BaseLLMProvider):
                     "Priority: 2"
                 )
             variant_index = int(data.get("variant_index", 1))
+            if generic_seed:
+                if variant_index == 1:
+                    return (
+                        "Summary: Investigate whether the original seed can be preserved as a bounded open research lead "
+                        "without forcing it into ECC, smart-contract, or known vulnerability terminology.\n"
+                        "Rationale: A research lab should accept novel or unfamiliar wording while keeping claims limited "
+                        "until local evidence establishes a domain surface.\n"
+                        "Planned Test: Run preliminary text-level local classification and record missing domain anchors.\n"
+                        "Branch Type: core\n"
+                        "Priority: 1"
+                    )
+                return (
+                    "Summary: Test whether the seed remains too underspecified for domain-specific local computation.\n"
+                    "Rationale: A conservative null branch prevents the system from inventing a familiar pattern when the "
+                    "input may be novel, ambiguous, or incomplete.\n"
+                    "Planned Test: Compare the generic local signal against the need for an explicit curve, contract, "
+                    "implementation artifact, or testable property.\n"
+                    "Branch Type: null\n"
+                    "Priority: 2"
+                )
+            if symbolic_seed:
+                if variant_index == 1:
+                    return (
+                        "Summary: Investigate whether the seed can be expressed as a bounded symbolic, invariant, "
+                        "or formal property suitable for local checking.\n"
+                        "Rationale: Symbolic and formal seeds should stay anchored to the expression or property "
+                        "under review rather than being forced into ECC point-format language.\n"
+                        "Planned Test: Run a symbolic, property, or formal local check and record whether the result "
+                        "supports only a narrow bounded claim.\n"
+                        "Branch Type: core\n"
+                        "Priority: 1"
+                    )
+                return (
+                    "Summary: Test whether the apparent symbolic lead is explained by a simpler algebraic identity, "
+                    "normalization artifact, or underdefined invariant.\n"
+                    "Rationale: A null branch keeps solver-facing evidence narrow and prevents overclaiming beyond "
+                    "the local check.\n"
+                    "Planned Test: Compare the symbolic result against a conservative normalized expression or property baseline.\n"
+                    "Branch Type: null\n"
+                    "Priority: 2"
+                )
             if round_index > 1:
                 if variant_index == 1:
                     return (
@@ -305,6 +423,28 @@ class MockLLMProvider(BaseLLMProvider):
                     "Recommendation: Require manual review before escalating any bounded signal into a security claim.\n"
                     "Confidence Hint: inconclusive"
                 )
+            if generic_seed:
+                tool_name = str(data.get("tool_name", "placeholder_math_tool")).strip()
+                return (
+                    "Summary: The session preserved the original seed, ran a neutral bounded local classification pass, "
+                    "and avoided forcing the idea into a known ECC or smart-contract pattern.\n"
+                    f"Anomaly: {tool_name} produced orientation evidence only; no domain-specific finding was established.\n"
+                    "Recommendation: Preserve the original wording for follow-up instead of rewriting it into a familiar class.\n"
+                    "Recommendation: Add a curve, contract, implementation artifact, trace, or testable property before domain-specific escalation.\n"
+                    "Recommendation: Keep confidence inconclusive until local evidence supports a concrete research surface.\n"
+                    "Confidence Hint: inconclusive"
+                )
+            if symbolic_seed:
+                tool_name = str(data.get("tool_name", "symbolic_check_tool")).strip()
+                return (
+                    "Summary: The session preserved the original symbolic or formal seed, ran bounded local checking, "
+                    "and kept the result scoped to narrow reproducible evidence.\n"
+                    f"Anomaly: {tool_name} produced symbolic or property-check evidence only; no broader proof was claimed.\n"
+                    "Recommendation: Keep the expression, invariant, or property attached to replayable local evidence.\n"
+                    "Recommendation: Add independent formal or property-based checks before upgrading confidence.\n"
+                    "Recommendation: Treat solver-style output as bounded support, not as a complete proof.\n"
+                    "Confidence Hint: inconclusive"
+                )
             keyword_hits = data.get("keyword_hit_count", 0)
             tool_name = str(data.get("tool_name", "local_tool")).strip()
             anomaly_line = (
@@ -336,9 +476,11 @@ class MockLLMProvider(BaseLLMProvider):
             return "implementation behavior"
         if "anomaly" in lowered or "anomal" in lowered:
             return "possible anomaly signals"
+        if any(token in lowered for token in ("symbolic", "invariant", "counterexample", "solver", "proof", "formal")):
+            return "symbolic or formal property behavior"
         if "point" in lowered:
             return "elliptic-curve point behavior"
-        if "curve" in lowered or self._extract_curve_names(lowered):
+        if any(token in lowered for token in ("curve", "ecc", "montgomery", "edwards", "weierstrass")) or self._extract_curve_names(lowered):
             return "elliptic-curve properties"
         return "a bounded elliptic-curve research question"
 
@@ -357,6 +499,9 @@ class MockLLMProvider(BaseLLMProvider):
                 "selfdestruct",
                 "solidity",
                 "vyper",
+                "смарт",
+                "контракт",
+                "солидити",
             )
         ):
             return True
@@ -364,6 +509,109 @@ class MockLLMProvider(BaseLLMProvider):
             r"\b(?:contract|interface|library)\s+[a-z_][a-z0-9_]*(?:\s+is\s+[^{]+)?\s*\{",
             lowered,
         ) is not None
+
+    def _has_direct_domain_signal(self, seed: str) -> bool:
+        lowered = seed.lower()
+        domain_tokens = (
+            "curve",
+            "ecc",
+            "family",
+            "montgomery",
+            "edwards",
+            "weierstrass",
+            "point",
+            "coordinate",
+            "compressed",
+            "uncompressed",
+            "prefix",
+            "on-curve",
+            "signature",
+            "ecdsa",
+            "ecdh",
+            "scalar",
+            "subgroup",
+            "cofactor",
+            "torsion",
+            "finite field",
+            "modular",
+            "contract",
+            "solidity",
+            "vyper",
+            "reentrancy",
+            "delegatecall",
+            "tx.origin",
+            "access control",
+            "крив",
+            "точк",
+            "координат",
+            "сжат",
+            "несжат",
+            "префикс",
+            "подпис",
+            "скаляр",
+            "подгрупп",
+            "кофактор",
+            "конечное поле",
+            "модуль",
+            "контракт",
+            "смарт",
+            "солидити",
+            "реентерабель",
+            "права доступа",
+        )
+        return bool(self._extract_curve_names(lowered)) or any(token in lowered for token in domain_tokens)
+
+    def _has_ecc_domain_signal(self, seed: str) -> bool:
+        lowered = seed.lower()
+        ecc_tokens = (
+            "ecc",
+            "curve",
+            "point",
+            "coordinate",
+            "compressed",
+            "uncompressed",
+            "prefix",
+            "on-curve",
+            "ecdsa",
+            "ecdh",
+            "scalar",
+            "subgroup",
+            "cofactor",
+            "torsion",
+            "montgomery",
+            "edwards",
+            "weierstrass",
+            "testbed",
+            "крив",
+            "точк",
+            "координат",
+            "сжат",
+            "несжат",
+            "префикс",
+            "подпис",
+            "скаляр",
+            "подгрупп",
+            "кофактор",
+        )
+        return bool(self._extract_curve_names(lowered)) or any(token in lowered for token in ecc_tokens)
+
+    def _is_symbolic_or_formal_seed(self, seed: str) -> bool:
+        lowered = seed.lower()
+        return any(
+            token in lowered
+            for token in (
+                "symbolic",
+                "invariant",
+                "counterexample",
+                "solver",
+                "smt",
+                "proof",
+                "prove",
+                "formal",
+                "property",
+                "expression",
+            )
+        )
 
     def _smart_contract_focus(self, seed: str) -> str:
         lowered = seed.lower()

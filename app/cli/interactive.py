@@ -4,7 +4,7 @@ import contextlib
 import logging
 from pathlib import Path
 
-from app.cli.i18n import is_affirmative, normalize_language, t
+from app.cli.i18n import is_affirmative, localize_error, normalize_language, t
 from app.cli.interactive_support import (
     CurveHelperChoice,
     InteractiveRenderer,
@@ -18,14 +18,28 @@ from app.cli.interactive_support import (
 from app.cli.interactive_support import (
     tool_summary_lines as build_tool_summary_lines,
 )
+from app.cli.text_rendering import (
+    render_evaluation_summary,
+    render_run_evaluation_summary,
+)
 from app.cli.ui import CYAN, GRAY, GREEN, RED, WHITE, LocalConsoleUI, MenuOption
 from app.core.doctor import SystemDoctor
+from app.core.golden_cases import (
+    GoldenCaseError,
+    list_golden_cases,
+    prepare_golden_case_run,
+)
 from app.core.orchestrator import ResearchOrchestrator
+from app.core.provider_privacy import (
+    build_provider_context_preview,
+    render_provider_context_preview,
+)
 from app.core.replay_loader import LoadedReplaySource, ReplayLoader
 from app.core.replay_planner import ReplayPlanner
 from app.core.report_markdown import write_report_markdown_file
 from app.core.sarif_export import write_sarif_file
 from app.core.seed_parsing import build_smart_contract_seed, infer_contract_root_from_source_path
+from app.llm.providers import SUPPORTED_PROVIDER_NAMES
 from app.llm.router import build_route_overview, summarize_route_mode
 from app.models.replay_request import ReplayRequest
 from app.models.replay_result import ReplayResult
@@ -224,12 +238,25 @@ class InteractiveConsole:
 
         try:
             with self._quiet_runtime_logs():
-                session = self.orchestrator.run_session(seed_text=seed_text, author=None)
+                session = self.orchestrator.run_session(
+                    seed_text=seed_text,
+                    author=None,
+                    domain=selected_domain,
+                )
         except ValueError as exc:
-            print(self.ui.center_text(self.t("message.input_rejected", error=str(exc)), color=RED, bold=True))
+            print(
+                self.ui.center_text(
+                    self.t("message.input_rejected", error=localize_error(self.language, exc)),
+                    color=RED,
+                    bold=True,
+                )
+            )
             self._pause()
             return
 
+        self._open_completed_session(session=session, helper_curve=helper_curve)
+
+    def _open_completed_session(self, *, session: ResearchSession, helper_curve: str | None = None) -> None:
         self._print_session_result(session=session, helper_curve=helper_curve)
         while True:
             action = self.ui.wait_action(self.t("hint.open_session_actions"))
@@ -367,23 +394,26 @@ class InteractiveConsole:
                 self._toggle_language()
                 advanced_start_index = self.ui.last_menu_index
                 continue
-            if selection is None or selection == 5:
+            if selection is None or selection == 6:
                 return
             if isinstance(selection, int):
                 advanced_start_index = selection
             if selection == 0:
-                self._run_replay()
+                self._run_evaluation_menu()
             elif selection == 1:
-                self._show_routing()
+                self._run_replay()
             elif selection == 2:
-                self._show_tools()
+                self._show_routing()
             elif selection == 3:
-                self._show_curves()
+                self._show_tools()
             elif selection == 4:
+                self._show_curves()
+            elif selection == 5:
                 self._show_system_check()
 
     def _advanced_options(self) -> list[MenuOption]:
         return [
+            MenuOption(self.t("menu.evaluation.label"), self.t("menu.evaluation.desc")),
             MenuOption(self.t("menu.replay.label"), self.t("menu.replay.desc")),
             MenuOption(self.t("menu.routing.label"), self.t("menu.routing.desc")),
             MenuOption(self.t("menu.tools.label"), self.t("menu.tools.desc")),
@@ -391,6 +421,429 @@ class InteractiveConsole:
             MenuOption(self.t("menu.doctor.label"), self.t("menu.doctor.desc")),
             MenuOption(self.t("menu.return.label"), self.t("menu.return.desc")),
         ]
+
+    def _run_evaluation_menu(self) -> None:
+        evaluation_start_index = 0
+        while True:
+            selection = self.ui.choose_menu(
+                header_lines=self._screen_header_lines(
+                    self.t("screen.evaluation.title"),
+                    self.t("screen.evaluation.subtitle"),
+                ),
+                options=self._evaluation_options(),
+                start_index=evaluation_start_index,
+                hint=self.t("hint.replay") + " " + self.t("hint.toggle_language"),
+            )
+            if selection == "toggle_language":
+                self._toggle_language()
+                evaluation_start_index = self.ui.last_menu_index
+                continue
+            if selection is None or selection == 5:
+                return
+            if isinstance(selection, int):
+                evaluation_start_index = selection
+            if selection == 0:
+                self._run_golden_case_menu()
+            elif selection == 1:
+                self._run_experiment_pack_menu()
+            elif selection == 2:
+                self._show_evaluation_summary_menu()
+            elif selection == 3:
+                self._run_baseline_compare()
+            elif selection == 4:
+                self._show_provider_context_preview()
+
+    def _evaluation_options(self) -> list[MenuOption]:
+        return [
+            MenuOption(self.t("menu.golden_cases.label"), self.t("menu.golden_cases.desc")),
+            MenuOption(self.t("menu.experiment_packs.label"), self.t("menu.experiment_packs.desc")),
+            MenuOption(self.t("menu.evaluation_summary.label"), self.t("menu.evaluation_summary.desc")),
+            MenuOption(self.t("menu.compare_baseline.label"), self.t("menu.compare_baseline.desc")),
+            MenuOption(self.t("menu.provider_context_preview.label"), self.t("menu.provider_context_preview.desc")),
+            MenuOption(self.t("menu.return.label"), self.t("menu.return.desc")),
+        ]
+
+    def _run_golden_case_menu(self) -> None:
+        golden_start_index = 0
+        while True:
+            cases = list_golden_cases()
+            options = [
+                MenuOption(
+                    str(case.get("case_id", "")),
+                    self.t(
+                        "menu.golden_case.desc",
+                        domain=case.get("domain", "unknown"),
+                        pack=case.get("recommended_pack", "none"),
+                    ),
+                )
+                for case in cases
+            ]
+            options.append(MenuOption(self.t("menu.return.label"), self.t("menu.return.desc")))
+            selection = self.ui.choose_menu(
+                header_lines=self._screen_header_lines(
+                    self.t("screen.golden_cases.title"),
+                    self.t("screen.golden_cases.subtitle"),
+                ),
+                options=options,
+                start_index=golden_start_index,
+                hint=self.t("hint.replay") + " " + self.t("hint.toggle_language"),
+            )
+            if selection == "toggle_language":
+                self._toggle_language()
+                golden_start_index = self.ui.last_menu_index
+                continue
+            if selection is None or selection == len(cases):
+                return
+            if isinstance(selection, int):
+                golden_start_index = selection
+            case_id = str(cases[int(selection)].get("case_id", "")).strip()
+            try:
+                golden_run = prepare_golden_case_run(case_id)
+            except GoldenCaseError as exc:
+                print(self.ui.center_text(self.t("message.golden_case_failed", error=str(exc)), color=RED, bold=True))
+                self._pause()
+                return
+            self._run_prepared_session(
+                title=self.t("screen.golden_run.title"),
+                subtitle=self.t("screen.golden_run.subtitle"),
+                seed_text=golden_run.seed_text,
+                domain=golden_run.domain,
+                experiment_pack_name=golden_run.experiment_pack_name,
+                synthetic_target_name=golden_run.synthetic_target_name,
+                context_rows=[
+                    self._summary_row(self.t("label.golden_case"), golden_run.case_id),
+                    self._summary_row(self.t("workflow.domain.label"), golden_run.domain),
+                    self._summary_row(self.t("label.experiment_pack"), golden_run.experiment_pack_name),
+                    self._summary_row(self.t("label.input_path"), str(golden_run.input_path)),
+                ],
+            )
+
+    def _run_experiment_pack_menu(self) -> None:
+        pack_start_index = 0
+        while True:
+            packs = self.orchestrator.experiment_pack_registry.list_packs()
+            options = [
+                MenuOption(
+                    pack.pack_name,
+                    self.t(
+                        "menu.experiment_pack.desc",
+                        targets=", ".join(pack.target_kinds),
+                        steps=len(pack.steps),
+                    ),
+                )
+                for pack in packs
+            ]
+            options.append(MenuOption(self.t("menu.return.label"), self.t("menu.return.desc")))
+            selection = self.ui.choose_menu(
+                header_lines=self._screen_header_lines(
+                    self.t("screen.experiment_packs.title"),
+                    self.t("screen.experiment_packs.subtitle"),
+                ),
+                options=options,
+                start_index=pack_start_index,
+                hint=self.t("hint.replay") + " " + self.t("hint.toggle_language"),
+            )
+            if selection == "toggle_language":
+                self._toggle_language()
+                pack_start_index = self.ui.last_menu_index
+                continue
+            if selection is None or selection == len(packs):
+                return
+            if isinstance(selection, int):
+                pack_start_index = selection
+            pack = packs[int(selection)]
+            selected_domain = self._domain_for_pack(pack.target_kinds)
+            helper_curve = self._select_curve_helper() if selected_domain == "ecc_research" else None
+            if helper_curve is _SESSION_FLOW_BACK:
+                continue
+            seed_text = self._build_seed_for_domain(selected_domain)
+            if seed_text is _SESSION_FLOW_BACK:
+                continue
+            if seed_text is None:
+                return
+            self._run_prepared_session(
+                title=self.t("screen.experiment_pack_run.title"),
+                subtitle=self.t("screen.experiment_pack_run.subtitle"),
+                seed_text=str(seed_text),
+                domain=selected_domain,
+                helper_curve=helper_curve if isinstance(helper_curve, str) else None,
+                experiment_pack_name=pack.pack_name,
+                context_rows=[
+                    self._summary_row(self.t("label.experiment_pack"), pack.pack_name),
+                    self._summary_row(self.t("workflow.domain.label"), selected_domain),
+                    self._summary_row(self.t("label.pack_steps"), str(len(pack.steps))),
+                ],
+            )
+
+    def _show_evaluation_summary_menu(self) -> None:
+        summary_start_index = 0
+        while True:
+            options = [
+                MenuOption(self.t("menu.project_summary.label"), self.t("menu.project_summary.desc")),
+                MenuOption(self.t("menu.saved_run_summary.label"), self.t("menu.saved_run_summary.desc")),
+                MenuOption(self.t("menu.return.label"), self.t("menu.return.desc")),
+            ]
+            selection = self.ui.choose_menu(
+                header_lines=self._screen_header_lines(
+                    self.t("screen.evaluation_summary.title"),
+                    self.t("screen.evaluation_summary.subtitle"),
+                ),
+                options=options,
+                start_index=summary_start_index,
+                hint=self.t("hint.replay") + " " + self.t("hint.toggle_language"),
+            )
+            if selection == "toggle_language":
+                self._toggle_language()
+                summary_start_index = self.ui.last_menu_index
+                continue
+            if selection is None or selection == 2:
+                return
+            if isinstance(selection, int):
+                summary_start_index = selection
+            if selection == 0:
+                self._show_project_evaluation_summary()
+            elif selection == 1:
+                self._show_saved_run_evaluation_summary()
+
+    def _show_project_evaluation_summary(self) -> None:
+        while True:
+            body = render_evaluation_summary(
+                language=self.language,
+                golden_cases=list_golden_cases(),
+                pack_names=self.orchestrator.experiment_pack_registry.names(),
+                provider_names=list(SUPPORTED_PROVIDER_NAMES),
+            )
+            self._show_text_document(
+                title=self.t("screen.project_summary.title"),
+                subtitle=self.t("screen.project_summary.subtitle"),
+                body=body,
+            )
+            action = self._pause_or_toggle()
+            if action == "toggle_language":
+                self._toggle_language()
+                continue
+            break
+
+    def _show_saved_run_evaluation_summary(self) -> None:
+        loaded = self._load_saved_source_interactively(
+            title=self.t("screen.saved_run_summary.title"),
+            subtitle=self.t("screen.saved_run_summary.subtitle"),
+        )
+        if loaded is None:
+            return
+        while True:
+            body = render_run_evaluation_summary(
+                language=self.language,
+                loaded_source=loaded,
+            )
+            self._show_text_document(
+                title=self.t("screen.saved_run_summary.title"),
+                subtitle=self.t("screen.saved_run_summary.subtitle"),
+                body=body,
+            )
+            action = self._pause_or_toggle()
+            if action == "toggle_language":
+                self._toggle_language()
+                continue
+            break
+
+    def _run_baseline_compare(self) -> None:
+        loaded = self._load_saved_source_interactively(
+            title=self.t("screen.compare_baseline.title"),
+            subtitle=self.t("screen.compare_baseline.subtitle"),
+        )
+        if loaded is None:
+            return
+        if loaded.session is None:
+            print(self.ui.center_text(self.t("message.compare_baseline_missing"), color=RED, bold=True))
+            self._pause()
+            return
+
+        selected_domain = self._select_research_domain()
+        if selected_domain is None:
+            return
+        helper_curve = self._select_curve_helper() if selected_domain == "ecc_research" else None
+        if helper_curve is _SESSION_FLOW_BACK:
+            return
+        seed_text = self._build_seed_for_domain(selected_domain)
+        if seed_text is _SESSION_FLOW_BACK or seed_text is None:
+            return
+        self._run_prepared_session(
+            title=self.t("screen.compare_run.title"),
+            subtitle=self.t("screen.compare_run.subtitle"),
+            seed_text=str(seed_text),
+            domain=selected_domain,
+            helper_curve=helper_curve if isinstance(helper_curve, str) else None,
+            comparison_baseline=loaded.session,
+            comparison_baseline_source_type=loaded.source_type,
+            comparison_baseline_source_path=loaded.source_path,
+            context_rows=[
+                self._summary_row(self.t("label.baseline_source"), loaded.source_type),
+                self._summary_row(self.t("label.baseline_path"), loaded.source_path),
+                self._summary_row(self.t("workflow.domain.label"), selected_domain),
+            ],
+        )
+
+    def _show_provider_context_preview(self) -> None:
+        selected_domain = self._select_research_domain()
+        if selected_domain is None:
+            return
+        seed_text = self._build_seed_for_domain(selected_domain)
+        if seed_text is _SESSION_FLOW_BACK or seed_text is None:
+            return
+        while True:
+            preview = build_provider_context_preview(
+                config=self.orchestrator.config,
+                seed_text=str(seed_text),
+            )
+            body = render_provider_context_preview(
+                preview=preview,
+                language=self.language,
+            )
+            self._show_text_document(
+                title=self.t("screen.provider_context_preview.title"),
+                subtitle=self.t("screen.provider_context_preview.subtitle"),
+                body=body,
+            )
+            action = self._pause_or_toggle()
+            if action == "toggle_language":
+                self._toggle_language()
+                continue
+            break
+
+    def _load_saved_source_interactively(self, *, title: str, subtitle: str) -> LoadedReplaySource | None:
+        source_type = self._select_saved_source_type(title=title, subtitle=subtitle)
+        if source_type is None:
+            return None
+        source_path = self._prompt_saved_source_path()
+        if source_path is None:
+            return None
+        request = ReplayRequest(
+            source_type=source_type,
+            source_path=source_path,
+            dry_run=True,
+            reexecute=False,
+            preserve_original_seed=True,
+        )
+        try:
+            return self.loader.load(request)
+        except ValueError as exc:
+            print(self.ui.center_text(self.t("message.replay_rejected", error=str(exc)), color=RED, bold=True))
+            self._pause()
+            return None
+
+    def _select_saved_source_type(self, *, title: str, subtitle: str) -> str | None:
+        source_start_index = 0
+        while True:
+            options = [
+                MenuOption(self.t("replay.option.session.label"), self.t("replay.option.session.desc")),
+                MenuOption(self.t("replay.option.manifest.label"), self.t("replay.option.manifest.desc")),
+                MenuOption(self.t("replay.option.bundle.label"), self.t("replay.option.bundle.desc")),
+                MenuOption(self.t("replay.option.return.label"), self.t("replay.option.return.desc")),
+            ]
+            selection = self.ui.choose_menu(
+                header_lines=self._screen_header_lines(title, subtitle),
+                options=options,
+                start_index=source_start_index,
+                hint=self.t("hint.replay") + " " + self.t("hint.toggle_language"),
+            )
+            if selection == "toggle_language":
+                self._toggle_language()
+                source_start_index = self.ui.last_menu_index
+                continue
+            if selection is None or selection == 3:
+                return None
+            if isinstance(selection, int):
+                source_start_index = selection
+            return {0: "session", 1: "manifest", 2: "bundle"}[int(selection)]
+
+    def _prompt_saved_source_path(self) -> str | None:
+        while True:
+            source_path = self._prompt_raw(self.t("prompt.path"))
+            if source_path is _PROMPT_TOGGLE_LANGUAGE:
+                continue
+            source_path = str(source_path).strip()
+            if source_path.lower() in {"/back", "/cancel"}:
+                return None
+            if source_path:
+                return source_path
+            print(self.ui.center_text(self.t("message.replay_path_required"), color=RED, bold=True))
+            self._pause()
+
+    def _run_prepared_session(
+        self,
+        *,
+        title: str,
+        subtitle: str,
+        seed_text: str,
+        domain: str,
+        helper_curve: str | None = None,
+        experiment_pack_name: str | None = None,
+        synthetic_target_name: str | None = None,
+        comparison_baseline: ResearchSession | None = None,
+        comparison_baseline_source_type: str | None = None,
+        comparison_baseline_source_path: str | None = None,
+        context_rows: list[str] | None = None,
+    ) -> None:
+        self.ui.clear()
+        for line in self._screen_header_lines(title, subtitle):
+            print(line)
+        if context_rows:
+            self._print_panel_block(self.t("block.prepared_run"), context_rows, title_color=CYAN)
+        try:
+            with self._quiet_runtime_logs():
+                session = self.orchestrator.run_session(
+                    seed_text=seed_text,
+                    author=None,
+                    domain=domain,
+                    experiment_pack_name=experiment_pack_name,
+                    synthetic_target_name=synthetic_target_name,
+                    comparison_baseline=comparison_baseline,
+                    comparison_baseline_source_type=comparison_baseline_source_type,
+                    comparison_baseline_source_path=comparison_baseline_source_path,
+                )
+        except ValueError as exc:
+            print(
+                self.ui.center_text(
+                    self.t("message.input_rejected", error=localize_error(self.language, exc)),
+                    color=RED,
+                    bold=True,
+                )
+            )
+            self._pause()
+            return
+        self._open_completed_session(session=session, helper_curve=helper_curve)
+
+    def _show_text_document(self, *, title: str, subtitle: str, body: str) -> None:
+        self.ui.clear()
+        for line in self._screen_header_lines(title, subtitle):
+            print(line)
+        for index, section in enumerate(self._split_text_sections(body)):
+            if index == 0 and len(section) == 1:
+                continue
+            section_title = section[0].rstrip(":") if section else self.t("block.summary")
+            rows: list[str] = []
+            for raw_line in (section[1:] if len(section) > 1 else section):
+                rows.extend(self.renderer.wrapped_panel_rows(raw_line, width=76))
+            self._print_panel_block(section_title, rows or [self.t("value.none")], title_color=CYAN)
+
+    def _split_text_sections(self, body: str) -> list[list[str]]:
+        sections: list[list[str]] = []
+        current: list[str] = []
+        for line in body.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                if current:
+                    sections.append(current)
+                    current = []
+                continue
+            current.append(stripped)
+        if current:
+            sections.append(current)
+        return sections
+
+    def _domain_for_pack(self, target_kinds: list[str]) -> str:
+        return "smart_contract_audit" if set(target_kinds) == {"smart_contract"} else "ecc_research"
 
     def _run_replay(self) -> None:
         replay_start_index = 0
@@ -419,15 +872,9 @@ class InteractiveConsole:
             return
 
         source_type = {0: "session", 1: "manifest", 2: "bundle"}[selection]
-        while True:
-            source_path = self._prompt_raw(self.t("prompt.path"))
-            if source_path is _PROMPT_TOGGLE_LANGUAGE:
-                continue
-            source_path = str(source_path).strip()
-            if source_path:
-                break
-            print(self.ui.center_text(self.t("message.replay_path_required"), color=RED, bold=True))
-            self._pause()
+        source_path = self._prompt_saved_source_path()
+        if source_path is None:
+            return
 
         while True:
             dry_run_value = self._prompt(self.t("prompt.dry_run"), default="n")
@@ -748,6 +1195,7 @@ class InteractiveConsole:
             ):
                 print(line)
             print(self.ui.center_text(self.t("prompt.seed_hint"), color=GRAY, dim=True))
+            print(self.ui.center_text(self.t("prompt.seed_example.ecc"), color=GRAY, dim=True))
             seed_text = self._prompt_raw(self.t("prompt.seed"))
             if seed_text is _PROMPT_TOGGLE_LANGUAGE:
                 continue
@@ -772,6 +1220,7 @@ class InteractiveConsole:
         )
 
         while True:
+            print(self.ui.center_text(self.t("prompt.contract.idea_hint"), color=GRAY, dim=True))
             idea_text = self._prompt_raw(self.t("prompt.contract.idea"))
             if idea_text is _PROMPT_TOGGLE_LANGUAGE:
                 continue
@@ -789,7 +1238,13 @@ class InteractiveConsole:
                 contract_root=infer_contract_root_from_source_path(source_label),
             )
         except ValueError as exc:
-            print(self.ui.center_text(self.t("message.input_rejected", error=str(exc)), color=RED, bold=True))
+            print(
+                self.ui.center_text(
+                    self.t("message.input_rejected", error=localize_error(self.language, exc)),
+                    color=RED,
+                    bold=True,
+                )
+            )
             self._pause()
             return None
 

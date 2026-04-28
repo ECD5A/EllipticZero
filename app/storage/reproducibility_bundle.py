@@ -173,7 +173,7 @@ class ReproducibilityBundleStore:
             "- trace.jsonl: append-only execution trace when the source path stays inside approved local export roots",
             "- manifest.json: reproducibility manifest",
             "- comparative_report.json: machine-readable comparative reporting snapshot when available",
-            "- report.md: human-readable Markdown report when a session report is available",
+            "- report.md: Markdown report when a session report is available",
             "- artifacts/: copied local research artifacts when available and inside approved local export roots",
             "",
             "Export policy summary:",

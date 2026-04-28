@@ -86,11 +86,17 @@ python -m app.main --replay-bundle .\artifacts\bundles\session_id --export-repor
 
 Markdown reports are for review, sharing, and archive. They intentionally avoid
 embedding the full seed or contract source; the session, trace, manifest, bundle,
-and local tool outputs remain the evidence trail.
+and local tool outputs remain the evidence trail. The top review snapshot shows
+the primary signal, next review step, evidence posture, and residual risk when
+the saved run contains those fields.
 
 For the menu-first path, run the interactive console and choose
 `EXPORT REVIEW FILES` after a session completes. It writes `report.md` and
 `review.sarif` into the session bundle without requiring export flags.
+
+The same interactive console also exposes `EVALUATION LAB` for no-key
+review paths: golden cases, experiment packs, project or saved-run summaries,
+baseline comparison, and provider context preview.
 
 Preview hosted-provider context before a live agent run:
 

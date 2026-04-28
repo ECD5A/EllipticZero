@@ -13,7 +13,7 @@ from app.agents import (
     StrategyAgent,
 )
 from app.cli import InteractiveConsole, should_launch_interactive
-from app.cli.i18n import normalize_language, t
+from app.cli.i18n import localize_error, normalize_language, t
 from app.cli.text_rendering import (
     render_doctor_report,
     render_evaluation_summary,
@@ -358,7 +358,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--export-report-md",
-        help="Write a human-readable Markdown report from one saved session, manifest, or bundle and exit.",
+        help="Write a Markdown report from one saved session, manifest, or bundle and exit.",
     )
     parser.add_argument(
         "--golden-case",
@@ -892,6 +892,7 @@ def main() -> int:
         session = orchestrator.run_session(
             seed_text=prepared_seed,
             author=args.author,
+            domain=args.domain,
             research_mode=args.research_mode,
             synthetic_target_name=selected_synthetic_target_name,
             experiment_pack_name=selected_pack_name,
@@ -900,7 +901,10 @@ def main() -> int:
             comparison_baseline_source_path=comparison_source_path,
         )
     except ValueError as exc:
-        parser.exit(status=2, message=t(language, "cli.error.input_rejected", error=str(exc)))
+        parser.exit(
+            status=2,
+            message=t(language, "cli.error.input_rejected", error=localize_error(language, exc)),
+        )
 
     session_path = session.session_file_path or str(
         Path(config.storage.sessions_dir) / f"{session.session_id}.json"

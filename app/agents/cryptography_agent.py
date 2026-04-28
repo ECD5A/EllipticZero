@@ -18,10 +18,10 @@ class CryptographyAgent(BaseAgent):
         round_index: int = 1,
         follow_up_context: str | None = None,
     ) -> CryptographyAgentResult:
-        user_prompt = seed.raw_text
+        user_prompt = self.seed_prompt(seed)
         if follow_up_context:
             user_prompt = (
-                f"{seed.raw_text}\n\nFollow-up context for exploratory round {round_index}:\n"
+                f"{self.seed_prompt(seed)}\n\nFollow-up context for exploratory round {round_index}:\n"
                 f"{follow_up_context}"
             )
         response = self.gateway.generate(
@@ -31,6 +31,7 @@ class CryptographyAgent(BaseAgent):
             metadata={
                 "agent": "cryptography",
                 "seed": seed.raw_text,
+                "domain": seed.domain or "",
                 "math_summary": math_formalization.formalization_summary,
                 "round_index": round_index,
                 "follow_up_context": follow_up_context or "",

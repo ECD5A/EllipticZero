@@ -204,7 +204,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "prompt.seed": "seed >",
         "prompt.seed_hint": "Enter the idea that agents and local tools should investigate locally. Type /lang to switch language.",
         "prompt.author_optional": "author (optional, Enter skips) >",
-        "prompt.path": "path (/lang switches language) >",
+        "prompt.path": "path (/back returns, /lang switches language) >",
         "prompt.replay_author": "author for replay run (optional) >",
         "prompt.dry_run": "inspect only? [y/N]",
         "prompt.pause": "Press Enter to continue...",
@@ -629,7 +629,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "prompt.seed": "исходная идея >",
         "prompt.seed_hint": "Введите идею, которую агенты и локальные инструменты должны проверить локально. /lang переключает язык.",
         "prompt.author_optional": "автор (необязательно, Enter пропускает) >",
-        "prompt.path": "путь (/lang переключает язык) >",
+        "prompt.path": "путь (/back назад, /lang переключает язык) >",
         "prompt.replay_author": "автор для повтора (необязательно) >",
         "prompt.dry_run": "только просмотр? [д/Н]",
         "prompt.pause": "Нажмите Enter, чтобы продолжить...",
@@ -1035,8 +1035,14 @@ TRANSLATIONS["en"].update(
         "hint.open_session_actions": "Enter opens session actions. F2 or L switches language.",
         "hint.session_actions": "Choose an action. Enter confirms. Esc returns.",
         "screen.session_actions.title": "SESSION ACTIONS",
-        "screen.session_actions.subtitle": "Export readable review files or inspect local output paths.",
+        "screen.session_actions.subtitle": "Export report files or inspect local output paths.",
         "block.export_outputs": "EXPORTED REVIEW FILES",
+        "block.review_snapshot": "REVIEW SNAPSHOT",
+        "label.primary_signal": "PRIMARY SIGNAL",
+        "label.next_review_step": "NEXT REVIEW STEP",
+        "label.evidence_posture": "EVIDENCE POSTURE",
+        "label.residual_risk": "RESIDUAL RISK",
+        "label.replay_export": "REPLAY / EXPORT",
         "label.markdown_report": "MARKDOWN REPORT",
         "label.sarif_file": "SARIF FILE",
         "label.sarif_results": "SARIF RESULTS",
@@ -1044,19 +1050,53 @@ TRANSLATIONS["en"].update(
         "message.export_failed": "Review export failed: {error}",
         "message.export_complete": "Review files exported.",
         "workflow.run_outputs.value": "Session JSON, trace JSONL, bundle, Markdown report, SARIF, and comparative report.",
+        "screen.contract_source.subtitle": "Choose a local file or paste contract code. Solidity/Vyper is inferred automatically.",
+        "prompt.contract.idea": "what should agents check? (/lang switches language) >",
+        "prompt.seed_example.ecc": "Example: secp256k1 compressed point, prefix/x outside field, on-curve check.",
+        "prompt.contract.idea_hint": "Example idea: access control, external calls, value-flow risks.",
+        "prompt.contract.file": "contract file or code (/back, /cancel, /lang) >",
+        "prompt.contract.input_hint": "Drop or paste a file path. Press Enter to paste multi-line code.",
+        "prompt.contract.paste_hint": "Paste contract code below. Type /done when finished. /back returns. /cancel leaves the session.",
+        "validation.seed.empty": "Research idea cannot be empty.",
+        "validation.seed.too_vague": (
+            "The idea is too broad. Mention a curve, contract behavior, point format, implementation detail, "
+            "risk, anomaly, or testable property."
+        ),
+        "validation.contract.idea_empty": "Smart-contract audit idea cannot be empty.",
+        "validation.contract.code_empty": "Smart-contract code cannot be empty.",
+        "validation.contract.code_too_large": "Smart-contract code is too large for a bounded local session.",
+        "summary.mock.ecc": (
+            "The session preserved the original seed, produced bounded hypotheses, ran a registry-controlled "
+            "local compute job, and recorded preliminary evidence without claiming a validated mathematical or "
+            "cryptographic result."
+        ),
+        "summary.mock.contract": (
+            "The session preserved the original smart-contract audit seed, ran bounded local static analysis, "
+            "and recorded review-oriented evidence without claiming a validated exploit path."
+        ),
+        "summary.mock.generic": (
+            "The session preserved the original seed, ran a neutral bounded local classification pass, "
+            "and avoided forcing the idea into a known ECC or smart-contract pattern."
+        ),
     }
 )
 TRANSLATIONS["ru"].update(
     {
-        "menu.export_review_files.label": "ВЫГРУЗИТЬ ФАЙЛЫ ПРОВЕРКИ",
+        "menu.export_review_files.label": "ВЫГРУЗИТЬ ОТЧЁТ И SARIF",
         "menu.export_review_files.desc": "Создать report.md и review.sarif внутри пакета сессии.",
         "menu.show_output_paths.label": "ПОКАЗАТЬ ПУТИ К ФАЙЛАМ",
         "menu.show_output_paths.desc": "Показать session, trace, bundle и пути к отчётам.",
         "hint.open_session_actions": "Enter открывает действия с сессией. F2 или L переключает язык.",
         "hint.session_actions": "Выбери действие. Enter подтверждает. Esc возвращает назад.",
         "screen.session_actions.title": "ДЕЙСТВИЯ С СЕССИЕЙ",
-        "screen.session_actions.subtitle": "Выгрузить читаемые файлы проверки или посмотреть локальные пути.",
+        "screen.session_actions.subtitle": "Выгрузить отчётные файлы или посмотреть локальные пути.",
         "block.export_outputs": "ВЫГРУЖЕННЫЕ ФАЙЛЫ ПРОВЕРКИ",
+        "block.review_snapshot": "КРАТКАЯ СВОДКА ПРОВЕРКИ",
+        "label.primary_signal": "ГЛАВНЫЙ СИГНАЛ",
+        "label.next_review_step": "СЛЕДУЮЩИЙ ШАГ",
+        "label.evidence_posture": "ДОКАЗАТЕЛЬНАЯ БАЗА",
+        "label.residual_risk": "ОСТАТОЧНЫЙ РИСК",
+        "label.replay_export": "REPLAY / EXPORT",
         "label.markdown_report": "MARKDOWN-ОТЧЁТ",
         "label.sarif_file": "SARIF-ФАЙЛ",
         "label.sarif_results": "SARIF-ЗАПИСЕЙ",
@@ -1064,6 +1104,142 @@ TRANSLATIONS["ru"].update(
         "message.export_failed": "Выгрузка не удалась: {error}",
         "message.export_complete": "Файлы проверки выгружены.",
         "workflow.run_outputs.value": "session.json, trace.jsonl, пакет, Markdown-отчёт, SARIF и сравнительный отчёт.",
+        "screen.contract_source.subtitle": "Выбери локальный файл или вставь код контракта. Solidity/Vyper определяется автоматически.",
+        "prompt.contract.idea": "что агентам проверить? (/lang переключает язык) >",
+        "prompt.seed_example.ecc": "Пример: secp256k1, сжатая точка, prefix/x вне поля, on-curve проверка.",
+        "prompt.contract.idea_hint": "Пример идеи: права доступа, внешние вызовы, value-flow риски.",
+        "prompt.contract.file": "файл контракта или код (/back, /cancel, /lang) >",
+        "prompt.contract.input_hint": "Перетащи или вставь путь к файлу. Нажми Enter, чтобы вставить многострочный код.",
+        "prompt.contract.paste_hint": "Вставь код контракта ниже. Введи /done, когда закончишь. /back возвращает назад. /cancel отменяет сессию.",
+        "validation.seed.empty": "Идея проверки не может быть пустой.",
+        "validation.seed.too_vague": (
+            "Идея слишком общая. Укажи кривую, поведение контракта, формат точки, деталь реализации, "
+            "риск, аномалию или проверяемое свойство."
+        ),
+        "validation.contract.idea_empty": "Идея аудита смарт-контракта не может быть пустой.",
+        "validation.contract.code_empty": "Код смарт-контракта не может быть пустым.",
+        "validation.contract.code_too_large": "Код смарт-контракта слишком большой для ограниченной локальной сессии.",
+        "summary.mock.ecc": (
+            "Сессия сохранила исходную идею, сформировала ограниченные гипотезы, запустила локальную "
+            "проверку через реестр инструментов и записала предварительные доказательства без заявлений "
+            "о подтверждённом математическом или криптографическом результате."
+        ),
+        "summary.mock.contract": (
+            "Сессия сохранила исходную идею аудита смарт-контракта, запустила ограниченную локальную "
+            "статическую проверку и записала доказательства для ревью без заявлений о подтверждённом "
+            "пути эксплуатации."
+        ),
+        "summary.mock.generic": (
+            "Сессия сохранила исходную идею, запустила нейтральную ограниченную локальную классификацию "
+            "и не стала насильно подгонять ввод под известный ECC- или smart-contract-паттерн."
+        ),
+    }
+)
+
+TRANSLATIONS["en"].update(
+    {
+        "menu.evaluation.label": "EVALUATION LAB",
+        "menu.evaluation.desc": "Golden cases, packs, summaries, comparison, and provider preview.",
+        "menu.golden_cases.label": "GOLDEN CASES",
+        "menu.golden_cases.desc": "Run a safe built-in example and inspect the report.",
+        "menu.golden_case.desc": "domain={domain}; pack={pack}",
+        "menu.experiment_packs.label": "BENCHMARK PACKS",
+        "menu.experiment_packs.desc": "Choose a benchmark or research pack from the console.",
+        "menu.experiment_pack.desc": "targets={targets}; steps={steps}",
+        "menu.evaluation_summary.label": "EVALUATION SUMMARY",
+        "menu.evaluation_summary.desc": "Show a project overview or inspect a saved run.",
+        "menu.compare_baseline.label": "COMPARE BASELINE",
+        "menu.compare_baseline.desc": "Compare a new run with a saved baseline.",
+        "menu.provider_context_preview.label": "PROVIDER PREVIEW",
+        "menu.provider_context_preview.desc": "Preview hosted context before live agents run.",
+        "menu.project_summary.label": "PROJECT SUMMARY",
+        "menu.project_summary.desc": "Show project coverage, no-key checks, and commercial boundary.",
+        "menu.saved_run_summary.label": "SAVED RUN SUMMARY",
+        "menu.saved_run_summary.desc": "Load a saved session, manifest, or bundle and summarize review readiness.",
+        "screen.evaluation.title": "EVALUATION LAB",
+        "screen.evaluation.subtitle": "Safe examples and review helpers are available from the console.",
+        "screen.golden_cases.title": "GOLDEN CASES",
+        "screen.golden_cases.subtitle": "Pick a built-in safe case and run the full bounded local flow.",
+        "screen.golden_run.title": "GOLDEN CASE RUN",
+        "screen.golden_run.subtitle": "The selected case defines the domain, seed, synthetic target, and recommended pack.",
+        "screen.experiment_packs.title": "BENCHMARK PACKS",
+        "screen.experiment_packs.subtitle": "Choose a pack, enter a seed or contract, and run it through the normal agent flow.",
+        "screen.experiment_pack_run.title": "EXPERIMENT PACK RUN",
+        "screen.experiment_pack_run.subtitle": "The selected pack is attached to this bounded local session.",
+        "screen.evaluation_summary.title": "EVALUATION SUMMARY",
+        "screen.evaluation_summary.subtitle": "Inspect project-level coverage or saved-run review readiness.",
+        "screen.project_summary.title": "PROJECT SUMMARY",
+        "screen.project_summary.subtitle": "Buyer-facing overview of domains, checks, packs, and license boundary.",
+        "screen.saved_run_summary.title": "SAVED RUN SUMMARY",
+        "screen.saved_run_summary.subtitle": "Load a saved session, manifest, or bundle and inspect review readiness.",
+        "screen.compare_baseline.title": "COMPARE BASELINE",
+        "screen.compare_baseline.subtitle": "Choose the saved baseline before entering the new bounded run.",
+        "screen.compare_run.title": "BASELINE COMPARISON RUN",
+        "screen.compare_run.subtitle": "The new run will record before/after context against the saved baseline.",
+        "screen.provider_context_preview.title": "PROVIDER PREVIEW",
+        "screen.provider_context_preview.subtitle": "No provider call is made; this only shows context and routing risk.",
+        "block.prepared_run": "PREPARED RUN",
+        "label.golden_case": "GOLDEN CASE",
+        "label.experiment_pack": "EXPERIMENT PACK",
+        "label.input_path": "INPUT PATH",
+        "label.pack_steps": "PACK STEPS",
+        "label.baseline_source": "BASELINE SOURCE",
+        "label.baseline_path": "BASELINE PATH",
+        "message.golden_case_failed": "Golden case failed: {error}",
+        "message.compare_baseline_missing": "Selected baseline did not contain a recoverable session snapshot.",
+    }
+)
+TRANSLATIONS["ru"].update(
+    {
+        "menu.evaluation.label": "ЛАБОРАТОРИЯ ОЦЕНКИ",
+        "menu.evaluation.desc": "Golden cases, пакеты, сводки, сравнение и контекст провайдера.",
+        "menu.golden_cases.label": "GOLDEN CASES",
+        "menu.golden_cases.desc": "Запустить безопасный пример и открыть отчёт.",
+        "menu.golden_case.desc": "домен={domain}; пакет={pack}",
+        "menu.experiment_packs.label": "ПАКЕТЫ ПРОВЕРОК",
+        "menu.experiment_packs.desc": "Выбрать пакет проверки из консоли.",
+        "menu.experiment_pack.desc": "цели={targets}; шагов={steps}",
+        "menu.evaluation_summary.label": "СВОДКА ОЦЕНКИ",
+        "menu.evaluation_summary.desc": "Быстрый обзор проекта или сохранённого запуска.",
+        "menu.compare_baseline.label": "СРАВНИТЬ BASELINE",
+        "menu.compare_baseline.desc": "Сравнить новый запуск с сохранённым baseline.",
+        "menu.provider_context_preview.label": "PREVIEW ПРОВАЙДЕРА",
+        "menu.provider_context_preview.desc": "Проверить контекст перед live-агентами.",
+        "menu.project_summary.label": "СВОДКА ПРОЕКТА",
+        "menu.project_summary.desc": "Покрытие, проверки без ключей и коммерческая граница.",
+        "menu.saved_run_summary.label": "СВОДКА ЗАПУСКА",
+        "menu.saved_run_summary.desc": "Загрузить session, manifest или bundle и оценить готовность review.",
+        "screen.evaluation.title": "ЛАБОРАТОРИЯ ОЦЕНКИ",
+        "screen.evaluation.subtitle": "Безопасные примеры и review-инструменты доступны прямо из консоли.",
+        "screen.golden_cases.title": "GOLDEN CASES",
+        "screen.golden_cases.subtitle": "Выбери встроенный безопасный кейс и запусти полный локальный цикл.",
+        "screen.golden_run.title": "ЗАПУСК GOLDEN CASE",
+        "screen.golden_run.subtitle": "Кейс задаёт домен, seed, синтетическую цель и рекомендованный пакет.",
+        "screen.experiment_packs.title": "ПАКЕТЫ ПРОВЕРОК",
+        "screen.experiment_packs.subtitle": "Выбери пакет, введи seed или контракт и запусти обычный агентный цикл.",
+        "screen.experiment_pack_run.title": "ЗАПУСК ПАКЕТА",
+        "screen.experiment_pack_run.subtitle": "Выбранный пакет привязан к этой ограниченной локальной сессии.",
+        "screen.evaluation_summary.title": "СВОДКА ОЦЕНКИ",
+        "screen.evaluation_summary.subtitle": "Покрытие проекта или готовность сохранённого запуска к проверке.",
+        "screen.project_summary.title": "СВОДКА ПРОЕКТА",
+        "screen.project_summary.subtitle": "Обзор доменов, проверок, пакетов и лицензионной границы.",
+        "screen.saved_run_summary.title": "СВОДКА СОХРАНЁННОГО ЗАПУСКА",
+        "screen.saved_run_summary.subtitle": "Загрузи session, manifest или bundle и посмотри готовность review.",
+        "screen.compare_baseline.title": "СРАВНИТЬ BASELINE",
+        "screen.compare_baseline.subtitle": "Сначала выбери сохранённый baseline, затем введи новый запуск.",
+        "screen.compare_run.title": "ЗАПУСК СРАВНЕНИЯ",
+        "screen.compare_run.subtitle": "Новый запуск сохранит before/after контекст относительно baseline.",
+        "screen.provider_context_preview.title": "PREVIEW ПРОВАЙДЕРА",
+        "screen.provider_context_preview.subtitle": "Вызов провайдера не выполняется; показываются только контекст и риск маршрута.",
+        "block.prepared_run": "ПОДГОТОВЛЕННЫЙ ЗАПУСК",
+        "label.golden_case": "GOLDEN CASE",
+        "label.experiment_pack": "ПАКЕТ",
+        "label.input_path": "ВХОДНОЙ ФАЙЛ",
+        "label.pack_steps": "ШАГОВ В ПАКЕТЕ",
+        "label.baseline_source": "ИСТОЧНИК BASELINE",
+        "label.baseline_path": "ПУТЬ BASELINE",
+        "message.golden_case_failed": "Golden case не запустился: {error}",
+        "message.compare_baseline_missing": "В выбранном baseline нет восстановимого снимка сессии.",
     }
 )
 
@@ -1083,6 +1259,23 @@ def t(language: str | None, key: str, **kwargs: object) -> str:
     if template is None:
         template = TRANSLATIONS["en"].get(key, key)
     return template.format(**kwargs)
+
+
+def localize_error(language: str | None, error: object) -> str:
+    """Translate common validation errors without changing the validation layer API."""
+
+    text = str(error)
+    if text == "Research idea cannot be empty.":
+        return t(language, "validation.seed.empty")
+    if text.startswith("Research idea is too vague."):
+        return t(language, "validation.seed.too_vague")
+    if text == "Smart contract audit idea cannot be empty.":
+        return t(language, "validation.contract.idea_empty")
+    if text == "Smart contract code cannot be empty.":
+        return t(language, "validation.contract.code_empty")
+    if text.startswith("Smart contract code is too large for a bounded local session"):
+        return t(language, "validation.contract.code_too_large")
+    return text
 
 
 def is_affirmative(language: str | None, value: str) -> bool:

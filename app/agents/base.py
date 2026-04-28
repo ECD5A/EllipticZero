@@ -4,6 +4,7 @@ from abc import ABC
 from pathlib import Path
 
 from app.llm.gateway import LLMGateway
+from app.models.seed import ResearchSeed
 
 
 class BaseAgent(ABC):
@@ -27,6 +28,15 @@ class BaseAgent(ABC):
 
     def load_prompt(self) -> str:
         return self._prompt_path.read_text(encoding="utf-8")
+
+    def seed_prompt(self, seed: ResearchSeed) -> str:
+        if not seed.domain:
+            return seed.raw_text
+        label = {
+            "ecc_research": "ECC / defensive cryptography research",
+            "smart_contract_audit": "smart-contract audit research",
+        }.get(seed.domain, seed.domain)
+        return f"Selected domain: {label}\nUser seed:\n{seed.raw_text}"
 
     def parse_labeled_sections(self, response: str) -> dict[str, str]:
         sections: dict[str, list[str]] = {}

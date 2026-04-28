@@ -23,10 +23,10 @@ class StrategyAgent(BaseAgent):
         round_index: int = 1,
         follow_up_context: str | None = None,
     ) -> StrategyAgentResult:
-        user_prompt = seed.raw_text
+        user_prompt = self.seed_prompt(seed)
         if follow_up_context:
             user_prompt = (
-                f"{seed.raw_text}\n\nFollow-up context for exploratory round {round_index}:\n"
+                f"{self.seed_prompt(seed)}\n\nFollow-up context for exploratory round {round_index}:\n"
                 f"{follow_up_context}"
             )
         response = self.gateway.generate(
@@ -36,6 +36,7 @@ class StrategyAgent(BaseAgent):
             metadata={
                 "agent": "strategy",
                 "seed": seed.raw_text,
+                "domain": seed.domain or "",
                 "math_summary": math_formalization.formalization_summary,
                 "crypto_surface_summary": cryptography_profile.surface_summary,
                 "round_index": round_index,

@@ -17,10 +17,10 @@ class MathAgent(BaseAgent):
         round_index: int = 1,
         follow_up_context: str | None = None,
     ) -> MathAgentResult:
-        user_prompt = seed.raw_text
+        user_prompt = self.seed_prompt(seed)
         if follow_up_context:
             user_prompt = (
-                f"{seed.raw_text}\n\nFollow-up context for exploratory round {round_index}:\n"
+                f"{self.seed_prompt(seed)}\n\nFollow-up context for exploratory round {round_index}:\n"
                 f"{follow_up_context}"
             )
         response = self.gateway.generate(
@@ -30,6 +30,7 @@ class MathAgent(BaseAgent):
             metadata={
                 "agent": "math",
                 "seed": seed.raw_text,
+                "domain": seed.domain or "",
                 "round_index": round_index,
                 "follow_up_context": follow_up_context or "",
             },
