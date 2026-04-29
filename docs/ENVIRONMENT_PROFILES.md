@@ -9,10 +9,10 @@ hosted providers or local security tools only when you need them.
 |---|---|---|---|---|
 | `mock` | first run, docs review, CLI walkthrough, reproducibility basics | Python 3.11+, project install | none | `python -m app.main --doctor` |
 | `hosted-agent` | evaluating real agent reasoning with configured providers | Python 3.11+, provider API key | per-agent routing | `python -m app.main --live-provider-smoke openrouter --live-smoke-model openrouter/auto` |
-| `ecc-focused` | ECC metadata, encoding, subgroup, cofactor, and family-depth review | Python 3.11+, lab extras | SageMath | `python -m app.main --pack ecc_family_depth_benchmark_pack "Review ECC assumptions."` |
 | `smart-contract-static` | Solidity/Vyper parse, compile, static review, and benchmark packs | Python 3.11+, smart-contract extras, managed `solc` | Slither, Foundry, Echidna | `.\scripts\setup_local_lab.ps1 -Profile smart-contract-static` |
 | `repo-scale-audit` | protocol repository inventory, casebooks, review lanes, before/after comparison | smart-contract-static profile, local contract tree | Slither, Foundry, Echidna | `python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --pack repo_casebook_benchmark_pack "Review repo lanes."` |
-| `full-local-lab` | broad local research across ECC, symbolic checks, smart-contract review, replay, and bundles | Python 3.11+, `.[lab]` extras | SageMath, Slither, Foundry, Echidna, hosted provider key | `.\scripts\setup_local_lab.ps1` |
+| `ecc-focused` | ECC metadata, encoding, subgroup, cofactor, and family-depth review | Python 3.11+, lab extras | SageMath | `python -m app.main --pack ecc_family_depth_benchmark_pack "Review ECC assumptions."` |
+| `full-local-lab` | broad local research across smart-contract review, ECC, symbolic checks, replay, and bundles | Python 3.11+, `.[lab]` extras | SageMath, Slither, Foundry, Echidna, hosted provider key | `.\scripts\setup_local_lab.ps1` |
 
 ## Profile Details
 

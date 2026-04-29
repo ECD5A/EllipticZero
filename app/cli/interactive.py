@@ -38,7 +38,11 @@ from app.core.replay_loader import LoadedReplaySource, ReplayLoader
 from app.core.replay_planner import ReplayPlanner
 from app.core.report_markdown import write_report_markdown_file
 from app.core.sarif_export import write_sarif_file
-from app.core.seed_parsing import build_smart_contract_seed, infer_contract_root_from_source_path
+from app.core.seed_parsing import (
+    SMART_CONTRACT_MAX_ROOT_SCAN_FILES,
+    build_smart_contract_seed,
+    infer_contract_root_from_source_path,
+)
 from app.core.threat_intel import (
     ThreatIntelCache,
     render_threat_intel_cache_summary,
@@ -1223,8 +1227,8 @@ class InteractiveConsole:
 
     def _select_research_domain(self) -> str | None:
         domain_options = [
-            MenuOption(self.t("domain.ecc.label"), self.t("domain.ecc.desc")),
             MenuOption(self.t("domain.smart_contract.label"), self.t("domain.smart_contract.desc")),
+            MenuOption(self.t("domain.ecc.label"), self.t("domain.ecc.desc")),
         ]
         start_index = 0
         while True:
@@ -1242,7 +1246,7 @@ class InteractiveConsole:
                 continue
             if selection is None:
                 return None
-            return "smart_contract_audit" if selection == 1 else "ecc_research"
+            return "smart_contract_audit" if selection == 0 else "ecc_research"
 
     def _build_seed_for_domain(self, selected_domain: str) -> str | object | None:
         if selected_domain == "smart_contract_audit":
@@ -1275,7 +1279,7 @@ class InteractiveConsole:
             return _SESSION_FLOW_BACK
         if source is None:
             return None
-        contract_code, source_label = source
+        contract_code, source_label, source_root = source
 
         language = infer_contract_language(
             source_label=source_label,
@@ -1299,7 +1303,7 @@ class InteractiveConsole:
                 contract_code=contract_code,
                 language=language,
                 source_label=source_label,
-                contract_root=infer_contract_root_from_source_path(source_label),
+                contract_root=source_root or infer_contract_root_from_source_path(source_label),
             )
         except ValueError as exc:
             print(
@@ -1312,7 +1316,7 @@ class InteractiveConsole:
             self._pause()
             return None
 
-    def _collect_contract_source(self) -> tuple[str, str | None] | object | None:
+    def _collect_contract_source(self) -> tuple[str, str | None, str | None] | object | None:
         while True:
             self.ui.clear()
             for line in self._screen_header_lines(
@@ -1332,8 +1336,10 @@ class InteractiveConsole:
 
             normalized_path = self._normalize_contract_source_path(source_input)
             if normalized_path:
-                contract_path = Path(normalized_path)
-                if not contract_path.exists() or not contract_path.is_file():
+                loaded_source = self._load_contract_source_path(normalized_path)
+                if loaded_source is not None:
+                    return loaded_source
+                if self._looks_like_contract_source_path(normalized_path):
                     print(
                         self.ui.center_text(
                             self.t("message.contract_path_invalid", path=normalized_path),
@@ -1342,11 +1348,6 @@ class InteractiveConsole:
                         )
                     )
                     continue
-                try:
-                    contract_code = contract_path.read_text(encoding="utf-8")
-                except UnicodeDecodeError:
-                    contract_code = contract_path.read_text(encoding="utf-8-sig")
-                return contract_code, str(contract_path)
 
             if not source_input:
                 contract_code = self._prompt_multiline_contract_code()
@@ -1363,7 +1364,56 @@ class InteractiveConsole:
             if not contract_code.strip():
                 print(self.ui.center_text(self.t("message.contract_code_required"), color=RED, bold=True))
                 continue
-            return contract_code, None
+            return contract_code, None, None
+
+    def _load_contract_source_path(self, value: str) -> tuple[str, str, str | None] | None:
+        try:
+            source_path = Path(value).expanduser()
+        except OSError:
+            return None
+        if not source_path.exists():
+            return None
+        if source_path.is_file():
+            if source_path.suffix.lower() not in {".sol", ".vy"}:
+                return None
+            return self._read_contract_source_file(source_path), str(source_path), None
+        if source_path.is_dir():
+            contract_files = self._bounded_contract_files_for_interactive_root(source_path)
+            if not contract_files:
+                return None
+            representative = self._choose_representative_contract_file(contract_files)
+            return self._read_contract_source_file(representative), str(representative), str(source_path.resolve())
+        return None
+
+    def _read_contract_source_file(self, source_path: Path) -> str:
+        try:
+            return source_path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            return source_path.read_text(encoding="utf-8-sig")
+
+    def _bounded_contract_files_for_interactive_root(self, root_path: Path) -> list[Path]:
+        skipped_dirs = {".git", "artifacts", "broadcast", "build", "cache", "node_modules", "out"}
+        files: list[Path] = []
+        for pattern in ("*.sol", "*.vy"):
+            for path in root_path.rglob(pattern):
+                if not path.is_file():
+                    continue
+                if any(part.lower() in skipped_dirs for part in path.relative_to(root_path).parts[:-1]):
+                    continue
+                files.append(path.resolve())
+                if len(files) > SMART_CONTRACT_MAX_ROOT_SCAN_FILES:
+                    return []
+        return sorted(files, key=lambda item: str(item).lower())
+
+    def _choose_representative_contract_file(self, contract_files: list[Path]) -> Path:
+        def score(path: Path) -> tuple[int, int, str]:
+            parts = {part.lower() for part in path.parts}
+            name = path.name.lower()
+            preferred_root = 0 if parts & {"contracts", "src"} else 1
+            test_like = 1 if any(token in name for token in ("test", "mock", "fixture", "script")) else 0
+            return preferred_root, test_like, str(path).lower()
+
+        return min(contract_files, key=score)
 
     def _prompt_multiline_contract_code(self, initial_line: str | None = None) -> str | object | None:
         print(self.ui.center_text(self.t("prompt.contract.paste_hint"), color=GRAY, dim=True))
@@ -1393,6 +1443,12 @@ class InteractiveConsole:
         if stripped[0] == stripped[-1] and stripped[0] in {'"', "'"}:
             stripped = stripped[1:-1].strip()
         return stripped or None
+
+    def _looks_like_contract_source_path(self, value: str) -> bool:
+        lowered = value.lower()
+        if lowered.endswith((".sol", ".vy")):
+            return True
+        return any(token in value for token in ("\\", "/", ":")) or lowered.startswith((".", "~"))
 
     def _looks_like_contract_code(self, value: str) -> bool:
         lowered = value.lower()

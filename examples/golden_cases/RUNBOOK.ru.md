@@ -56,12 +56,17 @@ python -m app.main --domain smart_contract_audit --contract-file .\examples\gold
 ```
 
 ```powershell
+python -m app.main --domain smart_contract_audit --contract-file .\examples\golden_cases\contracts\SyntheticReentrancyVault.sol --pack contract_static_benchmark_pack "Benchmark external-call ordering, withdrawal accounting, and reentrancy-adjacent review lanes."
+```
+
+```powershell
 python -m app.main --domain smart_contract_audit --contract-file .\examples\golden_cases\contracts\SyntheticGovernanceTimelock.sol --pack governance_timelock_benchmark_pack "Benchmark governance timelock, upgrade-control, and emergency-lane review surfaces."
 ```
 
 Смотреть:
 
 - parser и surface output
+- external-call ordering или withdrawal-accounting review lanes
 - manual review queue
 - bounded confidence
 - отсутствие утверждения о подтвержденном exploit только на основании pattern evidence

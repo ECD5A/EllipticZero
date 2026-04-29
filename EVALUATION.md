@@ -190,6 +190,7 @@ routing, and evidence boundaries:
 | `ecc-25519-subgroup-hygiene` | ECC | Subgroup/cofactor, twist hygiene, encoding caveats. |
 | `ecc-secp256k1-point-format-edge` | ECC | Point-format inspection and parser/encoding boundaries. |
 | `contract-vault-permission-lane` | Smart contracts | Vault permissions, externally reachable value flow, finding cards. |
+| `contract-reentrancy-review-lane` | Smart contracts | External-call ordering, withdrawal accounting, and reentrancy-adjacent review lanes. |
 | `contract-governance-timelock-lane` | Smart contracts | Governance, timelock, upgrade-control, and emergency-lane review. |
 | `contract-repo-scale-lending-protocol` | Smart contracts | Repo inventory, protocol lanes, liquidation/collateral/accounting review. |
 

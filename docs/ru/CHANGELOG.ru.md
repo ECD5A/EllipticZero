@@ -7,7 +7,19 @@
 
 ## В разработке
 
-Пока нет невыпущенных изменений.
+### Добавлено
+
+- Интерактивный smart-contract ввод теперь принимает папку контрактов:
+  консоль выбирает представительный Solidity/Vyper файл и сохраняет scoped
+  contract root для repo-scale review.
+- Добавлен `contract-reentrancy-review-lane` - безопасный синтетический golden
+  case для external-call ordering, withdrawal accounting и reentrancy-adjacent
+  review lanes.
+
+### Изменено
+
+- Публичное позиционирование переставлено на smart-contract audit первым, а
+  defensive ECC research оставлен вторым поддерживаемым доменом.
 
 ## 0.1.5 - 2026-04-29
 

@@ -227,13 +227,13 @@ def build_orchestrator(config: AppConfig) -> ResearchOrchestrator:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="EllipticZero sandboxed defensive cryptography research lab CLI"
+        description="EllipticZero Research Lab CLI for bounded smart-contract audits and defensive ECC research"
     )
     parser.add_argument("idea", nargs="?", help="Free-form research idea")
     parser.add_argument("--author", help="Optional author name")
     parser.add_argument(
         "--domain",
-        choices=["ecc_research", "smart_contract_audit"],
+        choices=["smart_contract_audit", "ecc_research"],
         help="Select the bounded research domain for a new session.",
     )
     parser.add_argument(

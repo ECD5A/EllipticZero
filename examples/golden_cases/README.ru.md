@@ -17,6 +17,7 @@
 - [RUNBOOK.ru.md](RUNBOOK.ru.md) даёт короткий путь оценки по golden cases.
 - [EXPECTED_REPORT_SHAPES.ru.md](EXPECTED_REPORT_SHAPES.ru.md) объясняет, что должен содержать полезный отчет по каждому кейсу.
 - [contracts/SyntheticVault.sol](contracts/SyntheticVault.sol) - безопасная тестовая фикстура для vault/permission review.
+- [contracts/SyntheticReentrancyVault.sol](contracts/SyntheticReentrancyVault.sol) - безопасная тестовая фикстура для external-call ordering и reentrancy-adjacent review.
 - [contracts/SyntheticGovernanceTimelock.sol](contracts/SyntheticGovernanceTimelock.sol) - безопасная тестовая фикстура для governance/timelock и upgrade-control review.
 - [protocols/SyntheticLendingProtocol](protocols/SyntheticLendingProtocol) - безопасная repo-scale фикстура для lending-protocol review.
 - [ecc/secp256k1_metadata_seed.txt](ecc/secp256k1_metadata_seed.txt) - seed-файл для ECC domain-completeness проверки.
@@ -47,6 +48,12 @@ Vault/permission lane для смарт-контракта:
 
 ```powershell
 python -m app.main --domain smart_contract_audit --contract-file .\examples\golden_cases\contracts\SyntheticVault.sol --pack vault_permission_benchmark_pack "Benchmark vault share-accounting, permission, and externally reachable value-flow review lanes."
+```
+
+External-call ordering lane для смарт-контракта:
+
+```powershell
+python -m app.main --domain smart_contract_audit --contract-file .\examples\golden_cases\contracts\SyntheticReentrancyVault.sol --pack contract_static_benchmark_pack "Benchmark external-call ordering, withdrawal accounting, and reentrancy-adjacent review lanes."
 ```
 
 Governance/timelock lane для смарт-контракта:

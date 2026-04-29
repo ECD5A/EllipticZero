@@ -64,6 +64,20 @@ Evaluator pass signal:
 
 - the report gives a buyer or reviewer a clear first triage path without overstating the result
 
+## `contract-reentrancy-review-lane`
+
+Expected useful output:
+
+- selected pack is `contract_static_benchmark_pack`
+- parser output includes the synthetic reentrancy-style vault and its externally reachable functions
+- surface or pattern summary highlights external-call ordering, value-flow, withdrawal accounting, or reentrancy-adjacent lanes when present
+- manual review queue and bounded confidence remain visible
+- report avoids claiming a confirmed exploit from pattern evidence alone
+
+Evaluator pass signal:
+
+- the report shows a concrete review lane and recheck path without turning the synthetic fixture into operational exploit guidance
+
 ## `contract-governance-timelock-lane`
 
 Expected useful output:

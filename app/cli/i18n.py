@@ -2,7 +2,7 @@ from __future__ import annotations
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
-        "brand.subtitle": "Sandboxed Research Audit Engine",
+        "brand.subtitle": "Research Lab Audit Engine",
         "menu.hint": "Arrow keys move selection. Enter confirms.",
         "menu.start_research.label": "START RESEARCH",
         "menu.start_research.desc": "Choose domain, optional curve, enter your idea, and run.",
@@ -415,9 +415,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "list.experiment_packs.title": "Built-in Experiment Packs",
         "hint.domain_select": "Arrow keys move selection. Enter confirms. Esc returns.",
         "screen.domain.title": "RESEARCH DOMAIN",
-        "screen.domain.subtitle": "Choose whether this bounded session starts from ECC research or a smart-contract audit target.",
+        "screen.domain.subtitle": "Choose whether this bounded session starts from a smart-contract audit target or ECC research.",
         "screen.contract_source.title": "CONTRACT SOURCE",
-        "screen.contract_source.subtitle": "Drop a local file, paste a file path, or paste contract code. Solidity/Vyper is inferred automatically.",
+        "screen.contract_source.subtitle": "Drop a file or folder, paste a path, or paste contract code. Solidity/Vyper is inferred automatically.",
         "workflow.domain.label": "DOMAIN",
         "workflow.domain.value.ecc": "ECC research",
         "workflow.domain.value.smart_contract": "Smart contract audit",
@@ -426,15 +426,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "domain.smart_contract.label": "SMART CONTRACT AUDIT",
         "domain.smart_contract.desc": "Local static audit for contract code, risky surfaces, and bounded review patterns.",
         "prompt.contract.idea": "audit idea (/lang switches language) >",
-        "prompt.contract.file": "file path or code (/back, /cancel, /lang) >",
-        "prompt.contract.input_hint": "Drop a file, paste a path, or press Enter for multiline code. /back returns. /cancel leaves the session. /lang switches language.",
+        "prompt.contract.file": "file path, folder, or code (/back, /cancel, /lang) >",
+        "prompt.contract.input_hint": "Drop a file or contract folder, paste a path, or press Enter for multiline code. /back returns. /cancel leaves the session. /lang switches language.",
         "prompt.contract.paste_hint": "Paste contract code below. Empty line finishes. /back returns. /cancel leaves the session. /lang switches language.",
         "message.contract_path_invalid": "Contract file not found: {path}",
         "message.contract_code_required": "Smart contract code is required for pasted audit input.",
-        "message.contract_source_invalid": "Input was not recognized as a readable file path or contract code snippet.",
+        "message.contract_source_invalid": "Input was not recognized as a readable file, folder, or contract code snippet.",
     },
     "ru": {
-        "brand.subtitle": "Консоль локального исследовательского аудита",
+        "brand.subtitle": "Лаборатория исследовательского аудита",
         "menu.hint": "Стрелки меняют выбор. Enter подтверждает.",
         "menu.start_research.label": "ЗАПУСК ИССЛЕДОВАНИЯ",
         "menu.start_research.desc": "Выбрать домен, кривую при желании, ввести идею и запустить.",
@@ -829,9 +829,9 @@ TRANSLATIONS["ru"].update(
     {
         "hint.domain_select": "Стрелки меняют выбор. Enter подтверждает. Esc возвращает назад.",
         "screen.domain.title": "ДОМЕН ИССЛЕДОВАНИЯ",
-        "screen.domain.subtitle": "Выберите, запускается ли ограниченная сессия как ECC-исследование или как аудит смарт-контракта.",
+        "screen.domain.subtitle": "Выберите, запускается ли ограниченная сессия как аудит смарт-контракта или как ECC-исследование.",
         "screen.contract_source.title": "ИСТОЧНИК КОНТРАКТА",
-        "screen.contract_source.subtitle": "Перетащите локальный файл, вставьте путь к файлу или код контракта. Solidity/Vyper определяется автоматически.",
+        "screen.contract_source.subtitle": "Перетащите файл или папку, вставьте путь или код контракта. Solidity/Vyper определяется автоматически.",
         "workflow.domain.label": "ДОМЕН",
         "workflow.domain.value.ecc": "ECC-исследование",
         "workflow.domain.value.smart_contract": "Аудит смарт-контрактов",
@@ -840,12 +840,12 @@ TRANSLATIONS["ru"].update(
         "domain.smart_contract.label": "АУДИТ СМАРТ-КОНТРАКТОВ",
         "domain.smart_contract.desc": "Локальный статический аудит кода контракта, рискованных поверхностей и ограниченных шаблонов проверки.",
         "prompt.contract.idea": "идея аудита (/lang переключает язык) >",
-        "prompt.contract.file": "путь, файл или сниппет кода (/back, /cancel, /lang) >",
-        "prompt.contract.input_hint": "Перетащите локальный файл, вставьте путь, вставьте однострочный сниппет или нажмите Enter для многострочного ввода. /back возвращает назад. /cancel отменяет сессию. /lang переключает язык.",
+        "prompt.contract.file": "путь, папка или код (/back, /cancel, /lang) >",
+        "prompt.contract.input_hint": "Перетащите файл или папку контрактов, вставьте путь, вставьте однострочный сниппет или нажмите Enter для многострочного ввода. /back возвращает назад. /cancel отменяет сессию. /lang переключает язык.",
         "prompt.contract.paste_hint": "Вставьте код контракта ниже. Пустая строка завершает ввод. /back возвращает назад. /cancel отменяет сессию. /lang переключает язык.",
         "message.contract_path_invalid": "Файл контракта не найден: {path}",
         "message.contract_code_required": "Для вставки нужен код смарт-контракта.",
-        "message.contract_source_invalid": "Ввод не распознан как читаемый путь к файлу или сниппет кода контракта.",
+        "message.contract_source_invalid": "Ввод не распознан как читаемый файл, папка или сниппет кода контракта.",
     }
 )
 
@@ -1076,7 +1076,7 @@ TRANSLATIONS["en"].update(
         ),
         "summary.mock.generic": (
             "The session preserved the original seed, ran a neutral bounded local classification pass, "
-            "and avoided forcing the idea into a known ECC or smart-contract pattern."
+            "and avoided forcing the idea into a known smart-contract or ECC pattern."
         ),
     }
 )
@@ -1131,7 +1131,7 @@ TRANSLATIONS["ru"].update(
         ),
         "summary.mock.generic": (
             "Сессия сохранила исходную идею, запустила нейтральную ограниченную локальную классификацию "
-            "и не стала насильно подгонять ввод под известный ECC- или smart-contract-паттерн."
+            "и не стала насильно подгонять ввод под известный smart-contract- или ECC-паттерн."
         ),
     }
 )

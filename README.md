@@ -4,14 +4,14 @@
   <a href="https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml/badge.svg"></a>
   <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white">
   <img alt="Source available: FSL-1.1-ALv2" src="https://img.shields.io/badge/source--available-FSL--1.1--ALv2-f0b429">
-  <img alt="Domains: ECC and smart contracts" src="https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2">
+  <img alt="Domains: smart contracts and ECC" src="https://img.shields.io/badge/domains-Smart--Contracts%20%7C%20ECC-0A66C2">
   <img alt="Local first reproducible evidence" src="https://img.shields.io/badge/local--first-reproducible%20evidence-2ea44f">
 </p>
 
 <p align="right"><a href="README.ru.md">Русская версия</a></p>
 
-EllipticZero is a source-available local lab for bounded defensive ECC research
-and smart-contract audits.
+**EllipticZero Research Lab** is an independent source-available project by
+**ECD5A** for bounded smart-contract audits and defensive ECC research.
 
 It is built for researchers, audit teams, and protocol teams that want local
 evidence instead of model-only output.
@@ -49,7 +49,7 @@ risk lanes, confidence, and follow-up guidance.
 
 ## What You Get
 
-- a local-first workflow for ECC research and smart-contract audits
+- a local-first workflow for smart-contract audits and defensive ECC research
 - tool-backed evidence instead of model-only claims
 - compact smart-contract finding cards for risk, evidence, fix direction, and recheck path
 - bounded smart-contract signals for signature, oracle, upgrade, and token-accounting review lanes
@@ -83,7 +83,7 @@ commercial partner, start with:
 - [SECURITY.md](SECURITY.md) for sandbox, provider, artifact, and data-handling
   boundaries
 - [examples/golden_cases/README.md](examples/golden_cases/README.md) for stable
-  ECC and smart-contract smoke cases
+  smart-contract and ECC smoke cases
 - [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) if your use case involves a
   product, hosted service, OEM, white-label, resale, or similar commercial path
 
@@ -91,15 +91,15 @@ commercial partner, start with:
 
 - orchestrator-centered research sessions
 - Math, Cryptography, Strategy, Hypothesis, Critic, and Report agents
-- sandboxed local runners for symbolic, formal, property-based, fuzz, and ECC testbed checks
-- built-in ECC benchmark packs for point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor and twist hygiene, and bounded domain completeness
 - smart-contract audit tools for parser, compile, repo-scale inventory, first-party vs dependency scoping, protocol maps, review lanes, function-family prioritization, and cross-file priority fusion
 - cached known-case profile matching from allowlisted metadata sources such as SmartBugs and Slither detector families; remote code is not executed
 - built-in smart-contract corpora for asset-flow, vault/share, oracle freshness, collateral/liquidation and liquidation-fee review, protocol-fee/reserve-buffer/debt accounting, bad-debt socialization, and related protocol-style review families
 - bounded repo-scale casebooks for upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, and vault/permit lanes, plus optional `Slither`, `Foundry`, and `Echidna` adapters when installed locally
 - Slither findings are normalized with severity and source locations; Foundry projects with `foundry.toml` can contribute local build/test evidence
 - built-in smart-contract benchmark packs for static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, upgrade/control benchmarking, governance/timelock benchmarking, rewards/distribution benchmarking, stablecoin/collateral benchmarking, AMM/liquidity benchmarking, bridge/custody benchmarking, staking/rebase benchmarking, keeper/auction benchmarking, treasury/vesting benchmarking, insurance/recovery benchmarking, vault/permission benchmarking, and lending-style protocol benchmarking
-- golden/synthetic example cases with expected report shapes for evaluator-facing ECC and smart-contract smoke checks
+- sandboxed local runners for symbolic, formal, property-based, fuzz, and ECC testbed checks
+- built-in ECC benchmark packs for point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor and twist hygiene, and bounded domain completeness
+- golden/synthetic example cases with expected report shapes for evaluator-facing smart-contract and ECC smoke checks
 - traces, manifests, bundles, replay, and doctor/self-check
 - evidence coverage summaries, report snapshot summaries, toolchain fingerprints, and secret-redacted session/trace/bundle JSON snapshots
 - `mock` by default, plus `openai`, `openrouter`, `gemini`, and `anthropic` when configured
@@ -232,9 +232,9 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Supported providers: `mock`, `openai`, `openrouter`, `gemini`, `anthropic`.
 - The default route uses one provider/model for all roles. Per-agent overrides are optional.
 - OpenRouter is supported as an OpenAI-compatible hosted path. Direct smoke checks use `openrouter/auto` unless a model is pinned.
-- Local tooling can include `SymPy`, `Hypothesis`, `z3-solver`, managed `solc`, bounded mutation probes, ECC testbeds, smart-contract checks, optional `SageMath`, and optional static analyzers.
-- Inputs stay simple: free-form ECC seeds, pasted smart-contract code, inline code, or local `.sol` / `.vy` files. Local contract files can derive a bounded repository root automatically.
-- Reports start with a compact review snapshot, then cover ECC triage, benchmark posture, family coverage, comparison/regression notes, smart-contract repo triage, inventories, protocol maps, casebook matches, finding cards, review queues, remediation notes, and residual-risk lanes when local evidence supports them.
+- Local tooling can include managed `solc`, smart-contract checks, optional static analyzers, `SymPy`, `Hypothesis`, `z3-solver`, bounded mutation probes, ECC testbeds, and optional `SageMath`.
+- Inputs stay simple: pasted smart-contract code, inline code, local `.sol` / `.vy` files, or free-form ECC seeds. Local contract files can derive a bounded repository root automatically.
+- Reports start with a compact review snapshot, then cover smart-contract repo triage, inventories, protocol maps, casebook matches, finding cards, review queues, remediation notes, residual-risk lanes, ECC triage, benchmark posture, family coverage, and comparison/regression notes when local evidence supports them.
 - Comparison flags (`--compare-session`, `--compare-manifest`, `--compare-bundle`) attach saved baselines to fresh bounded runs for cautious before/after and regression-oriented notes.
 - Completed runs can store session JSON, trace JSONL, reproducibility bundles, `overview.json`, comparative reports, `report.md`, and `review.sarif` under `artifacts/`.
 - The interactive console can export `report.md` and `review.sarif` from the session-actions menu without requiring export commands.

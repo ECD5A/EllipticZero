@@ -91,6 +91,28 @@
       "sample_command": "python -m app.main --domain smart_contract_audit --contract-file .\\examples\\golden_cases\\contracts\\SyntheticVault.sol --pack vault_permission_benchmark_pack \"Benchmark vault share-accounting, permission, and externally reachable value-flow review lanes.\""
     },
     {
+      "case_id": "contract-reentrancy-review-lane",
+      "domain": "smart_contract_audit",
+      "input_file": "contracts/SyntheticReentrancyVault.sol",
+      "recommended_pack": "contract_static_benchmark_pack",
+      "fallback_pack": "vault_permission_benchmark_pack",
+      "expected_report_shape": {
+        "must_include": [
+          "contract parser outline",
+          "external call or value-flow surface",
+          "reentrancy or withdrawal-order review lane",
+          "manual review queue",
+          "bounded confidence"
+        ],
+        "must_not_claim": [
+          "confirmed reentrancy exploit",
+          "production loss scenario",
+          "complete formal verification"
+        ]
+      },
+      "sample_command": "python -m app.main --domain smart_contract_audit --contract-file .\\examples\\golden_cases\\contracts\\SyntheticReentrancyVault.sol --pack contract_static_benchmark_pack \"Benchmark external-call ordering, withdrawal accounting, and reentrancy-adjacent review lanes.\""
+    },
+    {
       "case_id": "contract-governance-timelock-lane",
       "domain": "smart_contract_audit",
       "input_file": "contracts/SyntheticGovernanceTimelock.sol",

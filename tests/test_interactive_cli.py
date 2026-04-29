@@ -328,10 +328,41 @@ def test_interactive_renderer_localizes_generic_mock_summary() -> None:
     )
     summary = (
         "The session preserved the original seed, ran a neutral bounded local classification pass, "
-        "and avoided forcing the idea into a known ECC or smart-contract pattern."
+        "and avoided forcing the idea into a known smart-contract or ECC pattern."
     )
 
     assert "не стала насильно подгонять" in renderer.localized_summary(summary)
+
+
+def test_interactive_contract_source_accepts_contract_folder(tmp_path: Path) -> None:
+    contracts_dir = tmp_path / "repo" / "contracts"
+    contracts_dir.mkdir(parents=True)
+    (contracts_dir / "MockToken.sol").write_text(
+        "pragma solidity ^0.8.20; contract MockToken {}",
+        encoding="utf-8",
+    )
+    vault_path = contracts_dir / "Vault.sol"
+    vault_path.write_text(
+        "pragma solidity ^0.8.20; contract Vault { function withdraw(uint256 amount) external {} }",
+        encoding="utf-8",
+    )
+
+    console = object.__new__(InteractiveConsole)
+
+    loaded = console._load_contract_source_path(str(contracts_dir))
+
+    assert loaded is not None
+    contract_code, source_label, source_root = loaded
+    assert "contract Vault" in contract_code
+    assert Path(source_label).resolve() == vault_path.resolve()
+    assert source_root == str(contracts_dir.resolve())
+
+
+def test_interactive_contract_source_keeps_inline_code_out_of_path_errors() -> None:
+    console = object.__new__(InteractiveConsole)
+
+    assert not console._looks_like_contract_source_path("pragma solidity ^0.8.20; contract Vault {}")
+    assert console._looks_like_contract_code("pragma solidity ^0.8.20; contract Vault {}")
 
 
 def test_interactive_session_action_exports_review_files(tmp_path: Path) -> None:

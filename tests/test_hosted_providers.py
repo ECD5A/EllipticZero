@@ -139,7 +139,7 @@ def test_openrouter_provider_builds_chat_completions_request(monkeypatch) -> Non
     assert captured["timeout"] == 21
     assert captured["auth"] == "Bearer openrouter-test-key"
     assert captured["referer"] == "https://github.com/ECD5A/EllipticZero"
-    assert captured["title"] == "EllipticZero"
+    assert captured["title"] == "EllipticZero Research Lab"
     assert captured["body"] == {
         "model": "openai/gpt-4.1-mini",
         "messages": [

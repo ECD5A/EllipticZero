@@ -7,7 +7,19 @@ Package version: `0.1.5`.
 
 ## Unreleased
 
-No unreleased changes.
+### Added
+
+- Added interactive smart-contract folder input: the console can accept a local
+  contract directory, select a representative Solidity/Vyper file, and preserve
+  the scoped contract root for repo-scale review.
+- Added `contract-reentrancy-review-lane`, a safe synthetic golden case for
+  external-call ordering, withdrawal accounting, and reentrancy-adjacent review
+  lanes.
+
+### Changed
+
+- Shifted public positioning toward smart-contract audit first, with defensive
+  ECC research as the second supported domain.
 
 ## 0.1.5 - 2026-04-29
 

@@ -4,14 +4,14 @@
   <a href="https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/ECD5A/EllipticZero/actions/workflows/codeql.yml/badge.svg"></a>
   <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white">
   <img alt="Source available: FSL-1.1-ALv2" src="https://img.shields.io/badge/source--available-FSL--1.1--ALv2-f0b429">
-  <img alt="Domains: ECC and smart contracts" src="https://img.shields.io/badge/domains-ECC%20%7C%20Smart--Contracts-0A66C2">
+  <img alt="Domains: smart contracts and ECC" src="https://img.shields.io/badge/domains-Smart--Contracts%20%7C%20ECC-0A66C2">
   <img alt="Local first reproducible evidence" src="https://img.shields.io/badge/local--first-reproducible%20evidence-2ea44f">
 </p>
 
 <p align="right"><a href="README.md">English version</a></p>
 
-EllipticZero — локальная source-available лаборатория для ограниченных
-защитных ECC-исследований и аудита смарт-контрактов.
+**EllipticZero Research Lab** — независимый source-available проект **ECD5A**
+для ограниченного аудита смарт-контрактов и защитных ECC-исследований.
 
 Проект рассчитан на исследователей, аудиторские и протокольные команды,
 которым нужна локальная доказательная база, а не только ответы модели.
@@ -50,7 +50,7 @@ EllipticZero — локальная source-available лаборатория дл
 
 ## Что получаешь
 
-- локальный агентный цикл для ECC-исследований и аудита смарт-контрактов
+- локальный агентный цикл для аудита смарт-контрактов и ECC-исследований
 - выводы, опирающиеся на инструменты и артефакты, а не только на модель
 - компактные карточки находок по смарт-контрактам: риск, доказательства, направление исправления и путь перепроверки
 - воспроизводимые сессии, трассировки, манифесты, bundle-пакеты и replay
@@ -89,7 +89,7 @@ EllipticZero сделан для локальных исследований, г
 - [SECURITY.ru.md](docs/ru/SECURITY.ru.md) - границы sandbox, provider,
   артефактов и обработки данных
 - [examples/golden_cases/README.ru.md](examples/golden_cases/README.ru.md) -
-  стабильные ECC- и smart-contract smoke-сценарии
+  стабильные smart-contract и ECC smoke-сценарии
 - [COMMERCIAL_LICENSE.ru.md](docs/ru/COMMERCIAL_LICENSE.ru.md) - если сценарий
   связан с продуктом, развёртыванием как сервиса, OEM, white-label, перепродажей или
   похожим коммерческим использованием
@@ -98,8 +98,6 @@ EllipticZero сделан для локальных исследований, г
 
 - исследовательские сессии с оркестратором в центре цикла
 - агенты Math, Cryptography, Strategy, Hypothesis, Critic и Report
-- локальные изолированные раннеры для символьных, формальных, property-based, фаззинг- и ECC testbed-проверок
-- встроенные ECC benchmark-наборы для point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor и twist hygiene, а также bounded domain completeness
 - инструменты аудита смарт-контрактов: разбор кода, компиляция, инвентаризация репозитория контрактов, ограниченный анализ импортов и зависимостей, карта протокольных модулей, маршруты обзора, приоритизация семейств функций и сведение межфайловых сигналов в общие приоритеты
 - локальные сигналы аудита смарт-контрактов для проверок подписей, оракулов, upgrade-путей и token-accounting
 - локальное сопоставление с кэшированными профилями известных кейсов из разрешённых источников метаданных, включая SmartBugs и семейства детекторов Slither; удалённый код не запускается
@@ -107,7 +105,9 @@ EllipticZero сделан для локальных исследований, г
 - ограниченные repo-casebook сценарии для upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery и vault/permit, а также опциональные адаптеры `Slither`, `Foundry` и `Echidna`, если они установлены локально
 - находки Slither нормализуются по severity и source location; Foundry-проекты с `foundry.toml` могут добавлять локальные build/test-сигналы
 - встроенные smart-contract benchmark-пакеты для static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, а также для governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission и lending-style проходов
-- golden/synthetic примеры с ожидаемыми формами отчётов для быстрой оценки ECC- и smart-contract smoke-checks
+- локальные изолированные раннеры для символьных, формальных, property-based, фаззинг- и ECC testbed-проверок
+- встроенные ECC benchmark-наборы для point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor и twist hygiene, а также bounded domain completeness
+- golden/synthetic примеры с ожидаемыми формами отчётов для быстрой оценки smart-contract и ECC smoke-checks
 - трассировки, манифесты, пакеты воспроизводимости, повторный запуск и `doctor`
 - сводки покрытия доказательной базы, компактные report snapshot-сводки, отпечатки toolchain и session/trace/bundle JSON-снимки с редактированием секретов
 - `mock` по умолчанию, а также `openai`, `openrouter`, `gemini` и `anthropic` при корректной настройке
@@ -240,9 +240,9 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Поддерживаемые провайдеры: `mock`, `openai`, `openrouter`, `gemini`, `anthropic`.
 - Базовый сценарий использует один общий провайдер и одну модель для всех ролей. Переопределения по ролям остаются продвинутой настройкой.
 - OpenRouter поддерживается как OpenAI-compatible hosted path. Прямые smoke-проверки используют `openrouter/auto`, если модель не указана явно.
-- Локальная среда может включать `SymPy`, `Hypothesis`, `z3-solver`, управляемый `solc`, bounded mutation probes, ECC-тестбеды, smart-contract проверки, опциональный `SageMath` и опциональные статические анализаторы.
-- Входы остаются простыми: свободная ECC-идея, вставленный код смарт-контракта, inline-код или локальный файл `.sol` / `.vy`. Для локального файла контрактного репозитория может автоматически выводиться ограниченный repo root.
-- Отчёты начинаются с короткой сводки проверки, а затем покрывают ECC-триаж, benchmark-статус, покрытие семейств, сравнение и регрессии, smart-contract repo triage, inventory, protocol maps, casebook matches, finding cards, review queues, remediation notes и residual-risk lanes, когда это подтверждается локальными данными.
+- Локальная среда может включать управляемый `solc`, smart-contract проверки, опциональные статические анализаторы, `SymPy`, `Hypothesis`, `z3-solver`, bounded mutation probes, ECC-тестбеды и опциональный `SageMath`.
+- Входы остаются простыми: вставленный код смарт-контракта, inline-код, локальный файл `.sol` / `.vy` или свободная ECC-идея. Для локального файла контрактного репозитория может автоматически выводиться ограниченный repo root.
+- Отчёты начинаются с короткой сводки проверки, а затем покрывают smart-contract repo triage, inventory, protocol maps, casebook matches, finding cards, review queues, remediation notes, residual-risk lanes, ECC-триаж, benchmark-статус, покрытие семейств, сравнение и регрессии, когда это подтверждается локальными данными.
 - Флаги сравнения (`--compare-session`, `--compare-manifest`, `--compare-bundle`) привязывают сохранённый baseline к новому bounded-запуску для осторожных строк до/после и регрессионных заметок.
 - Завершённые запуски могут сохранять session JSON, trace JSONL, пакеты воспроизводимости, `overview.json`, сравнительные отчёты, `report.md` и `review.sarif` в `artifacts/`.
 - Интерактивная консоль выгружает `report.md` и `review.sarif` из меню действий сессии без ручного ввода export-команд.

@@ -164,6 +164,10 @@ class InteractiveRenderer:
             ): self.t("summary.mock.contract"),
             (
                 "The session preserved the original seed, ran a neutral bounded local classification pass, "
+                "and avoided forcing the idea into a known smart-contract or ECC pattern."
+            ): self.t("summary.mock.generic"),
+            (
+                "The session preserved the original seed, ran a neutral bounded local classification pass, "
                 "and avoided forcing the idea into a known ECC or smart-contract pattern."
             ): self.t("summary.mock.generic"),
         }

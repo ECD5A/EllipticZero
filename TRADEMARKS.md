@@ -1,5 +1,7 @@
 # Trademarks
 
+"EllipticZero Research Lab" is an independent ECD5A project.
+
 "EllipticZero", the EllipticZero name, logo, and related branding are not
 granted under the repository source code license.
 
@@ -11,6 +13,9 @@ branding is granted except as required for truthful reference to the project.
 
 Truthful reference does not imply endorsement, affiliation, certification, or
 official partnership.
+
+EllipticZero Research Lab is not affiliated with, endorsed by, or sponsored by
+any third-party service or company using similar wording.
 
 For branding, naming, OEM, white-label, or partnership inquiries, contact:
 

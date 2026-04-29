@@ -19,10 +19,10 @@ EllipticZero рассчитан на прямую проверку: исходн
 - просмотр кода оркестрации, агентных ролей, раннеров, отчётов и границ экспорта
 - локальная CLI-проверка без ключей в `mock`-режиме
 - golden/synthetic cases для стабильных smoke-проверок
-- ECC benchmark-пакеты по point format, curve metadata, subgroup, cofactor,
-  twist и domain-completeness поверхностям
 - smart-contract audit по parser, compile, repo inventory, casebook, benchmark,
   comparison и manual-review lanes
+- ECC benchmark-пакеты по point format, curve metadata, subgroup, cofactor,
+  twist и domain-completeness поверхностям
 - сверка с профилями известных кейсов из локального кэша, обновляемого только из
   разрешённых источников метаданных; удалённый код не скачивается и не запускается
 - проверка с реальными провайдерами на ваших собственных API-ключах
@@ -158,9 +158,9 @@ Benchmark-слой стоит воспринимать как проверочн
 
 | Зона | Что проверять | Более сильный сигнал |
 | --- | --- | --- |
-| Golden cases | Встроенные ECC- и smart-contract кейсы запускаются чисто и дают ожидаемую форму отчёта. | Smoke-вывод стабилен при повторных локальных запусках. |
-| ECC coverage | В отчёте видны форматы точек, метаданные кривых, subgroup/cofactor проверки, twist hygiene, переходы между семействами кривых, domain-completeness поверхности и компактная сводка ECC-триажа. | Локальные вычисления и интерпретация отчёта согласованы без завышения уверенности. |
+| Golden cases | Встроенные smart-contract и ECC кейсы запускаются чисто и дают ожидаемую форму отчёта. | Smoke-вывод стабилен при повторных локальных запусках. |
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, signature, oracle, upgrade, token-accounting, residual-risk lanes и компактная сводка триажа появляются, когда входные данные это оправдывают. | Отчёт отделяет подтверждённые локальные сигналы от приоритетов ручной проверки. |
+| ECC coverage | В отчёте видны форматы точек, метаданные кривых, subgroup/cofactor проверки, twist hygiene, переходы между семействами кривых, domain-completeness поверхности и компактная сводка ECC-триажа. | Локальные вычисления и интерпретация отчёта согласованы без завышения уверенности. |
 | Локальные analyzer-сигналы | Опциональный Slither нормализуется по severity и source location; Foundry-проекты могут добавлять локальные build/test-сигналы при наличии `foundry.toml`. | Сигналы внешних анализаторов попадают в приоритеты отчёта, но не считаются доказательством сами по себе. |
 | Профили известных кейсов | В `ЛАБОРАТОРИЯ ОЦЕНКИ` -> `ИЗВЕСТНЫЕ КЕЙСЫ` можно обновить или посмотреть кэшированные профили метаданных из разрешённых источников. | Отчёт показывает совпадения как контекст или как пункты для проверки, подкреплённые локальными сигналами, а не как автоматическое доказательство эксплоита. |
 | Comparison | Сохранённую baseline можно подключить через `--compare-session`, `--compare-manifest` или `--compare-bundle`. | Before/after строки и remediation-delta summary показывают осторожные изменения, возможные regression flags и следующий replay-path. |
@@ -195,6 +195,7 @@ Benchmark-слой стоит воспринимать как проверочн
 | `ecc-25519-subgroup-hygiene` | ECC | Subgroup/cofactor, twist hygiene, оговорки по encoding. |
 | `ecc-secp256k1-point-format-edge` | ECC | Проверка формата точек и границ parser/encoding. |
 | `contract-vault-permission-lane` | Smart contracts | Права vault, внешне достижимый value flow, finding cards. |
+| `contract-reentrancy-review-lane` | Smart contracts | External-call ordering, withdrawal accounting и reentrancy-adjacent review lanes. |
 | `contract-governance-timelock-lane` | Smart contracts | Управление, timelock, контроль upgrade и emergency-lane review. |
 | `contract-repo-scale-lending-protocol` | Smart contracts | Инвентаризация репозитория, protocol lanes, liquidation/collateral/accounting review. |
 

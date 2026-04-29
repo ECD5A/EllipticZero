@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "ellipticzero"
 version = "0.1.5"
-description = "A source-available sandboxed local research lab for ECC analysis, smart-contract audit, and reproducible evidence-driven computation."
+description = "An independent source-available research lab by ECD5A for bounded smart-contract audit, defensive ECC analysis, and reproducible evidence-driven computation."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }

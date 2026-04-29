@@ -17,6 +17,7 @@ expected workflow legible:
 - [RUNBOOK.md](RUNBOOK.md) gives a quick evaluator path through the golden cases.
 - [EXPECTED_REPORT_SHAPES.md](EXPECTED_REPORT_SHAPES.md) explains what a useful report should contain for each case.
 - [contracts/SyntheticVault.sol](contracts/SyntheticVault.sol) is a safe vault/permission review fixture.
+- [contracts/SyntheticReentrancyVault.sol](contracts/SyntheticReentrancyVault.sol) is a safe external-call ordering and reentrancy-adjacent review fixture.
 - [contracts/SyntheticGovernanceTimelock.sol](contracts/SyntheticGovernanceTimelock.sol) is a safe governance/timelock and upgrade-control fixture.
 - [protocols/SyntheticLendingProtocol](protocols/SyntheticLendingProtocol) is a safe repo-scale lending protocol fixture.
 - [ecc/secp256k1_metadata_seed.txt](ecc/secp256k1_metadata_seed.txt) is an ECC domain-completeness seed.
@@ -47,6 +48,12 @@ Vault/permission smart-contract lane:
 
 ```powershell
 python -m app.main --domain smart_contract_audit --contract-file .\examples\golden_cases\contracts\SyntheticVault.sol --pack vault_permission_benchmark_pack "Benchmark vault share-accounting, permission, and externally reachable value-flow review lanes."
+```
+
+External-call ordering smart-contract lane:
+
+```powershell
+python -m app.main --domain smart_contract_audit --contract-file .\examples\golden_cases\contracts\SyntheticReentrancyVault.sol --pack contract_static_benchmark_pack "Benchmark external-call ordering, withdrawal accounting, and reentrancy-adjacent review lanes."
 ```
 
 Governance/timelock smart-contract lane:

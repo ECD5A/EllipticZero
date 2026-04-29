@@ -67,6 +67,20 @@
 
 - отчет дает покупателю или ревьюеру понятный первый путь первичного разбора без завышения результата
 
+## `contract-reentrancy-review-lane`
+
+Что ожидается в полезном выводе:
+
+- выбран пакет `contract_static_benchmark_pack`
+- parser output включает синтетический reentrancy-style vault и его externally reachable функции
+- surface или pattern summary подсвечивает external-call ordering, value-flow, withdrawal accounting или reentrancy-adjacent lanes, если они есть в локальном разборе
+- manual review queue и bounded confidence остаются видны
+- отчет не заявляет подтвержденный exploit только на основании pattern evidence
+
+Хороший сигнал для оценки:
+
+- отчет показывает конкретную линию проверки и путь перепроверки, не превращая синтетическую фикстуру в эксплуатационную инструкцию
+
 ## `contract-governance-timelock-lane`
 
 Что ожидается в полезном выводе:

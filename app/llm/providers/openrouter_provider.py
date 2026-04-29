@@ -13,7 +13,7 @@ class OpenRouterProvider(BaseLLMProvider):
     provider_name = "openrouter"
     endpoint = "https://openrouter.ai/api/v1/chat/completions"
     referer = "https://github.com/ECD5A/EllipticZero"
-    title = "EllipticZero"
+    title = "EllipticZero Research Lab"
 
     def __init__(self, *, api_key: str | None) -> None:
         self.api_key = api_key
