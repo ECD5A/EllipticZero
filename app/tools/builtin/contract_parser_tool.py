@@ -9,7 +9,7 @@ from app.tools.smart_contract_utils import build_contract_outline, infer_contrac
 
 
 class ContractParserTool(BaseTool):
-    """Parse a bounded smart-contract source into a deterministic structural outline."""
+    """Parse a scoped smart-contract source into a deterministic structural outline."""
 
     name = "contract_parser_tool"
     category = "smart_contract_audit"

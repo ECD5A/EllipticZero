@@ -9,6 +9,7 @@ from app.tools.base import BaseTool
 from app.tools.smart_contract_utils import (
     build_contract_issue_line_hints,
     build_contract_outline,
+    build_normalized_contract_findings,
     detect_contract_patterns,
     infer_contract_language,
     prioritize_contract_issues,
@@ -16,14 +17,14 @@ from app.tools.smart_contract_utils import (
 
 
 class ContractPatternCheckTool(BaseTool):
-    """Run bounded static pattern checks against smart-contract source text."""
+    """Run scoped static pattern checks against smart-contract source text."""
 
     name = "contract_pattern_check_tool"
     category = "smart_contract_audit"
-    description = "Run bounded static checks for reentrancy review surfaces, unsafe call patterns, and access-control gaps."
+    description = "Run scoped static checks for reentrancy review surfaces, unsafe call patterns, and access-control gaps."
     version = "0.1.0"
     input_schema_hint = "SmartContractAuditPayload"
-    output_schema_hint = "Bounded smart-contract pattern findings"
+    output_schema_hint = "Scoped smart-contract pattern findings"
     payload_model = SmartContractAuditPayload
 
     def __init__(
@@ -87,13 +88,18 @@ class ContractPatternCheckTool(BaseTool):
         for item in prioritized_issues:
             priority = str(item.get("priority", "medium"))
             priority_counts[priority] = priority_counts.get(priority, 0) + 1
+        known_case_match_mappings = [match.to_mapping() for match in known_case_matches]
+        normalized_findings = build_normalized_contract_findings(
+            prioritized_issues,
+            known_case_matches=known_case_match_mappings,
+        )
 
         return self.make_result(
             status="ok" if not issues else "observed_issue",
-            conclusion="Bounded smart-contract pattern checks completed locally without implying a validated exploit path.",
+            conclusion="Scoped smart-contract pattern checks completed locally without implying a validated exploit path.",
             notes=[
                 *notes,
-                "Pattern findings are bounded review signals and should be confirmed manually before stronger claims.",
+                "Pattern findings are scoped review signals and should be confirmed manually before stronger claims.",
             ],
             result_data={
                 "recognized": bool(outline.contract_names or outline.functions),
@@ -107,11 +113,14 @@ class ContractPatternCheckTool(BaseTool):
                 "issue_line_hints": issue_line_hints,
                 "issue_line_hint_count": len(issue_line_hints),
                 "prioritized_issues": prioritized_issues[:12],
+                "normalized_findings": normalized_findings[:12],
+                "normalized_finding_count": len(normalized_findings),
                 "priority_counts": priority_counts,
                 "highest_priority": prioritized_issues[0]["priority"] if prioritized_issues else None,
+                "highest_severity": normalized_findings[0]["severity"] if normalized_findings else None,
                 "known_case_profile_count": len(profiles),
                 "known_case_match_count": len(known_case_matches),
-                "known_case_matches": [match.to_mapping() for match in known_case_matches],
+                "known_case_matches": known_case_match_mappings,
                 "known_case_sources": sorted({match.source_id for match in known_case_matches}),
                 "notes": notes,
                 "note_type_counts": note_type_counts,

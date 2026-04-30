@@ -60,7 +60,7 @@ python -m app.main --live-provider-smoke openrouter --live-smoke-model openroute
 
 ### `smart-contract-static`
 
-Используй этот профиль для ограниченного разбора смарт-контрактов, compile
+Используй этот профиль для разбора смарт-контрактов в заданных рамках, compile
 checks, static review и запуска benchmark-пакетов.
 
 Что он даёт:

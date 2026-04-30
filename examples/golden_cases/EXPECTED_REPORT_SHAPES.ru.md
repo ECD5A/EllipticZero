@@ -18,6 +18,7 @@
 - выбран пакет `vault_permission_benchmark_pack`
 - parser output включает синтетический vault-контракт и его externally reachable функции
 - surface summary подсвечивает payable, value-flow, share/accounting, permission или signature-style lanes, если они есть в локальном разборе
+- нормализованные находки показывают severity, confidence, строку, направление исправления и путь повторной проверки
 - manual review queue и строки с остаточным риском остаются видны
 - отчёт не заявляет подтверждённый exploit только на основании pattern evidence
 
@@ -61,6 +62,7 @@
 - bounded contract inventory показывает файлы scoped protocol
 - local import graph связывает `LendingPool.sol`, `OracleAdapter.sol` и `ReserveVault.sol`
 - entrypoint review lanes включают collateral, liquidation, reserve, fee или debt-accounting signals
+- oracle-находки сохраняют контекст freshness, answer bounds, scaling и round completeness, если такие сигналы есть
 - manual review queue и bounded confidence остаются видны
 - отчёт не заявляет complete protocol audit или confirmed insolvency exploit
 

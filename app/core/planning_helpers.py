@@ -168,7 +168,7 @@ def build_standard_smart_contract_tool_plans(
             ToolPlan(
                 tool_name=tool_name,
                 reason=(
-                    f"Added {tool_name} as part of the bounded smart-contract audit stack "
+                    f"Added {tool_name} as part of the scoped smart-contract audit stack "
                     "to preserve compile, surface, and static-review coverage."
                 )
                 + (
@@ -216,7 +216,7 @@ def expected_output_for_tool(*, tool_name: str, target_kind: str) -> str:
         "slither_audit_tool": "bounded Slither detector findings and normalized severity counts",
         "echidna_audit_tool": "bounded Echidna property or assertion result with failing-test summaries",
         "foundry_audit_tool": "bounded Foundry build and structural inspection result with method and storage-layout signals",
-        "contract_testbed_tool": "bounded smart-contract corpus sweep result",
+        "contract_testbed_tool": "scoped smart-contract corpus sweep result",
     }
     if tool_name in tool_specific:
         return tool_specific[tool_name]
@@ -224,8 +224,8 @@ def expected_output_for_tool(*, tool_name: str, target_kind: str) -> str:
         "curve": "recognized curve metadata and canonical registry entry",
         "point": "ECC point/public-key format descriptor",
         "ecc_consistency": "bounded ECC format or on-curve consistency result",
-        "smart_contract": "bounded smart-contract compile, static-analysis, parse, surface, or pattern-check result",
-        "smart_contract_testbed": "bounded smart-contract corpus sweep result",
+        "smart_contract": "scoped smart-contract compile, static-analysis, parse, surface, or pattern-check result",
+        "smart_contract_testbed": "scoped smart-contract corpus sweep result",
         "symbolic": "bounded advanced symbolic normalization or deterministic fallback",
         "testbed": "bounded ECC testbed sweep result",
         "finite_field": "bounded modular consistency result",

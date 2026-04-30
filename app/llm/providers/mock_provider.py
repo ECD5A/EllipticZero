@@ -55,7 +55,7 @@ class MockLLMProvider(BaseLLMProvider):
                         "Key Objects:\n"
                         "- contract entry points and privileged surfaces\n"
                         "- externally reachable value or control-flow boundaries\n"
-                        "- bounded review questions supported by local static tooling\n"
+                        "- scoped review questions supported by local static tooling\n"
                         "Testable Elements:\n"
                         "- compare the earlier signal against a narrower contract review pass\n"
                         "- preserve null explanations when the code remains underspecified\n"
@@ -129,7 +129,7 @@ class MockLLMProvider(BaseLLMProvider):
             if smart_contract_seed:
                 preferred_tool_families, preferred_local_tools, preferred_testbeds = self._contract_preferences(seed)
                 return (
-                    "Surface Summary: Map the seed to bounded smart-contract audit surfaces such as access control, "
+                    "Surface Summary: Map the seed to scoped smart-contract audit surfaces such as access control, "
                     "external call boundaries, privileged state transitions, and static pattern-review targets.\n"
                     "Focus Areas:\n"
                     "- externally reachable write paths and payable functions\n"
@@ -417,7 +417,7 @@ class MockLLMProvider(BaseLLMProvider):
                 return (
                     "Summary: The session preserved the original smart-contract audit seed, ran bounded local static analysis, "
                     "and recorded review-oriented evidence without claiming a validated exploit path.\n"
-                    f"Anomaly: {tool_name} produced bounded review signals only; manual review remains more important than overclaiming.\n"
+                    f"Anomaly: {tool_name} produced scoped review signals only; manual review remains more important than overclaiming.\n"
                     "Recommendation: Extend the local smart-contract audit toolset with deeper static and invariant checks.\n"
                     "Recommendation: Keep contract findings tied to local evidence and reviewable source locations.\n"
                     "Recommendation: Require manual review before escalating any bounded signal into a security claim.\n"
@@ -616,7 +616,7 @@ class MockLLMProvider(BaseLLMProvider):
     def _smart_contract_focus(self, seed: str) -> str:
         lowered = seed.lower()
         if any(token in lowered for token in ("delegatecall", "tx.origin", "selfdestruct", "reentrancy")):
-            return "bounded smart-contract risk patterns"
+            return "scoped smart-contract risk patterns"
         if any(token in lowered for token in ("access", "owner", "admin", "modifier", "privilege")):
             return "contract access-control boundaries"
         return "smart-contract surface and control-flow review"

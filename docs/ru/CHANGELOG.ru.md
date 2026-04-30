@@ -3,7 +3,26 @@
 Здесь кратко фиксируются заметные публичные изменения EllipticZero.
 
 Проект идёт по source-available release track под `FSL-1.1-ALv2`.
-Версия пакета: `0.1.6`.
+Версия пакета: `0.1.7`.
+
+## 0.1.7 - 2026-04-30
+
+### Добавлено
+
+- Нормализованные smart-contract находки для встроенных pattern checks: каждая
+  кандидатная находка хранит severity, confidence, локальную evidence,
+  подсказку по строке, направление исправления и путь повторной проверки в
+  `result_data`.
+- Сигналы проверки deadline / expiry для permit-like signature путей, где
+  используется `ecrecover` без явной границы срока действия.
+- Сигналы Chainlink-style oracle round completeness для `latestRoundData` /
+  `getRoundData`, если путь не сохраняет проверку вида
+  `answeredInRound >= roundId`.
+
+### Изменено
+
+- Формулировки smart-contract слоя сдвинуты от слишком широкого audit wording к
+  scoped security review и нормализованным review-сигналам.
 
 ## 0.1.6 - 2026-04-30
 
@@ -36,7 +55,7 @@
 - В интерактивную лабораторию оценки добавлен пункт `ИЗВЕСТНЫЕ КЕЙСЫ` для
   обновления профилей, просмотра локального кэша и проверки разрешённых
   источников метаданных.
-- Усилен bounded smart-contract review: добавлены сигналы по domain separation
+- Усилен smart-contract review в заданных рамках: добавлены сигналы по domain separation
   для подписей, границам Chainlink-style oracle answer и немедленным upgrade
   путям без явной задержки, очереди или governance-контроля.
 - Добавлены review-сигналы для token balance-delta и oracle decimal scaling,

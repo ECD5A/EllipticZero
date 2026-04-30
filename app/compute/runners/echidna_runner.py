@@ -138,7 +138,7 @@ class EchidnaRunner:
         if binary is None:
             return self._result(
                 status="unavailable",
-                conclusion="No local Echidna binary was found for the bounded smart-contract fuzzing path.",
+                conclusion="No local Echidna binary was found for the scoped smart-contract fuzzing path.",
                 notes=["Install Echidna locally and expose the echidna binary to enable property-based contract fuzzing."],
                 result_data=self._base_result_data(
                     language=language,
@@ -260,7 +260,7 @@ class EchidnaRunner:
         except OSError as exc:
             return self._result(
                 status="unavailable",
-                conclusion="The local Echidna binary could not be started for the bounded smart-contract fuzzing path.",
+                conclusion="The local Echidna binary could not be started for the scoped smart-contract fuzzing path.",
                 notes=[str(exc)],
                 result_data=self._base_result_data(
                     language=language,

@@ -882,6 +882,18 @@ def test_contract_pattern_check_tool_flags_bounded_review_signals() -> None:
         and item.get("line_hint", "").startswith("Line hint:")
         for item in result["result_data"]["prioritized_issues"]
     )
+    normalized = result["result_data"]["normalized_findings"]
+    assert result["result_data"]["normalized_finding_count"] == len(normalized)
+    assert result["result_data"]["highest_severity"] == "high"
+    assert any(
+        item["issue"].startswith("reentrancy_review_required:withdraw")
+        and item["severity"] == "high"
+        and item["confidence"] in {"candidate_with_local_evidence", "candidate_with_local_evidence_and_known_case_context"}
+        and item["review_required"] is True
+        and str(item["fix_direction"])
+        and str(item["recheck"])
+        for item in normalized
+    )
 
 
 def test_contract_pattern_check_tool_flags_upgrade_entropy_and_user_supplied_call_targets() -> None:
@@ -1033,8 +1045,10 @@ contract SignatureOracleSurface {
     notes = result["result_data"]["notes"]
     assert any(item.startswith("signature_replay_review_required:permitAction") for item in issues)
     assert any(item.startswith("signature_domain_separation_review_required:permitAction") for item in issues)
+    assert any(item.startswith("signature_deadline_review_required:permitAction") for item in issues)
     assert any(item.startswith("oracle_staleness_review_required:quote") for item in issues)
     assert any(item.startswith("oracle_answer_bounds_review_required:quote") for item in issues)
+    assert any(item.startswith("oracle_round_completeness_review_required:quote") for item in issues)
     assert any(item.startswith("signature_validation_surface:permitAction") for item in notes)
     assert any(item.startswith("oracle_dependency_review:quote") for item in notes)
 
@@ -1084,8 +1098,10 @@ contract GuardedSignatureOracleSurface {
     issues = result["result_data"]["issues"]
     assert not any(item.startswith("signature_replay_review_required:permitAction") for item in issues)
     assert not any(item.startswith("signature_domain_separation_review_required:permitAction") for item in issues)
+    assert not any(item.startswith("signature_deadline_review_required:permitAction") for item in issues)
     assert not any(item.startswith("oracle_staleness_review_required:quote") for item in issues)
     assert not any(item.startswith("oracle_answer_bounds_review_required:quote") for item in issues)
+    assert not any(item.startswith("oracle_round_completeness_review_required:quote") for item in issues)
 
 
 def test_contract_pattern_check_tool_flags_immediate_upgrade_without_timelock() -> None:
@@ -1242,6 +1258,12 @@ contract PermitSurface {
     assert data["known_case_match_count"] == 1
     assert data["known_case_matches"][0]["profile_id"] == "permit-replay-known-case"
     assert data["known_case_matches"][0]["evidence_strength"] == "local_signal"
+    assert any(
+        item["issue"].startswith("signature_replay_review_required:permitAction")
+        and item["confidence"] == "candidate_with_local_evidence_and_known_case_context"
+        and item["known_case_matches"][0]["profile_id"] == "permit-replay-known-case"
+        for item in data["normalized_findings"]
+    )
 
 
 def test_contract_pattern_check_tool_flags_collateral_and_liquidation_review_signals() -> None:

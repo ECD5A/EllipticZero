@@ -46,7 +46,7 @@ The EllipticZero pipeline is a constrained research workflow:
    The Math Agent converts informal statements into mathematical objects, assumptions, invariants, constraints, and testable formulations.
 
 4. Smart-Contract / Cryptographic Surface Profiling
-   The Cryptography Agent maps the seed and formalization to bounded smart-contract audit, ECC, or cryptographic surfaces, preferred local tool families, and defensive research questions.
+   The Cryptography Agent maps the seed and formalization to scoped smart-contract audit, ECC, or cryptographic surfaces, preferred local tool families, and defensive research questions.
 
 5. Strategy Shaping  
    The Strategy Agent defines conservative local checks, null controls, and stop conditions so the investigation stays bounded and evidence-first.
@@ -94,7 +94,7 @@ This layer is the single approved interface between reasoning and computation. I
 
 ### 4.5 Local Compute Layer
 
-This layer performs deterministic or controlled local computation. It is responsible for actual mathematical evaluation, implementation checks, anomaly scans, sampling procedures, bounded smart-contract parsing/compile/surface/pattern checks, repo-scale contract inventory and import/dependency scoping, entrypoint and risk-family review lane extraction, bounded repo-casebook comparisons for repository-style contract review, optional external static or invariant adapters, and other experimental work that cannot be delegated to LLM reasoning.
+This layer performs deterministic or controlled local computation. It is responsible for actual mathematical evaluation, implementation checks, anomaly scans, sampling procedures, scoped smart-contract parsing/compile/surface/pattern checks, repo-scale contract inventory and import/dependency scoping, entrypoint and risk-family review lane extraction, scoped repo-casebook comparisons for repository-style contract review, optional external static or invariant adapters, and other experimental work that cannot be delegated to LLM reasoning.
 
 ### 4.6 Evidence Layer
 

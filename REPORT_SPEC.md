@@ -48,7 +48,7 @@ For smart-contract sessions, the report should also preserve contract-specific d
 - short signal-consensus summaries when the report can show where compile, surface, static, casebook, or invariant paths converge or still leave important gaps
 - a short validation-matrix block when the report can show the current posture, support, and replay gaps for the strongest repository lanes
 - a short benchmark-posture block when the report can state how much bounded repo-casebook support backs the strongest repository lanes
-- a short benchmark-pack summary when a bounded smart-contract benchmark pack materially structured the local review path
+- a short benchmark-pack summary when a scoped smart-contract benchmark pack materially structured the local review path
 - bounded confidence-calibration notes when the report can explain which support vectors, replay anchors, or unresolved gaps kept the assigned confidence level narrow
 - repo-scale strongest priorities when cross-file evidence materially shaped review order
 - repo triage for the first bounded review pass when repository lanes, function families, and casebook alignment materially shaped review order
@@ -56,7 +56,7 @@ For smart-contract sessions, the report should also preserve contract-specific d
 - a short casebook-coverage matrix when the report can compare the current posture, dominant issues, validation support, and matched risk families across the strongest bounded repo-casebooks
 - compact case-study summaries when bounded repo-casebook paths materially shaped the audit narrative
 - short archetype labels when the report can tie matched repo-casebook paths to bounded governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, or similar protocol-style scenarios
-- short benchmark-case summaries when a bounded smart-contract benchmark pack materially shaped which anomaly-bearing or control cases mattered first
+- short benchmark-case summaries when a scoped smart-contract benchmark pack materially shaped which anomaly-bearing or control cases mattered first
 - short priority-case lines naming the strongest matched repo-casebook cases when those examples materially shaped review order
 - a short casebook-gap block naming which repo review lanes or function-family priorities remain unmatched by the current bounded casebook run
 - benchmark-support summaries when the report can responsibly state which local compile, static, invariant, or structural paths supported the current repo-casebook review

@@ -84,7 +84,7 @@ python -m app.main --pack ecc_domain_completeness_benchmark_pack "Review whether
 Привязать сохранённую baseline-сессию к новому ограниченному запуску:
 
 ```powershell
-python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the scoped audit and record before/after deltas against the saved baseline session."
 ```
 
 Повторить уже сохранённую сессию:

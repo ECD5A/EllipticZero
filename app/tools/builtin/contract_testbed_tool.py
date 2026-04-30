@@ -9,13 +9,13 @@ from app.tools.base import BaseTool
 
 
 class ContractTestbedTool(BaseTool):
-    """Run built-in bounded smart-contract review corpora through the local testbed runner."""
+    """Run built-in scoped smart-contract review corpora through the local testbed runner."""
 
     name = "contract_testbed_tool"
     category = "smart_contract_audit"
-    description = "Run built-in bounded smart-contract review corpora locally."
+    description = "Run built-in scoped smart-contract review corpora locally."
     input_schema_hint = "SmartContractTestbedPayload"
-    output_schema_hint = "Normalized bounded smart-contract testbed result"
+    output_schema_hint = "Normalized scoped smart-contract testbed result"
     payload_model = SmartContractTestbedPayload
 
     def __init__(self, *, runner: ContractTestbedRunner) -> None:

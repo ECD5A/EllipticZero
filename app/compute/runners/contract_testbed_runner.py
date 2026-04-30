@@ -25,7 +25,7 @@ def _ordered_unique(values: list[str]) -> list[str]:
 
 
 class ContractTestbedRunner:
-    """Run built-in bounded smart-contract review corpora locally."""
+    """Run built-in scoped smart-contract review corpora locally."""
 
     def __init__(self, *, enabled: bool = True) -> None:
         self.enabled = enabled
@@ -109,9 +109,9 @@ class ContractTestbedRunner:
         return self._result(
             status="ok" if anomaly_count == 0 else "observed_issue",
             conclusion=(
-                "The bounded smart-contract testbed sweep found no review-bearing anomaly signal."
+                "The scoped smart-contract testbed sweep found no review-bearing anomaly signal."
                 if anomaly_count == 0
-                else "The bounded smart-contract testbed sweep surfaced review-bearing cases."
+                else "The scoped smart-contract testbed sweep surfaced review-bearing cases."
             ),
             notes=["This runner executes only built-in local smart-contract review corpora."],
             result_data={

@@ -88,7 +88,7 @@ Must not:
 
 Purpose:
 
-- map the seed and formalization to bounded smart-contract, ECC, or cryptographic security surfaces worth studying locally
+- map the seed and formalization to scoped smart-contract, ECC, or cryptographic security surfaces worth studying locally
 - identify whether the relevant surface is parsing, curve/domain normalization, symbolic structure, finite-field consistency, validation assumptions, testbed-style anomaly probing, contract parse / compile / surface mapping, bounded static pattern review, or optional external analyzer / invariant paths
 - suggest appropriate local tool families
 

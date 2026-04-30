@@ -112,7 +112,7 @@ class ResearchTargetRegistry:
             "smart_contract_testbed": ResearchTargetProfile(
                 profile_name="smart_contract_testbed_target",
                 target_kind="smart_contract_testbed",
-                description="Built-in bounded smart-contract review corpus target.",
+                description="Built-in scoped smart-contract review corpus target.",
                 allowed_tool_names=[
                     "contract_testbed_tool",
                 ],
@@ -341,7 +341,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_reentrancy_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_reentrancy_testbed",
-                description="Built-in bounded smart-contract corpus for reentrancy-style review signals.",
+                description="Built-in scoped smart-contract corpus for reentrancy-style review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="reentrancy_review_corpus",
@@ -354,7 +354,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_access_control_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_access_control_testbed",
-                description="Built-in bounded smart-contract corpus for access-control review signals.",
+                description="Built-in scoped smart-contract corpus for access-control review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="access_control_corpus",
@@ -367,7 +367,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_asset_flow_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_asset_flow_testbed",
-                description="Built-in bounded smart-contract corpus for deposit, withdraw, claim, rescue, and sweep flow review signals.",
+                description="Built-in scoped smart-contract corpus for deposit, withdraw, claim, rescue, and sweep flow review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="asset_flow_corpus",
@@ -380,7 +380,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_authorization_flow_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_authorization_flow_testbed",
-                description="Built-in bounded smart-contract corpus for role-management, operator, guardian, and pause-control review signals.",
+                description="Built-in scoped smart-contract corpus for role-management, operator, guardian, and pause-control review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="authorization_flow_corpus",
@@ -393,7 +393,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_dangerous_call_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_dangerous_call_testbed",
-                description="Built-in bounded smart-contract corpus for delegatecall, tx.origin, and selfdestruct review signals.",
+                description="Built-in scoped smart-contract corpus for delegatecall, tx.origin, and selfdestruct review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="dangerous_call_corpus",
@@ -406,7 +406,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_upgrade_surface_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_upgrade_surface_testbed",
-                description="Built-in bounded smart-contract corpus for upgrade and implementation review signals.",
+                description="Built-in scoped smart-contract corpus for upgrade and implementation review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="upgrade_surface_corpus",
@@ -419,7 +419,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_proxy_storage_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_proxy_storage_testbed",
-                description="Built-in bounded smart-contract corpus for proxy delegation, storage-slot, and storage-collision review signals.",
+                description="Built-in scoped smart-contract corpus for proxy delegation, storage-slot, and storage-collision review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="proxy_storage_corpus",
@@ -432,7 +432,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_time_entropy_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_time_entropy_testbed",
-                description="Built-in bounded smart-contract corpus for timestamp and entropy review signals.",
+                description="Built-in scoped smart-contract corpus for timestamp and entropy review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="time_entropy_corpus",
@@ -445,7 +445,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_upgrade_validation_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_upgrade_validation_testbed",
-                description="Built-in bounded smart-contract corpus for zero-address and implementation validation review signals.",
+                description="Built-in scoped smart-contract corpus for zero-address and implementation validation review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="upgrade_validation_corpus",
@@ -458,7 +458,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_token_interaction_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_token_interaction_testbed",
-                description="Built-in bounded smart-contract corpus for ERC20 transfer and transferFrom review signals.",
+                description="Built-in scoped smart-contract corpus for ERC20 transfer and transferFrom review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="token_interaction_corpus",
@@ -471,7 +471,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_approval_review_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_approval_review_testbed",
-                description="Built-in bounded smart-contract corpus for ERC20 approve and allowance review signals.",
+                description="Built-in scoped smart-contract corpus for ERC20 approve and allowance review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="approval_review_corpus",
@@ -484,7 +484,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_accounting_review_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_accounting_review_testbed",
-                description="Built-in bounded smart-contract corpus for balance, claim-state, and withdrawal-order review signals.",
+                description="Built-in scoped smart-contract corpus for balance, claim-state, and withdrawal-order review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="accounting_review_corpus",
@@ -497,7 +497,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_vault_share_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_vault_share_testbed",
-                description="Built-in bounded smart-contract corpus for vault share mint, redeem, and asset-conversion review signals.",
+                description="Built-in scoped smart-contract corpus for vault share mint, redeem, and asset-conversion review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="vault_share_corpus",
@@ -510,7 +510,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_assembly_review_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_assembly_review_testbed",
-                description="Built-in bounded smart-contract corpus for inline assembly review signals.",
+                description="Built-in scoped smart-contract corpus for inline assembly review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="assembly_review_corpus",
@@ -523,7 +523,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_state_machine_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_state_machine_testbed",
-                description="Built-in bounded smart-contract corpus for state-transition and status-update review signals.",
+                description="Built-in scoped smart-contract corpus for state-transition and status-update review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="state_machine_corpus",
@@ -536,7 +536,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_signature_review_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_signature_review_testbed",
-                description="Built-in bounded smart-contract corpus for signature validation and replay review signals.",
+                description="Built-in scoped smart-contract corpus for signature validation and replay review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="signature_review_corpus",
@@ -549,7 +549,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_oracle_review_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_oracle_review_testbed",
-                description="Built-in bounded smart-contract corpus for price-oracle freshness and dependency review signals.",
+                description="Built-in scoped smart-contract corpus for price-oracle freshness and dependency review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="oracle_review_corpus",
@@ -562,7 +562,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_collateral_liquidation_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_collateral_liquidation_testbed",
-                description="Built-in bounded smart-contract corpus for collateral ratio, liquidation, and reserve-derived pricing review signals.",
+                description="Built-in scoped smart-contract corpus for collateral ratio, liquidation, and reserve-derived pricing review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="collateral_liquidation_corpus",
@@ -575,7 +575,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_reserve_fee_accounting_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_reserve_fee_accounting_testbed",
-                description="Built-in bounded smart-contract corpus for protocol-fee, reserve-accounting, and debt-state review signals.",
+                description="Built-in scoped smart-contract corpus for protocol-fee, reserve-accounting, and debt-state review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="reserve_fee_accounting_corpus",
@@ -588,7 +588,7 @@ class ResearchTargetRegistry:
             ),
             "toy_contract_loop_payout_testbed": SyntheticResearchTarget(
                 target_name="toy_contract_loop_payout_testbed",
-                description="Built-in bounded smart-contract corpus for payout-loop and batch distribution review signals.",
+                description="Built-in scoped smart-contract corpus for payout-loop and batch distribution review signals.",
                 research_target=ResearchTarget(
                     target_kind="smart_contract_testbed",
                     target_reference="loop_payout_corpus",

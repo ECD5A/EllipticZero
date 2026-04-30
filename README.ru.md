@@ -11,7 +11,7 @@
 <p align="right"><a href="README.md">English version</a></p>
 
 **EllipticZero Research Lab** — независимый source-available проект **ECD5A**
-для ограниченного аудита смарт-контрактов и защитных ECC-исследований.
+для контролируемого аудита смарт-контрактов и защитных ECC-исследований.
 
 Проект рассчитан на исследователей, аудиторские и протокольные команды,
 которым нужна локальная доказательная база, а не только ответы модели.
@@ -52,7 +52,7 @@
 
 - локальный агентный цикл для аудита смарт-контрактов и ECC-исследований
 - выводы, опирающиеся на инструменты и артефакты, а не только на модель
-- компактные карточки находок по смарт-контрактам: риск, доказательства, строки кода, направление исправления и путь перепроверки
+- нормализованные записи и компактные карточки находок по смарт-контрактам: риск, доказательства, строки кода, направление исправления и путь перепроверки
 - воспроизводимые сессии, трассировки, манифесты, bundle-пакеты и replay
 - сводки покрытия доказательной базы, отпечатки toolchain и JSON-экспорт с редактированием секретов
 - SARIF-экспорт с привязкой к строкам, когда локальные подсказки доступны
@@ -99,7 +99,7 @@ EllipticZero сделан для локальных исследований, г
 
 - сессии с оркестратором и ролями Math, Cryptography, Strategy, Hypothesis, Critic и Report
 - smart-contract пути для parser, compile, repo inventory, protocol map, review lanes, benchmark, casebook и finding cards
-- ограниченные семейства проверок для access control, upgrade/storage, asset-flow, vault/share, oracle, liquidation, token accounting, signatures, rewards, AMM/liquidity, bridge/custody, staking, treasury, insurance и смежных protocol surfaces
+- семейства проверок в заданных рамках для access control, upgrade/storage, asset-flow, vault/share, oracle, liquidation, token accounting, signatures, rewards, AMM/liquidity, bridge/custody, staking, treasury, insurance и смежных protocol surfaces
 - опциональные локальные адаптеры `Slither`, `Foundry` и `Echidna`; Slither сохраняет severity и source location, Foundry может добавлять build/test evidence для проектов с `foundry.toml`
 - локальное сопоставление с кэшированными профилями известных кейсов из разрешённых источников метаданных; удалённый код не запускается
 - ECC benchmark-наборы для point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor, twist hygiene и bounded domain completeness
@@ -226,7 +226,7 @@ python -m app.main --list-packs
 python -m app.main --live-provider-smoke openai --live-smoke-model gpt-4.1-mini
 python -m app.main --live-provider-smoke openrouter --live-smoke-model openrouter/auto
 python -m app.main --replay-session .\artifacts\sessions\session_id.json
-python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Повторно прогнать bounded-аудит и записать различия до/после относительно сохранённой baseline-сессии."
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Повторно прогнать аудит в заданных рамках и записать различия до/после относительно сохранённой baseline-сессии."
 ```
 
 ## Конфигурация и среда выполнения

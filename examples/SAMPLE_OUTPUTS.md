@@ -22,6 +22,7 @@ What the reviewer should see:
 
 - parsed functions, state, modifiers, and value-flow surfaces
 - a short review queue with strongest lanes first
+- normalized finding records with severity, confidence, local evidence, fix direction, and recheck path
 - residual-risk and exit-criteria lines for manual follow-up
 - pattern evidence kept separate from confirmed exploit claims
 
@@ -136,7 +137,7 @@ Confidence:
 Command:
 
 ```powershell
-python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the scoped audit and record before/after deltas against the saved baseline session."
 ```
 
 Typical report areas:
@@ -164,7 +165,7 @@ Confidence:
 ```
 
 This lane is useful for hardening validation. It helps answer whether a later
-run looks better, worse, or merely different under the same bounded review
+run looks better, worse, or merely different under the same scoped review
 model.
 
 ## ECC Benchmark Report

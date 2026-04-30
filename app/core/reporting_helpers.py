@@ -2613,7 +2613,7 @@ def build_contract_finding_cards(session: ResearchSession) -> list[str]:
         )
         fallback_fix = "Narrow the implicated flow, harden the control path, and keep the claim manual-review bounded."
         fallback_recheck = (
-            "Re-run the same bounded smart-contract audit path and compare the strongest local signals."
+            "Re-run the same scoped smart-contract audit path and compare the strongest local signals."
         )
         evidence = _contract_card_match_value(
             evidence_lines,
@@ -5409,7 +5409,7 @@ def _add_pattern_family_supports(
         _add_repo_family_support(
             family_supports,
             family=family,
-            text=f"{priority} bounded pattern signal: {summary}",
+            text=f"{priority} scoped pattern signal: {summary}",
             weight=weight,
             priority=priority,
         )
@@ -5541,8 +5541,10 @@ def _normalize_contract_repo_family(label: str | None) -> str | None:
         "vault_conversion_review_required": "vault/share",
         "signature_replay_review_required": "permit/signature",
         "signature_domain_separation_review_required": "permit/signature",
+        "signature_deadline_review_required": "permit/signature",
         "oracle_staleness_review_required": "oracle/price",
         "oracle_answer_bounds_review_required": "oracle/price",
+        "oracle_round_completeness_review_required": "oracle/price",
         "oracle_decimal_scaling_review_required": "oracle/price",
         "collateral_ratio_review_required": "collateral/liquidation",
         "liquidation_without_fresh_price_review": "collateral/liquidation",

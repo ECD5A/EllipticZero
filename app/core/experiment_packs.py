@@ -255,7 +255,7 @@ class ExperimentPackRegistry:
             recommendations.append(
                 ExperimentPackRecommendation(
                     pack_name="contract_static_benchmark_pack",
-                    reason="The current seed resolves to a bounded smart-contract audit target and fits a repeatable static benchmark baseline.",
+                    reason="The current seed resolves to a scoped smart-contract audit target and fits a repeatable static benchmark baseline.",
                     confidence_hint="high",
                     notes=[
                         "Useful for parser, compile, surface, pattern, and external static cross-check coverage.",

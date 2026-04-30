@@ -99,7 +99,7 @@ class ContractCompileRunner:
         if not self.enabled:
             return self._result(
                 status="unavailable",
-                conclusion="The bounded smart-contract compile layer is disabled in the current configuration.",
+                conclusion="The scoped smart-contract compile layer is disabled in the current configuration.",
                 notes=["Enable local_research.smart_contract_compile_enabled to allow local compiler checks."],
                 result_data=self._base_result_data(
                     language=language,

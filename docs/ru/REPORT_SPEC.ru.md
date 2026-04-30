@@ -48,7 +48,7 @@
 - короткие сводки по согласованности сигналов, если отчёт может показать, где compile/surface/static/casebook/invariant paths уже сходятся, а где ещё остаются важные gaps
 - короткий блок матрицы валидации, если отчёт может показать текущий статус, поддержку и replay-gaps для сильнейших маршрутов обзора по репозиторию
 - короткий блок benchmark-статуса, если отчёт может ответственно показать, насколько ограниченный repo-casebook уже поддерживает сильнейшие маршруты обзора по репозиторию
-- короткую сводку по benchmark-пакету, если bounded smart-contract benchmark pack существенно структурировал локальный путь проверки
+- короткую сводку по benchmark-пакету, если smart-contract benchmark pack в заданных рамках существенно структурировал локальный путь проверки
 - короткие заметки по калибровке уверенности, если отчёт может показать, какие support vectors, replay anchors или unresolved gaps удерживают назначенный уровень уверенности в ограниченных рамках
 - сильнейшие приоритеты по обзору репозитория, если межфайловые сигналы существенно влияли на порядок проверки
 - компактную сводку триажа репозитория, если отчёт может коротко поднять наверх самый важный repo lane, ключевые файлы, причину приоритета и следующий ручной шаг
@@ -57,7 +57,7 @@
 - короткую матрицу покрытия casebook, если отчёт может сравнить текущий статус, доминирующие issue-families, поддержку валидации и совпавшие семейства рисков для сильнейших ограниченных repo-casebook
 - компактные сводки по ограниченным case-study сценариям, если repo-casebook paths существенно влияли на ход аудита
 - короткие archetype-style подписи, если отчёт может привязать matched repo-casebook paths к bounded governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery или схожим protocol-style сценариям
-- короткие сводки по benchmark-кейсам, если bounded smart-contract benchmark pack существенно повлиял на то, какие anomaly-bearing или control-кейсы были важнее всего в первом проходе
+- короткие сводки по benchmark-кейсам, если smart-contract benchmark pack в заданных рамках существенно повлиял на то, какие anomaly-bearing или control-кейсы были важнее всего в первом проходе
 - короткие строки с ключевыми совпавшими repo-casebook кейсами, если именно эти примеры существенно влияли на порядок обзора
 - короткий блок casebook gaps, если отчёт может показать, какие маршруты обзора по репозиторию или приоритеты семейств функций текущий bounded casebook-прогон ещё не покрыл
 - benchmark-сводки, если отчёт может ответственно указать, какие локальные compile/static/invariant/structural paths поддержали текущий repo-casebook обзор
@@ -67,7 +67,7 @@
 - компактные карточки находок, если отчёт может связать ограниченный потенциальный finding с локальной доказательной базой, причиной важности, направлением защитной доработки и путём повторной проверки
 - короткие строки с остаточным риском, если отчёт может назвать, какие сильнейшие маршруты обзора по репозиторию всё ещё остаются открытыми, почему они остаются открытыми и какие casebook/toolchain сигналы всё ещё их держат
 - короткий блок критериев завершения, если отчёт может назвать, какие сигналы должны ослабнуть, исчезнуть или остаться явно нерешёнными, прежде чем сильнейший маршрут обзора по репозиторию можно будет считать суженным
-- более предметные сводки по benchmark-пакетам, если текущий bounded review materially structured через upgrade/control, governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission или lending-style benchmark pass
+- более предметные сводки по benchmark-пакетам, если текущая проверка в заданных рамках materially structured через upgrade/control, governance/timelock, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, vault/permission или lending-style benchmark pass
 - короткий блок сравнения до/после, если к запуску привязана сохранённая baseline-сессия и отчёт может осторожно показать, какие ограниченные сигналы сузились, расширились или остались стабильными между двумя прогонами
 - компактную сводку изменений после доработки, если отчёт может коротко показать before/after posture, сильнейшее улучшение или регрессионный риск и следующий replay-path
 - короткие флаги регрессий, если к запуску привязана сохранённая baseline-сессия и отчёт может назвать, какие bounded tool-paths, review-counts или casebook-gaps расширились или исчезли относительно baseline

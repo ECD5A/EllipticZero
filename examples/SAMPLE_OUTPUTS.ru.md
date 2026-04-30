@@ -22,6 +22,7 @@
 
 - разобранные функции, состояние, модификаторы и value-flow поверхности
 - короткая review queue с самыми сильными lanes в начале
+- нормализованные записи находок с severity, confidence, локальной evidence, направлением исправления и recheck path
 - residual-risk и exit-criteria строки для ручной проверки
 - pattern evidence отделена от заявлений о подтвержденной эксплуатации
 
@@ -136,7 +137,7 @@ Confidence:
 Команда:
 
 ```powershell
-python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the scoped audit and record before/after deltas against the saved baseline session."
 ```
 
 Типичные области отчёта:

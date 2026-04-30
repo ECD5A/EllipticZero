@@ -209,7 +209,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 Then compare against a saved baseline when validating a change:
 
 ```powershell
-python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the scoped audit and record before/after deltas against the saved baseline session."
 ```
 
 What to inspect:

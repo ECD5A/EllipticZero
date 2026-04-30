@@ -530,12 +530,16 @@ def detect_contract_patterns(outline: ContractOutline) -> tuple[list[str], list[
                 issues.append(f"signature_replay_review_required:{item.name}")
             if not _contains_signature_expiry_guard(item.signature, item.body):
                 notes.append(f"signature_expiry_review:{item.name}")
+                if _looks_permit_or_authorized_signature(item.name, item.signature, item.body):
+                    issues.append(f"signature_deadline_review_required:{item.name}")
         if _contains_oracle_read(item.body):
             notes.append(f"oracle_dependency_review:{item.name}")
             if not _has_oracle_freshness_check(item.body):
                 issues.append(f"oracle_staleness_review_required:{item.name}")
             if _contains_chainlink_oracle_read(item.body) and not _has_oracle_answer_bounds_check(item.body):
                 issues.append(f"oracle_answer_bounds_review_required:{item.name}")
+            if _contains_chainlink_oracle_read(item.body) and not _has_chainlink_round_completeness_check(item.body):
+                issues.append(f"oracle_round_completeness_review_required:{item.name}")
             if _contains_oracle_price_math(item.body) and not _has_oracle_scaling_context(item.body):
                 issues.append(f"oracle_decimal_scaling_review_required:{item.name}")
         if _looks_collateral_management_function(item.name, item.signature, item.body):
@@ -762,6 +766,57 @@ def prioritize_contract_issues(issues: list[str]) -> list[dict[str, str]]:
     return prioritized
 
 
+def build_normalized_contract_findings(
+    prioritized_issues: list[dict[str, object]],
+    *,
+    known_case_matches: list[dict[str, object]] | None = None,
+) -> list[dict[str, object]]:
+    findings: list[dict[str, object]] = []
+    known_cases_by_family = _known_case_matches_by_family(known_case_matches or [])
+
+    for item in prioritized_issues:
+        issue = str(item.get("issue", "")).strip()
+        if not issue:
+            continue
+        family, _, raw_target = issue.partition(":")
+        target = raw_target.strip()
+        priority = str(item.get("priority", contract_issue_priority(issue))).strip().lower() or "medium"
+        summary = str(item.get("summary", contract_issue_summary(issue))).strip() or contract_issue_summary(issue)
+        line = _contract_item_line(item)
+        line_evidence = str(item.get("line_evidence", "")).strip()
+        family_matches = known_cases_by_family.get(family, [])
+        finding: dict[str, object] = {
+            "finding_id": f"ez-contract-{_contract_issue_slug(issue)}",
+            "issue": issue,
+            "family": family,
+            "target": target or None,
+            "summary": summary,
+            "severity": _contract_finding_severity(priority),
+            "priority": priority,
+            "confidence": _contract_finding_confidence(line=line, known_case_matches=family_matches),
+            "source": "contract_pattern_check_tool",
+            "review_required": True,
+            "evidence": _normalized_contract_finding_evidence(
+                issue=issue,
+                line=line,
+                line_evidence=line_evidence,
+                known_case_matches=family_matches,
+            ),
+            "fix_direction": _contract_fix_direction(family),
+            "recheck": _contract_recheck_path(family),
+        }
+        if line is not None:
+            finding["line"] = line
+            finding["line_hint"] = f"Line hint: {line}"
+        if line_evidence:
+            finding["line_evidence"] = line_evidence
+        if family_matches:
+            finding["known_case_matches"] = family_matches[:3]
+        findings.append(finding)
+
+    return findings
+
+
 def build_contract_issue_line_hints(
     outline: ContractOutline,
     issues: list[str],
@@ -843,8 +898,10 @@ def contract_issue_priority(issue: str) -> str:
         "bad_debt_socialization_review_required",
         "signature_replay_review_required",
         "signature_domain_separation_review_required",
+        "signature_deadline_review_required",
         "oracle_staleness_review_required",
         "oracle_answer_bounds_review_required",
+        "oracle_round_completeness_review_required",
         "unvalidated_implementation_target",
         "proxy_storage_collision_review_required",
         "selfdestruct_usage",
@@ -963,6 +1020,8 @@ def contract_issue_summary(issue: str) -> str:
         return f"replay protection and nonce use in `{target}` should be reviewed"
     if family == "signature_domain_separation_review_required" and target:
         return f"signature domain separation in `{target}` should be reviewed"
+    if family == "signature_deadline_review_required" and target:
+        return f"signature deadline or expiry handling in `{target}` should be reviewed"
     if family == "arbitrary_from_transfer_surface" and target:
         return f"arbitrary `from` transfer behavior in `{target}` should be reviewed"
     if family == "assembly_review_required" and target:
@@ -973,6 +1032,8 @@ def contract_issue_summary(issue: str) -> str:
         return f"oracle freshness and staleness handling in `{target}` should be reviewed"
     if family == "oracle_answer_bounds_review_required" and target:
         return f"oracle answer bounds and non-positive price handling in `{target}` should be reviewed"
+    if family == "oracle_round_completeness_review_required" and target:
+        return f"Chainlink round completeness in `{target}` should be reviewed"
     if family == "oracle_decimal_scaling_review_required" and target:
         return f"oracle decimal scaling and price precision in `{target}` should be reviewed"
     if family == "reserve_spot_dependency_review_required" and target:
@@ -990,6 +1051,178 @@ def contract_issue_summary(issue: str) -> str:
     if family == "storage_slot_write_review_required" and target:
         return f"storage-slot write behavior in `{target}` should be reviewed"
     return issue.replace("_", " ")
+
+
+def _contract_item_line(item: dict[str, object]) -> int | None:
+    raw_line = item.get("line")
+    if isinstance(raw_line, int) and raw_line > 0:
+        return raw_line
+    if isinstance(raw_line, str) and raw_line.isdigit():
+        line = int(raw_line)
+        return line if line > 0 else None
+    return None
+
+
+def _known_case_matches_by_family(matches: list[dict[str, object]]) -> dict[str, list[dict[str, object]]]:
+    indexed: dict[str, list[dict[str, object]]] = {}
+    for match in matches:
+        matched_checks = match.get("matched_checks")
+        if not isinstance(matched_checks, list):
+            continue
+        compact = {
+            "profile_id": str(match.get("profile_id", "")).strip(),
+            "title": str(match.get("title", "")).strip(),
+            "family": str(match.get("family", "")).strip(),
+            "source_id": str(match.get("source_id", "")).strip(),
+            "risk_hint": str(match.get("risk_hint", "")).strip(),
+            "evidence_strength": str(match.get("evidence_strength", "")).strip(),
+        }
+        for raw_check in matched_checks:
+            check_family = str(raw_check).split(":", 1)[0].strip()
+            if check_family:
+                indexed.setdefault(check_family, []).append(compact)
+    return indexed
+
+
+def _normalized_contract_finding_evidence(
+    *,
+    issue: str,
+    line: int | None,
+    line_evidence: str,
+    known_case_matches: list[dict[str, object]],
+) -> list[str]:
+    evidence = [f"Local pattern signal: {issue}."]
+    if line is not None:
+        evidence.append(f"Line hint: {line}.")
+    if line_evidence:
+        evidence.append(f"Matched local token: {line_evidence}.")
+    for match in known_case_matches[:2]:
+        title = str(match.get("title", "")).strip() or str(match.get("profile_id", "")).strip()
+        source = str(match.get("source_id", "")).strip()
+        risk = str(match.get("risk_hint", "")).strip()
+        fragments = [title]
+        if source:
+            fragments.append(f"source={source}")
+        if risk:
+            fragments.append(f"risk_hint={risk}")
+        evidence.append("Known-case context: " + "; ".join(fragments) + ".")
+    return evidence
+
+
+def _contract_finding_severity(priority: str) -> str:
+    normalized = priority.strip().lower()
+    if normalized in {"high", "medium", "low"}:
+        return normalized
+    return "review"
+
+
+def _contract_finding_confidence(
+    *,
+    line: int | None,
+    known_case_matches: list[dict[str, object]],
+) -> str:
+    if line is not None and known_case_matches:
+        return "candidate_with_local_evidence_and_known_case_context"
+    if line is not None:
+        return "candidate_with_local_evidence"
+    if known_case_matches:
+        return "candidate_with_known_case_context"
+    return "candidate_review_required"
+
+
+def _contract_fix_direction(family: str) -> str:
+    if family in {
+        "unguarded_admin_surface",
+        "unguarded_role_management_surface",
+        "unguarded_pause_control_surface",
+        "unguarded_upgrade_surface",
+        "unguarded_privileged_state_change",
+        "public_initializer_surface",
+        "missing_zero_address_validation",
+        "unvalidated_implementation_target",
+        "upgrade_timelock_review_required",
+    }:
+        return "Add explicit authorization, target validation, and upgrade delay or governance controls where applicable."
+    if family in {
+        "unchecked_external_call_surface",
+        "user_supplied_call_target",
+        "reentrancy_review_required",
+        "external_call_in_loop",
+        "state_transition_after_external_call",
+        "accounting_update_after_external_call",
+        "withdrawal_without_balance_validation",
+        "asset_exit_without_balance_validation",
+        "unguarded_rescue_or_sweep_flow",
+        "unguarded_rescue_or_sweep_surface",
+    }:
+        return "Narrow the value-flow path, check call results, validate balances before transfer, and prefer checks-effects-interactions."
+    if family in {
+        "unchecked_token_transfer_surface",
+        "unchecked_token_transfer_from_surface",
+        "unchecked_approve_surface",
+        "approve_race_review_required",
+        "token_balance_delta_review_required",
+        "arbitrary_from_transfer_surface",
+    }:
+        return "Use safe token wrappers, validate return values, and confirm allowance or balance-delta assumptions."
+    if family in {
+        "signature_replay_review_required",
+        "signature_domain_separation_review_required",
+        "signature_deadline_review_required",
+    }:
+        return "Bind signatures to domain, chain, contract, nonce, signer, and expiry before accepting the action."
+    if family in {
+        "oracle_staleness_review_required",
+        "oracle_answer_bounds_review_required",
+        "oracle_round_completeness_review_required",
+        "oracle_decimal_scaling_review_required",
+        "reserve_spot_dependency_review_required",
+    }:
+        return "Validate oracle freshness, round completeness, non-zero bounds, and decimal scaling before price-dependent state changes."
+    if family in {
+        "user_supplied_delegatecall_target",
+        "unguarded_delegatecall_surface",
+        "proxy_fallback_delegatecall_review_required",
+        "proxy_storage_collision_review_required",
+        "storage_slot_write_review_required",
+        "delegatecall_usage",
+    }:
+        return "Constrain delegatecall targets, validate implementation code, and preserve proxy storage-layout assumptions."
+    if family in {
+        "collateral_ratio_review_required",
+        "liquidation_without_fresh_price_review",
+        "liquidation_fee_allocation_review_required",
+    }:
+        return "Re-check health-factor, liquidation price, and fee-allocation invariants against fresh market inputs."
+    if family in {
+        "protocol_fee_without_reserve_sync_review",
+        "reserve_accounting_drift_review_required",
+        "debt_state_transition_review_required",
+        "bad_debt_socialization_review_required",
+    }:
+        return "Tie fee, reserve, debt, and bad-debt transitions to explicit accounting invariants and sync checks."
+    if family in {
+        "share_mint_without_asset_backing_review",
+        "share_redeem_without_share_validation",
+        "vault_conversion_review_required",
+    }:
+        return "Validate asset-share conversion, backing, and redemption assumptions before mint or burn effects."
+    return "Add a minimal local reproduction or invariant, harden the implicated path, and keep the claim in manual review until rechecked."
+
+
+def _contract_recheck_path(family: str) -> str:
+    if family.startswith("oracle") or family == "reserve_spot_dependency_review_required":
+        return "Re-run pattern checks, compile/test paths, and an oracle-focused golden or casebook run after the fix."
+    if family.startswith("signature"):
+        return "Re-run pattern checks and signature or permit replay cases after adding nonce, domain, and deadline controls."
+    if "delegatecall" in family or "proxy" in family or "storage" in family:
+        return "Re-run pattern checks, proxy/storage casebook lanes, and compile tests after target or storage hardening."
+    return "Re-run the same scoped smart-contract audit path and compare the normalized findings after remediation."
+
+
+def _contract_issue_slug(issue: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", issue.strip().lower()).strip("-")
+    return slug or "review-signal"
 
 
 def _extract_functions(code: str) -> list[ContractFunction]:
@@ -1181,6 +1414,7 @@ def _issue_line_hint_tokens(family: str) -> tuple[str, ...]:
         "approve_race_review_required": (".approve(",),
         "signature_replay_review_required": ("ecrecover(",),
         "signature_domain_separation_review_required": ("ecrecover(",),
+        "signature_deadline_review_required": ("deadline", "expiry", "ecrecover("),
         "oracle_staleness_review_required": (
             ".latestrounddata(",
             ".getrounddata(",
@@ -1194,6 +1428,12 @@ def _issue_line_hint_tokens(family: str) -> tuple[str, ...]:
             ".getrounddata(",
             ".latestanswer(",
             "pricefeed",
+        ),
+        "oracle_round_completeness_review_required": (
+            ".latestrounddata(",
+            ".getrounddata(",
+            "answeredinround",
+            "roundid",
         ),
         "oracle_decimal_scaling_review_required": ("price", "answer", ".latestrounddata("),
         "reserve_spot_dependency_review_required": (".getreserves(", "reserve"),
@@ -1488,6 +1728,23 @@ def _contains_signature_domain_separator(signature: str, body: str) -> bool:
     )
 
 
+def _looks_permit_or_authorized_signature(name: str, signature: str, body: str) -> bool:
+    combined = f"{name} {signature} {body}".lower()
+    return any(
+        token in combined
+        for token in (
+            "permit",
+            "authorization",
+            "authorize",
+            "signature",
+            "signed",
+            "execute",
+            "meta",
+            "eip712",
+        )
+    )
+
+
 def _contains_oracle_read(body: str) -> bool:
     lowered = body.lower()
     return any(
@@ -1745,6 +2002,19 @@ def _has_oracle_freshness_check(body: str) -> bool:
             "roundid",
         )
     )
+
+
+def _has_chainlink_round_completeness_check(body: str) -> bool:
+    lowered = body.lower()
+    if not (".latestrounddata(" in lowered or ".getrounddata(" in lowered):
+        return True
+    has_updated_at = "updatedat" in lowered or "updated_at" in lowered
+    has_round_identity = "answeredinround" in lowered and "roundid" in lowered
+    has_round_comparison = bool(
+        re.search(r"\bansweredinround\b[^;\n]*(?:>=|==|>|<)\s*\broundid\b", lowered)
+        or re.search(r"\broundid\b[^;\n]*(?:<=|==|<|>)\s*\bansweredinround\b", lowered)
+    )
+    return has_updated_at and has_round_identity and has_round_comparison
 
 
 def _has_reserve_window_check(body: str) -> bool:

@@ -3,7 +3,25 @@
 All notable public changes for EllipticZero are summarized here.
 
 The project follows a source-available release track under `FSL-1.1-ALv2`.
-Package version: `0.1.6`.
+Package version: `0.1.7`.
+
+## 0.1.7 - 2026-04-30
+
+### Added
+
+- Added normalized smart-contract findings for built-in pattern checks:
+  each candidate keeps severity, confidence, local evidence, line hints, fix
+  direction, and recheck path in `result_data`.
+- Added signature deadline / expiry review signals for permit-like signature
+  paths that use `ecrecover` without an expiry boundary.
+- Added Chainlink-style oracle round-completeness review signals for
+  `latestRoundData` / `getRoundData` paths that do not preserve an
+  `answeredInRound >= roundId` style check.
+
+### Changed
+
+- Tightened smart-contract wording from broad "bounded audit" phrasing toward
+  scoped security review and normalized review signals.
 
 ## 0.1.6 - 2026-04-30
 
@@ -35,7 +53,7 @@ Package version: `0.1.6`.
   remote code.
 - Added `KNOWN CASES` to the interactive evaluation lab for updating profiles,
   inspecting the local cache, and reviewing allowed metadata sources.
-- Added deeper bounded smart-contract review signals for signature domain
+- Added deeper scoped smart-contract review signals for signature domain
   separation, Chainlink-style oracle answer bounds, and immediate upgrade paths
   that lack an explicit delay, queue, or governance control.
 - Added token balance-delta and oracle decimal-scaling review signals for

@@ -22,7 +22,7 @@ def _saved_contract_run() -> LoadedReplaySource:
     report = ResearchReport(
         session_id="session_sarif",
         seed_text=seed_text,
-        summary="Bounded smart-contract review.",
+        summary="Scoped smart-contract review.",
         contract_finding_cards=[
             "Potential finding: externally reachable value-flow lane requires review. Line hint: 7."
         ],

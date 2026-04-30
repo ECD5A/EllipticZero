@@ -25,7 +25,7 @@ def _saved_contract_run() -> LoadedReplaySource:
     report = ResearchReport(
         session_id="session_markdown",
         seed_text=seed_text,
-        summary="Bounded smart-contract review.",
+        summary="Scoped smart-contract review.",
         contract_finding_cards=[
             "Potential finding: externally reachable value-flow lane requires review."
         ],
@@ -63,7 +63,7 @@ def test_saved_run_markdown_report_avoids_embedded_contract_code(tmp_path: Path)
     markdown = build_saved_run_report_markdown(loaded_source=loaded)
 
     assert markdown.startswith("# EllipticZero Report")
-    assert "Bounded smart-contract review." in markdown
+    assert "Scoped smart-contract review." in markdown
     assert "## Review Snapshot" in markdown
     assert "Primary signal" in markdown
     assert "Next review step" in markdown

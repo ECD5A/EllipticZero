@@ -59,7 +59,7 @@ python -m app.main --live-provider-smoke openrouter --live-smoke-model openroute
 
 ### `smart-contract-static`
 
-Use this profile for bounded smart-contract parsing, compile checks, static
+Use this profile for scoped smart-contract parsing, compile checks, static
 review, and benchmark-pack runs.
 
 What it gives you:

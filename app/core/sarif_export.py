@@ -16,8 +16,8 @@ SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
 
 RULE_DEFINITIONS: dict[str, dict[str, str]] = {
     "EZ-CONTRACT-FINDING": {
-        "name": "Bounded smart-contract finding",
-        "description": "A smart-contract finding or candidate issue from a bounded EllipticZero run.",
+        "name": "Scoped smart-contract finding",
+        "description": "A smart-contract finding or candidate issue from a scoped EllipticZero run.",
     },
     "EZ-CONTRACT-STATIC-SIGNAL": {
         "name": "Smart-contract static signal",

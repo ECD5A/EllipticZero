@@ -28,13 +28,13 @@ python -m app.main --show-routing
 
 ## Smart-Contract Audit
 
-Run a bounded review from inline Solidity:
+Run a scoped review from inline Solidity:
 
 ```powershell
 python -m app.main --domain smart_contract_audit --contract-code "pragma solidity ^0.8.20; contract Vault { mapping(address => uint256) public balances; }" "Review reachable state, value-flow, and externally visible surfaces."
 ```
 
-Run a bounded review from a local contract file:
+Run a scoped review from a local contract file:
 
 ```powershell
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol "Audit the contract for low-level call review surfaces and externally reachable value flow."
@@ -84,7 +84,7 @@ python -m app.main --pack ecc_domain_completeness_benchmark_pack "Review whether
 Attach a saved baseline session to a fresh bounded run:
 
 ```powershell
-python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the scoped audit and record before/after deltas against the saved baseline session."
 ```
 
 Replay an existing saved session:

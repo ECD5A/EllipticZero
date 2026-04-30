@@ -17,7 +17,7 @@ class ContractCompileTool(BaseTool):
     description = "Run a bounded local Solidity compile check through solc or solcjs."
     version = "0.1.0"
     input_schema_hint = "SmartContractAuditPayload"
-    output_schema_hint = "Bounded smart-contract compile result"
+    output_schema_hint = "Scoped smart-contract compile result"
     payload_model = SmartContractAuditPayload
 
     def __init__(self, *, runner: ContractCompileRunner) -> None:

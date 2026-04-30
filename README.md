@@ -11,7 +11,7 @@
 <p align="right"><a href="README.ru.md">Русская версия</a></p>
 
 **EllipticZero Research Lab** is an independent source-available project by
-**ECD5A** for bounded smart-contract audits and defensive ECC research.
+**ECD5A** for scoped smart-contract security reviews and defensive ECC research.
 
 It is built for researchers, audit teams, and protocol teams that want local
 evidence instead of model-only output.
@@ -51,8 +51,8 @@ risk lanes, confidence, and follow-up guidance.
 
 - a local-first workflow for smart-contract audits and defensive ECC research
 - tool-backed evidence instead of model-only claims
-- compact smart-contract finding cards with risk, evidence, line hints, fix direction, and recheck path
-- bounded smart-contract signals for signature, oracle, upgrade, and token-accounting review lanes
+- normalized smart-contract finding records and compact cards with risk, evidence, line hints, fix direction, and recheck path
+- scoped smart-contract signals for signature, oracle, upgrade, and token-accounting review lanes
 - reproducible sessions, traces, manifests, bundles, and replay
 - evidence coverage, toolchain fingerprints, and secret-redacted JSON exports
 - SARIF review exports with source-line regions when local hints are available
@@ -92,7 +92,7 @@ commercial partner, start with:
 
 - orchestrator-centered sessions with Math, Cryptography, Strategy, Hypothesis, Critic, and Report agent roles
 - smart-contract parser, compile, repo inventory, protocol-map, review-lane, benchmark, casebook, and finding-card paths
-- bounded smart-contract review families for access control, upgrade/storage, asset-flow, vault/share, oracle, liquidation, token accounting, signatures, rewards, AMM/liquidity, bridge/custody, staking, treasury, insurance, and related protocol surfaces
+- scoped smart-contract review families for access control, upgrade/storage, asset-flow, vault/share, oracle, liquidation, token accounting, signatures, rewards, AMM/liquidity, bridge/custody, staking, treasury, insurance, and related protocol surfaces
 - optional local adapters for `Slither`, `Foundry`, and `Echidna`; Slither findings keep severity and source locations, while Foundry can add build/test evidence for projects with `foundry.toml`
 - cached known-case profile matching from allowlisted metadata sources such as SmartBugs and Slither detector families; remote code is not executed
 - ECC benchmark packs for point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor and twist hygiene, and bounded domain completeness
@@ -219,7 +219,7 @@ python -m app.main --list-packs
 python -m app.main --live-provider-smoke openai --live-smoke-model gpt-4.1-mini
 python -m app.main --live-provider-smoke openrouter --live-smoke-model openrouter/auto
 python -m app.main --replay-session .\artifacts\sessions\session_id.json
-python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
+python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the scoped audit and record before/after deltas against the saved baseline session."
 ```
 
 ## Runtime Notes
