@@ -5,48 +5,6 @@ running the golden synthetic cases. They are intentionally qualitative because
 local tools, optional adapters, and provider configuration can change the exact
 wording and artifact counts.
 
-## `ecc-secp256k1-domain-completeness`
-
-Expected useful output:
-
-- selected pack is `ecc_domain_completeness_benchmark_pack`
-- executed pack steps are visible in the session and report
-- curve-domain metadata is described as local evidence
-- generator/order/cofactor or family-completeness boundaries are clear
-- confidence remains bounded and does not claim a cryptographic break
-
-Evaluator pass signal:
-
-- the report makes it easy to see what was checked and what remains a manual-review question
-
-## `ecc-25519-subgroup-hygiene`
-
-Expected useful output:
-
-- selected pack is `ecc_subgroup_hygiene_benchmark_pack`
-- subgroup, cofactor, twist, or encoding lanes are visible
-- any coordinate or family caveat stays separated from a production finding
-- confidence remains bounded
-- manual-review boundaries are preserved
-
-Evaluator pass signal:
-
-- the report distinguishes local review signals from verified implementation evidence
-
-## `ecc-secp256k1-point-format-edge`
-
-Expected useful output:
-
-- selected pack is `point_format_inspection_pack`
-- point-format or prefix evidence is visible
-- bounded consistency output is separated from stronger cryptographic claims
-- confidence remains bounded
-- report avoids claiming private-key recovery or a production library vulnerability
-
-Evaluator pass signal:
-
-- the report treats malformed or edge-format evidence as a review signal, not as an exploit
-
 ## `contract-vault-permission-lane`
 
 Expected useful output:
@@ -106,3 +64,45 @@ Expected useful output:
 Evaluator pass signal:
 
 - the report demonstrates repo-scale triage: it should show what files and lanes deserve human review first
+
+## `ecc-secp256k1-domain-completeness`
+
+Expected useful output:
+
+- selected pack is `ecc_domain_completeness_benchmark_pack`
+- executed pack steps are visible in the session and report
+- curve-domain metadata is described as local evidence
+- generator/order/cofactor or family-completeness boundaries are clear
+- confidence remains bounded and does not claim a cryptographic break
+
+Evaluator pass signal:
+
+- the report makes it easy to see what was checked and what remains a manual-review question
+
+## `ecc-25519-subgroup-hygiene`
+
+Expected useful output:
+
+- selected pack is `ecc_subgroup_hygiene_benchmark_pack`
+- subgroup, cofactor, twist, or encoding lanes are visible
+- any coordinate or family caveat stays separated from a production finding
+- confidence remains bounded
+- manual-review boundaries are preserved
+
+Evaluator pass signal:
+
+- the report distinguishes local review signals from verified implementation evidence
+
+## `ecc-secp256k1-point-format-edge`
+
+Expected useful output:
+
+- selected pack is `point_format_inspection_pack`
+- point-format or prefix evidence is visible
+- bounded consistency output is separated from stronger cryptographic claims
+- confidence remains bounded
+- report avoids claiming private-key recovery or a production library vulnerability
+
+Evaluator pass signal:
+
+- the report treats malformed or edge-format evidence as a review signal, not as an exploit

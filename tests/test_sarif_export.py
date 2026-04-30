@@ -24,7 +24,7 @@ def _saved_contract_run() -> LoadedReplaySource:
         seed_text=seed_text,
         summary="Bounded smart-contract review.",
         contract_finding_cards=[
-            "Potential finding: externally reachable value-flow lane requires review."
+            "Potential finding: externally reachable value-flow lane requires review. Line hint: 7."
         ],
         contract_static_findings=[
             "Static signal: parser and surface summaries should be cross-checked."
@@ -70,6 +70,7 @@ def test_sarif_export_builds_code_scanning_payload_from_saved_run(tmp_path: Path
     assert results[0]["locations"][0]["physicalLocation"]["artifactLocation"]["uri"] == (
         "contracts/Vault.sol"
     )
+    assert results[0]["locations"][0]["physicalLocation"]["region"]["startLine"] == 7
     assert results[0]["properties"]["ellipticzeroSeverity"] == "medium"
     assert "smart-contracts" in results[0]["properties"]["tags"]
     assert results[0]["partialFingerprints"]["ellipticzero/v1"]

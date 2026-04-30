@@ -51,10 +51,11 @@ risk lanes, confidence, and follow-up guidance.
 
 - a local-first workflow for smart-contract audits and defensive ECC research
 - tool-backed evidence instead of model-only claims
-- compact smart-contract finding cards for risk, evidence, fix direction, and recheck path
+- compact smart-contract finding cards with risk, evidence, line hints, fix direction, and recheck path
 - bounded smart-contract signals for signature, oracle, upgrade, and token-accounting review lanes
 - reproducible sessions, traces, manifests, bundles, and replay
 - evidence coverage, toolchain fingerprints, and secret-redacted JSON exports
+- SARIF review exports with source-line regions when local hints are available
 - benchmark packs and golden cases for evaluator-facing smoke checks
 - menu-first golden cases, experiment packs, evaluation summaries, baseline comparison, and provider context preview
 - cautious reports with manual-review boundaries and remediation direction
@@ -89,19 +90,14 @@ commercial partner, start with:
 
 ## Detailed Capabilities
 
-- orchestrator-centered research sessions
-- Math, Cryptography, Strategy, Hypothesis, Critic, and Report agents
-- smart-contract audit tools for parser, compile, repo-scale inventory, first-party vs dependency scoping, protocol maps, review lanes, function-family prioritization, and cross-file priority fusion
+- orchestrator-centered sessions with Math, Cryptography, Strategy, Hypothesis, Critic, and Report agent roles
+- smart-contract parser, compile, repo inventory, protocol-map, review-lane, benchmark, casebook, and finding-card paths
+- bounded smart-contract review families for access control, upgrade/storage, asset-flow, vault/share, oracle, liquidation, token accounting, signatures, rewards, AMM/liquidity, bridge/custody, staking, treasury, insurance, and related protocol surfaces
+- optional local adapters for `Slither`, `Foundry`, and `Echidna`; Slither findings keep severity and source locations, while Foundry can add build/test evidence for projects with `foundry.toml`
 - cached known-case profile matching from allowlisted metadata sources such as SmartBugs and Slither detector families; remote code is not executed
-- built-in smart-contract corpora for asset-flow, vault/share, oracle freshness, collateral/liquidation and liquidation-fee review, protocol-fee/reserve-buffer/debt accounting, bad-debt socialization, and related protocol-style review families
-- bounded repo-scale casebooks for upgrade/storage, governance/timelock, asset-flow, oracle/liquidation, protocol accounting, rewards/distribution, stablecoin/collateral, AMM/liquidity, bridge/custody, staking/rebase, keeper/auction, treasury/vesting, insurance/recovery, and vault/permit lanes, plus optional `Slither`, `Foundry`, and `Echidna` adapters when installed locally
-- Slither findings are normalized with severity and source locations; Foundry projects with `foundry.toml` can contribute local build/test evidence
-- built-in smart-contract benchmark packs for static baseline review, repo-casebook benchmarking, protocol-style repo benchmarking, upgrade/control benchmarking, governance/timelock benchmarking, rewards/distribution benchmarking, stablecoin/collateral benchmarking, AMM/liquidity benchmarking, bridge/custody benchmarking, staking/rebase benchmarking, keeper/auction benchmarking, treasury/vesting benchmarking, insurance/recovery benchmarking, vault/permission benchmarking, and lending-style protocol benchmarking
-- sandboxed local runners for symbolic, formal, property-based, fuzz, and ECC testbed checks
-- built-in ECC benchmark packs for point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor and twist hygiene, and bounded domain completeness
-- golden/synthetic example cases with expected report shapes for evaluator-facing smart-contract and ECC smoke checks
-- traces, manifests, bundles, replay, and doctor/self-check
-- evidence coverage summaries, report snapshot summaries, toolchain fingerprints, and secret-redacted session/trace/bundle JSON snapshots
+- ECC benchmark packs for point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor and twist hygiene, and bounded domain completeness
+- golden/synthetic cases with expected report shapes for evaluator-facing smart-contract and ECC smoke checks
+- traces, manifests, bundles, replay, doctor/self-check, evidence coverage, toolchain fingerprints, and secret-redacted JSON snapshots
 - `mock` by default, plus `openai`, `openrouter`, `gemini`, and `anthropic` when configured
 
 ## Quick Start
@@ -161,18 +157,6 @@ Inside the interactive console, use `F2` or `L` to switch between `EN` and `RU`.
 
 ## Common Commands
 
-Direct research session:
-
-```powershell
-python -m app.main "Inspect whether secp256k1 metadata labels remain consistent across local reasoning and tool output."
-```
-
-Bounded exploratory mode:
-
-```powershell
-python -m app.main "Explore whether ECC point parsing and on-curve checks reveal bounded defensive research leads." --research-mode sandboxed_exploratory
-```
-
 Smart-contract audit from a local file:
 
 ```powershell
@@ -189,6 +173,18 @@ Smart-contract benchmark pack from a local file:
 
 ```powershell
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --pack contract_static_benchmark_pack "Benchmark the contract with bounded static analysis and parser-to-surface cross-checks."
+```
+
+ECC research session:
+
+```powershell
+python -m app.main "Inspect whether secp256k1 metadata labels remain consistent across local reasoning and tool output."
+```
+
+Bounded ECC exploratory mode:
+
+```powershell
+python -m app.main "Explore whether ECC point parsing and on-curve checks reveal bounded defensive research leads." --research-mode sandboxed_exploratory
 ```
 
 Routing overview:
@@ -245,26 +241,10 @@ See `.env.example` for local configuration options.
 
 ## Project Docs
 
-- [docs/INDEX.md](docs/INDEX.md)
-- [EVALUATION.md](EVALUATION.md)
-- [CHANGELOG.md](CHANGELOG.md)
-- [docs/USE_CASES.md](docs/USE_CASES.md)
-- [docs/ENVIRONMENT_PROFILES.md](docs/ENVIRONMENT_PROFILES.md)
-- [ARCHITECTURE.md](ARCHITECTURE.md)
-- [AGENTS.md](AGENTS.md)
-- [LICENSE_FAQ.md](LICENSE_FAQ.md)
-- [LICENSE_TRANSITION.md](LICENSE_TRANSITION.md)
-- [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md)
-- [TRADEMARKS.md](TRADEMARKS.md)
-- [REPRODUCIBILITY.md](REPRODUCIBILITY.md)
-- [REPORT_SPEC.md](REPORT_SPEC.md)
-- [SECURITY.md](SECURITY.md)
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [examples/README.md](examples/README.md)
-- [examples/SAMPLE_OUTPUTS.md](examples/SAMPLE_OUTPUTS.md)
-- [examples/golden_cases/README.md](examples/golden_cases/README.md)
-- [examples/golden_cases/RUNBOOK.md](examples/golden_cases/RUNBOOK.md)
-- [examples/golden_cases/EXPECTED_REPORT_SHAPES.md](examples/golden_cases/EXPECTED_REPORT_SHAPES.md)
+- [docs/INDEX.md](docs/INDEX.md) is the full documentation map.
+- [EVALUATION.md](EVALUATION.md) is the fastest path for reviewers and commercial evaluators.
+- [SECURITY.md](SECURITY.md), [REPRODUCIBILITY.md](REPRODUCIBILITY.md), and [REPORT_SPEC.md](REPORT_SPEC.md) define the evidence, safety, and reporting boundaries.
+- [LICENSE_FAQ.md](LICENSE_FAQ.md), [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md), and [TRADEMARKS.md](TRADEMARKS.md) define licensing, commercial use, and brand boundaries.
 
 ## Verification
 

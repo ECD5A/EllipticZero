@@ -9,13 +9,13 @@
 - выбрать ограниченный кейс
 - запустить подходящий benchmark-пакет
 - посмотреть выполненные шаги пакета и локальные доказательства
-- проверить, что итоговый отчет сохраняет границы уверенности и ручные линии проверки
+- проверить, что итоговый отчёт сохраняет границы уверенности и ручные линии проверки
 
 ## Состав
 
-- [golden_manifest.json](golden_manifest.json) описывает поддерживаемые кейсы, ожидаемые пакеты и форму отчета.
+- [golden_manifest.json](golden_manifest.json) описывает поддерживаемые кейсы, ожидаемые пакеты и форму отчёта.
 - [RUNBOOK.ru.md](RUNBOOK.ru.md) даёт короткий путь оценки по golden cases.
-- [EXPECTED_REPORT_SHAPES.ru.md](EXPECTED_REPORT_SHAPES.ru.md) объясняет, что должен содержать полезный отчет по каждому кейсу.
+- [EXPECTED_REPORT_SHAPES.ru.md](EXPECTED_REPORT_SHAPES.ru.md) объясняет, что должен содержать полезный отчёт по каждому кейсу.
 - [contracts/SyntheticVault.sol](contracts/SyntheticVault.sol) - безопасная тестовая фикстура для vault/permission review.
 - [contracts/SyntheticReentrancyVault.sol](contracts/SyntheticReentrancyVault.sol) - безопасная тестовая фикстура для external-call ordering и reentrancy-adjacent review.
 - [contracts/SyntheticGovernanceTimelock.sol](contracts/SyntheticGovernanceTimelock.sol) - безопасная тестовая фикстура для governance/timelock и upgrade-control review.
@@ -71,7 +71,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\examples\gold
 ## Как оценивать
 
 Кейсы специально сделаны синтетическими. Они проверяют пути парсинга,
-surface-анализа, benchmark-режима, отчета и confidence-calibration, но не публикуют реальные
+surface-анализа, benchmark-режима, отчёта и confidence-calibration, но не публикуют реальные
 эксплуатационные материалы.
 
 Хороший вывод должен сохранять то, что реально наблюдалось локально. Он не

@@ -3,9 +3,9 @@
 All notable public changes for EllipticZero are summarized here.
 
 The project follows a source-available release track under `FSL-1.1-ALv2`.
-Package version: `0.1.5`.
+Package version: `0.1.6`.
 
-## Unreleased
+## 0.1.6 - 2026-04-30
 
 ### Added
 
@@ -15,11 +15,15 @@ Package version: `0.1.5`.
 - Added `contract-reentrancy-review-lane`, a safe synthetic golden case for
   external-call ordering, withdrawal accounting, and reentrancy-adjacent review
   lanes.
+- Added line hints for built-in smart-contract pattern findings, finding cards,
+  manual-review items, and SARIF exported results.
 
 ### Changed
 
 - Shifted public positioning toward smart-contract audit first, with defensive
   ECC research as the second supported domain.
+- Tightened README and evaluation docs to reduce repeated capability lists and
+  keep reviewer-facing descriptions shorter.
 
 ## 0.1.5 - 2026-04-29
 
@@ -39,7 +43,7 @@ Package version: `0.1.5`.
 - Added matching built-in corpus cases for token balance-delta and oracle
   decimal-scaling review so the new families are covered by local benchmark
   sweeps.
-- Added richer Slither/Foundry evidence ingestion: Slither findings now keep
+- Added richer Slither/Foundry evidence ingestion: Slither findings keep
   normalized severity and source-location summaries, while Foundry projects can
   contribute local `forge test` results when `foundry.toml` is present.
 
@@ -84,7 +88,7 @@ Package version: `0.1.5`.
 ### Added
 
 - `report_snapshot_summary` and `report_snapshot_count` in manifests and bundle
-  overviews so compact ECC / smart-contract triage and remediation-delta signals
+  overviews so compact smart-contract / ECC triage and remediation-delta signals
   are visible without opening the full session JSON.
 - `--evaluation-summary --replay-session/--replay-manifest/--replay-bundle`
   mode for compact reviewer summaries of saved runs without re-execution.
@@ -106,8 +110,8 @@ Package version: `0.1.5`.
 - Buyer-demo guidance for the no-key vault/permission golden case.
 - More compact smart-contract finding-card text for first-screen review.
 - Compact `--evaluation-summary` CLI path for no-key evaluator orientation.
-- Evaluator-facing case-study snapshots for ECC point-format review,
-  vault-permission review, and repo-scale lending-protocol triage.
+- Evaluator-facing case-study snapshots for vault-permission review,
+  repo-scale lending-protocol triage, and ECC point-format review.
 
 ## 0.1.0 - 2026-04-13
 
@@ -115,19 +119,20 @@ Initial public FSL release track.
 
 ### Added
 
-- Local-first bounded research workflow for ECC and smart-contract audit.
+- Local-first bounded research workflow for smart-contract audit and ECC
+  research.
 - Orchestrated agent roles: Orchestrator, Math, Cryptography, Strategy,
   Hypothesis, Critic, and Report.
 - Reproducible session artifacts, traces, manifests, bundles, replay, and
   doctor/self-check paths.
-- ECC benchmark depth for point formats, curve metadata, aliases, curve-family
-  transitions, subgroup/cofactor hygiene, twist hygiene, and bounded
-  domain-completeness checks.
 - Smart-contract repo-scale audit layer with parser, compile, inventory,
   first-party/dependency scoping, protocol maps, entrypoint lanes,
   function-family priorities, casebook matching, benchmark packs, and
   before/after comparison support.
-- Golden/synthetic evaluator cases for stable ECC and smart-contract smoke
+- ECC benchmark depth for point formats, curve metadata, aliases, curve-family
+  transitions, subgroup/cofactor hygiene, twist hygiene, and bounded
+  domain-completeness checks.
+- Golden/synthetic evaluator cases for stable smart-contract and ECC smoke
   checks.
 - Provider configuration for `mock`, `openai`, `openrouter`, `gemini`, and
   `anthropic`, with live smoke checks available when a user supplies their own

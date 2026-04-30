@@ -6,8 +6,8 @@ This document defines the internal structure, operating priorities, and bounded 
 
 The current architecture covers two bounded research domains through the same orchestrator and sandbox model:
 
-- ECC / defensive cryptography research
 - smart-contract audit research
+- ECC / defensive cryptography research
 
 EllipticZero is governed by the following operating priorities:
 
@@ -45,8 +45,8 @@ The EllipticZero pipeline is a constrained research workflow:
 3. Mathematical Formalization  
    The Math Agent converts informal statements into mathematical objects, assumptions, invariants, constraints, and testable formulations.
 
-4. Cryptographic or Contract Surface Profiling  
-   The Cryptography Agent maps the seed and formalization to bounded ECC, cryptographic, or smart-contract audit surfaces, preferred local tool families, and defensive research questions.
+4. Smart-Contract / Cryptographic Surface Profiling
+   The Cryptography Agent maps the seed and formalization to bounded smart-contract audit, ECC, or cryptographic surfaces, preferred local tool families, and defensive research questions.
 
 5. Strategy Shaping  
    The Strategy Agent defines conservative local checks, null controls, and stop conditions so the investigation stays bounded and evidence-first.

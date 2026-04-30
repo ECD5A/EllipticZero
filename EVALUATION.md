@@ -20,10 +20,10 @@ Useful evaluation paths include:
   export boundaries
 - no-key CLI evaluation in `mock` mode
 - golden/synthetic evaluator cases for stable smoke checks
-- ECC benchmark-pack review across point formats, curve metadata, subgroup,
-  cofactor, twist, and domain-completeness surfaces
 - smart-contract audit review across parser, compile, repo inventory,
   casebook, benchmark, comparison, and manual-review lanes
+- ECC benchmark-pack review across point formats, curve metadata, subgroup,
+  cofactor, twist, and domain-completeness surfaces
 - known-case profile review using cached metadata from allowlisted sources;
   profiles guide local checks and never execute remote code
 - provider-backed evaluation with your own configured API keys
@@ -116,16 +116,16 @@ List built-in golden cases:
 python -m app.main --list-golden-cases
 ```
 
-Run an ECC golden case:
-
-```powershell
-python -m app.main --golden-case ecc-secp256k1-point-format-edge
-```
-
 Run a repo-scale smart-contract golden case:
 
 ```powershell
 python -m app.main --golden-case contract-repo-scale-lending-protocol
+```
+
+Run an ECC golden case:
+
+```powershell
+python -m app.main --golden-case ecc-secp256k1-point-format-edge
 ```
 
 ## Buyer Demo Path
@@ -153,14 +153,14 @@ fully audited a target by itself.
 
 | Area | What To Check | Stronger Signal |
 | --- | --- | --- |
-| Golden cases | Built-in ECC and smart-contract cases run cleanly and produce expected report shapes. | Stable smoke output across repeated local runs. |
-| ECC coverage | Point formats, curve metadata, subgroup/cofactor checks, twist hygiene, curve-family transitions, and domain-completeness surfaces are visible in the report. | Local compute evidence and report interpretation agree without overstating confidence. |
+| Golden cases | Built-in smart-contract and ECC cases run cleanly and produce expected report shapes. | Stable smoke output across repeated local runs. |
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, signature, oracle, upgrade, token-accounting, and residual-risk lanes appear when the input justifies them. | The report separates confirmed local signals from manual-review priorities. |
+| ECC coverage | Point formats, curve metadata, subgroup/cofactor checks, twist hygiene, curve-family transitions, and domain-completeness surfaces are visible in the report. | Local compute evidence and report interpretation agree without overstating confidence. |
 | Local analyzer evidence | Optional Slither output is normalized with severity and source locations; Foundry projects can add local build/test evidence when `foundry.toml` is present. | External analyzer signals are tied to report priorities without being treated as proof by themselves. |
 | Known-case metadata | `EVALUATION LAB` -> `KNOWN CASES` can update or inspect cached metadata profiles from allowlisted sources. | The report shows known-case matches only as context or local-signal-backed review items, not as automatic exploit claims. |
 | Comparison | A saved baseline can be attached with `--compare-session`, `--compare-manifest`, or `--compare-bundle`. | Before/after lines show cautious deltas and possible regression flags. |
 | Export quality | Session, trace, manifest, bundle, and `report.md` artifacts stay inside approved local export roots. | A reviewer can reproduce the run, inspect the evidence trail, and share a Markdown report. |
-| CI review | Saved runs can export SARIF 2.1.0 review items. | Code Scanning can display bounded findings without treating them as automatic proof. |
+| CI review | Saved runs can export SARIF 2.1.0 review items. | Code Scanning can display bounded findings, including source-line regions when local hints are available, without treating them as automatic proof. |
 | Provider privacy | `--provider-context-preview` is run before live hosted agents. | The reviewer can see whether contract code or source paths may be sent to hosted routes. |
 | Hosted path | Optional live smoke works only when the evaluator provides valid provider credentials. | Provider output is treated as interpretation, not proof. |
 
@@ -186,13 +186,13 @@ routing, and evidence boundaries:
 
 | Case | Domain | Expected Review Focus |
 | --- | --- | --- |
-| `ecc-secp256k1-domain-completeness` | ECC | Curve-domain assumptions, metadata completeness, bounded confidence. |
-| `ecc-25519-subgroup-hygiene` | ECC | Subgroup/cofactor, twist hygiene, encoding caveats. |
-| `ecc-secp256k1-point-format-edge` | ECC | Point-format inspection and parser/encoding boundaries. |
 | `contract-vault-permission-lane` | Smart contracts | Vault permissions, externally reachable value flow, finding cards. |
 | `contract-reentrancy-review-lane` | Smart contracts | External-call ordering, withdrawal accounting, and reentrancy-adjacent review lanes. |
 | `contract-governance-timelock-lane` | Smart contracts | Governance, timelock, upgrade-control, and emergency-lane review. |
 | `contract-repo-scale-lending-protocol` | Smart contracts | Repo inventory, protocol lanes, liquidation/collateral/accounting review. |
+| `ecc-secp256k1-domain-completeness` | ECC | Curve-domain assumptions, metadata completeness, bounded confidence. |
+| `ecc-25519-subgroup-hygiene` | ECC | Subgroup/cofactor, twist hygiene, encoding caveats. |
+| `ecc-secp256k1-point-format-edge` | ECC | Point-format inspection and parser/encoding boundaries. |
 
 Missing sections are useful too. They can mean the input did not justify that
 lane, the selected pack was too narrow, the local toolchain was not installed,

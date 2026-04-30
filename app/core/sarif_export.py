@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from hashlib import sha256
 from pathlib import Path
 from typing import Any
@@ -239,17 +240,21 @@ def _result(
     confidence: str | None = None,
 ) -> dict[str, Any]:
     severity = _severity(rule_id=rule_id, level=level, message=message)
+    line_hint = _line_hint(message)
+    physical_location: dict[str, Any] = {
+        "artifactLocation": {
+            "uri": source_uri,
+        }
+    }
+    if line_hint is not None:
+        physical_location["region"] = {"startLine": line_hint}
     return {
         "ruleId": rule_id,
         "level": level,
         "message": {"text": message},
         "locations": [
             {
-                "physicalLocation": {
-                    "artifactLocation": {
-                        "uri": source_uri,
-                    }
-                }
+                "physicalLocation": physical_location
             }
         ],
         "partialFingerprints": {
@@ -336,6 +341,14 @@ def _severity(*, rule_id: str, level: str, message: str) -> str:
     if level == "warning":
         return "review"
     return "informational"
+
+
+def _line_hint(message: str) -> int | None:
+    match = re.search(r"\bLine hint:\s*(\d+)\b", message)
+    if match is None:
+        return None
+    line = int(match.group(1))
+    return line if line > 0 else None
 
 
 def _tags(rule_id: str) -> list[str]:

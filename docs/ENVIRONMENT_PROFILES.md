@@ -57,27 +57,6 @@ python -m app.main --provider openrouter "Review whether the local evidence is s
 python -m app.main --live-provider-smoke openrouter --live-smoke-model openrouter/auto
 ```
 
-### `ecc-focused`
-
-Use this profile for defensive ECC research. SageMath is useful when available,
-but the core local path can still use the Python-installed lab dependencies.
-
-What it gives you:
-
-- curve metadata and registry checks
-- point/public-key format inspection
-- ECC consistency checks
-- ECC family-depth, subgroup-hygiene, and domain-completeness benchmark packs
-- cautious report sections for residual risk, review queue, and exit criteria
-
-Useful commands:
-
-```powershell
-python -m app.main --pack ecc_family_depth_benchmark_pack "Review curve-family transitions, parameter labels, and encoding assumptions."
-python -m app.main --pack ecc_subgroup_hygiene_benchmark_pack "Review subgroup, cofactor, and twist-hygiene assumptions."
-python -m app.main --pack ecc_domain_completeness_benchmark_pack "Review curve-domain completeness and registry assumptions."
-```
-
 ### `smart-contract-static`
 
 Use this profile for bounded smart-contract parsing, compile checks, static
@@ -122,6 +101,27 @@ Useful commands:
 ```powershell
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --pack repo_casebook_benchmark_pack "Compare the bounded repo inventory against supported protocol-style review lanes."
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run and compare against the saved baseline."
+```
+
+### `ecc-focused`
+
+Use this profile for defensive ECC research. SageMath is useful when available,
+but the core local path can still use the Python-installed lab dependencies.
+
+What it gives you:
+
+- curve metadata and registry checks
+- point/public-key format inspection
+- ECC consistency checks
+- ECC family-depth, subgroup-hygiene, and domain-completeness benchmark packs
+- cautious report sections for residual risk, review queue, and exit criteria
+
+Useful commands:
+
+```powershell
+python -m app.main --pack ecc_family_depth_benchmark_pack "Review curve-family transitions, parameter labels, and encoding assumptions."
+python -m app.main --pack ecc_subgroup_hygiene_benchmark_pack "Review subgroup, cofactor, and twist-hygiene assumptions."
+python -m app.main --pack ecc_domain_completeness_benchmark_pack "Review curve-domain completeness and registry assumptions."
 ```
 
 ### `full-local-lab`

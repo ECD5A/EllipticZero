@@ -10,21 +10,6 @@ evidence.
 These snapshots are compact evaluator-facing examples. They describe what a
 reviewer should expect to learn from a run, not a finding against a real target.
 
-### ECC: Point-Format Edge Review
-
-Input shape:
-
-- a secp256k1-focused seed about point prefixes, compressed/uncompressed
-  encodings, and local consistency checks
-- expected route: `point_format_inspection_pack`
-
-What the reviewer should see:
-
-- point-format evidence is listed as local evidence
-- malformed or edge-format observations remain review signals
-- confidence stays bounded and avoids claims about key recovery or production
-  library compromise
-
 ### Smart Contract: Vault Permission Lane
 
 Input shape:
@@ -55,47 +40,20 @@ What the reviewer should see:
 - casebook/benchmark posture and first manual-review priorities
 - no claim of a complete protocol audit or confirmed insolvency exploit
 
-## ECC Benchmark Report
+### ECC: Point-Format Edge Review
 
-Command:
+Input shape:
 
-```powershell
-python -m app.main --pack ecc_family_depth_benchmark_pack "Review curve-family transitions, parameter labels, and encoding assumptions for defensive ECC analysis."
-```
+- a secp256k1-focused seed about point prefixes, compressed/uncompressed
+  encodings, and local consistency checks
+- expected route: `point_format_inspection_pack`
 
-Typical report areas:
+What the reviewer should see:
 
-```text
-Research target:
-- ECC curve/domain metadata, family transitions, and encoding assumptions.
-
-Experiment pack:
-- ecc_family_depth_benchmark_pack.
-
-Evidence:
-- curve parameter and metadata checks
-- family transition benchmark steps
-- point or encoding format review where applicable
-
-Report focus:
-- labels and aliases that require manual confirmation
-- family-limited encoding assumptions
-- missing or incomplete domain fields
-- cautious comparison notes if a baseline is attached
-
-ECC triage snapshot:
-- primary ECC family
-- current support labels
-- next ECC check
-
-Confidence:
-- bounded by local tool evidence
-- no cryptographic break claimed
-- manual review required for production conclusions
-```
-
-Good output from this lane makes uncertainty visible. A useful run narrows what
-to inspect next and keeps weak metadata signals separate from confirmed evidence.
+- point-format evidence is listed as local evidence
+- malformed or edge-format observations remain review signals
+- confidence stays bounded and avoids claims about key recovery or production
+  library compromise
 
 ## Smart-Contract Static Benchmark Report
 
@@ -208,3 +166,45 @@ Confidence:
 This lane is useful for hardening validation. It helps answer whether a later
 run looks better, worse, or merely different under the same bounded review
 model.
+
+## ECC Benchmark Report
+
+Command:
+
+```powershell
+python -m app.main --pack ecc_family_depth_benchmark_pack "Review curve-family transitions, parameter labels, and encoding assumptions for defensive ECC analysis."
+```
+
+Typical report areas:
+
+```text
+Research target:
+- ECC curve/domain metadata, family transitions, and encoding assumptions.
+
+Experiment pack:
+- ecc_family_depth_benchmark_pack.
+
+Evidence:
+- curve parameter and metadata checks
+- family transition benchmark steps
+- point or encoding format review where applicable
+
+Report focus:
+- labels and aliases that require manual confirmation
+- family-limited encoding assumptions
+- missing or incomplete domain fields
+- cautious comparison notes if a baseline is attached
+
+ECC triage snapshot:
+- primary ECC family
+- current support labels
+- next ECC check
+
+Confidence:
+- bounded by local tool evidence
+- no cryptographic break claimed
+- manual review required for production conclusions
+```
+
+Good output from this lane makes uncertainty visible. A useful run narrows what
+to inspect next and keeps weak metadata signals separate from confirmed evidence.

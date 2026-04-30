@@ -13,6 +13,8 @@ class ContractFunction:
     payable: bool
     body: str
     kind: str = "function"
+    start_line: int = 0
+    end_line: int = 0
 
 
 @dataclass(frozen=True)
@@ -760,6 +762,54 @@ def prioritize_contract_issues(issues: list[str]) -> list[dict[str, str]]:
     return prioritized
 
 
+def build_contract_issue_line_hints(
+    outline: ContractOutline,
+    issues: list[str],
+) -> list[dict[str, object]]:
+    hints: list[dict[str, object]] = []
+    functions_by_name: dict[str, ContractFunction] = {}
+    for function in outline.functions:
+        functions_by_name.setdefault(function.name, function)
+
+    for issue in _ordered_unique(issues):
+        family, _, detail = issue.partition(":")
+        target = detail.strip()
+        function = functions_by_name.get(target) if target else None
+        tokens = _issue_line_hint_tokens(family)
+        line = 0
+        evidence = ""
+        hint_source = ""
+
+        if function is not None:
+            line, evidence = _line_hint_in_function(outline, function, tokens)
+            hint_source = "function"
+            if line == 0 and function.start_line > 0:
+                line = function.start_line
+                evidence = function.name
+                hint_source = "function_entry"
+
+        if line == 0 and tokens:
+            line, evidence = _line_hint_in_text(outline.source_text, tokens, base_line=1)
+            hint_source = "source"
+
+        if line <= 0:
+            continue
+
+        hint: dict[str, object] = {
+            "issue": issue,
+            "family": family,
+            "line": line,
+            "source": hint_source or "source",
+        }
+        if target:
+            hint["function"] = target
+        if evidence:
+            hint["evidence"] = evidence
+        hints.append(hint)
+
+    return hints
+
+
 def contract_issue_priority(issue: str) -> str:
     family = issue.split(":", 1)[0]
     high_priority_families = {
@@ -982,6 +1032,8 @@ def _extract_functions(code: str) -> list[ContractFunction]:
                         payable=bool(re.search(r"\bpayable\b", header)),
                         body=body,
                         kind=kind,
+                        start_line=_line_number_for_offset(code, start),
+                        end_line=_line_number_for_offset(code, block_end),
                     ),
                 )
             )
@@ -1041,11 +1093,138 @@ def _extract_vyper_functions(code: str) -> list[ContractFunction]:
                 payable=payable,
                 body="\n".join(body_lines),
                 kind=kind,
+                start_line=index + 1,
+                end_line=body_index,
             )
         )
         index = body_index
 
     return entries
+
+
+def _line_number_for_offset(text: str, offset: int) -> int:
+    safe_offset = max(0, min(offset, len(text)))
+    return text.count("\n", 0, safe_offset) + 1
+
+
+def _line_hint_in_function(
+    outline: ContractOutline,
+    function: ContractFunction,
+    tokens: tuple[str, ...],
+) -> tuple[int, str]:
+    if function.start_line <= 0:
+        return 0, ""
+    lines = outline.source_text.splitlines()
+    start_index = max(function.start_line - 1, 0)
+    end_index = function.end_line if function.end_line > function.start_line else len(lines)
+    segment = "\n".join(lines[start_index:end_index])
+    return _line_hint_in_text(segment, tokens, base_line=function.start_line)
+
+
+def _line_hint_in_text(text: str, tokens: tuple[str, ...], *, base_line: int) -> tuple[int, str]:
+    if not text or not tokens:
+        return 0, ""
+    lowered = text.lower()
+    best_index: int | None = None
+    best_token = ""
+    for token in tokens:
+        normalized_token = token.lower()
+        index = lowered.find(normalized_token)
+        if index == -1:
+            continue
+        if best_index is None or index < best_index:
+            best_index = index
+            best_token = token
+    if best_index is None:
+        return 0, ""
+    return base_line + text.count("\n", 0, best_index), best_token
+
+
+def _issue_line_hint_tokens(family: str) -> tuple[str, ...]:
+    token_map: dict[str, tuple[str, ...]] = {
+        "floating_pragma": ("pragma solidity",),
+        "selfdestruct_usage": ("selfdestruct(", "suicide("),
+        "tx_origin_usage": ("tx.origin",),
+        "tx_origin_auth_surface": ("tx.origin",),
+        "delegatecall_usage": (".delegatecall(", ".delegatecall{"),
+        "proxy_fallback_delegatecall_review_required": (".delegatecall(", ".delegatecall{"),
+        "proxy_storage_collision_review_required": (".delegatecall(", ".delegatecall{"),
+        "user_supplied_delegatecall_target": (".delegatecall(", ".delegatecall{"),
+        "unguarded_delegatecall_surface": (".delegatecall(", ".delegatecall{"),
+        "unchecked_external_call_surface": (".call{", ".call(", ".staticcall{", ".staticcall("),
+        "user_supplied_call_target": (".call{", ".call(", ".staticcall{", ".staticcall("),
+        "external_call_in_loop": (".call{", ".call(", ".delegatecall(", ".staticcall(", "send(", "transfer("),
+        "state_transition_after_external_call": (
+            ".call{",
+            ".call(",
+            ".delegatecall(",
+            ".staticcall(",
+            "send(",
+            "transfer(",
+        ),
+        "accounting_update_after_external_call": (
+            ".call{",
+            ".call(",
+            ".delegatecall(",
+            ".staticcall(",
+            "send(",
+            "transfer(",
+            "transferfrom(",
+        ),
+        "withdrawal_without_balance_validation": (".call{", ".call(", "transfer(", "transferfrom("),
+        "reentrancy_review_required": (".call{", ".call(", ".delegatecall(", "send(", "transfer("),
+        "unchecked_token_transfer_surface": (".transfer(",),
+        "unchecked_token_transfer_from_surface": (".transferfrom(",),
+        "arbitrary_from_transfer_surface": (".transferfrom(",),
+        "token_balance_delta_review_required": (".transferfrom(", ".transfer("),
+        "unchecked_approve_surface": (".approve(",),
+        "approve_race_review_required": (".approve(",),
+        "signature_replay_review_required": ("ecrecover(",),
+        "signature_domain_separation_review_required": ("ecrecover(",),
+        "oracle_staleness_review_required": (
+            ".latestrounddata(",
+            ".getrounddata(",
+            ".latestanswer(",
+            ".consult(",
+            ".getreserves(",
+            "oracle.",
+        ),
+        "oracle_answer_bounds_review_required": (
+            ".latestrounddata(",
+            ".getrounddata(",
+            ".latestanswer(",
+            "pricefeed",
+        ),
+        "oracle_decimal_scaling_review_required": ("price", "answer", ".latestrounddata("),
+        "reserve_spot_dependency_review_required": (".getreserves(", "reserve"),
+        "collateral_ratio_review_required": ("collateral", "health", "ratio"),
+        "liquidation_without_fresh_price_review": ("liquidat", "price", "oracle", ".getreserves("),
+        "liquidation_fee_allocation_review_required": ("liquidat", "fee", "bonus", "penalty"),
+        "bad_debt_socialization_review_required": ("baddebt", "bad_debt", "writeoff", "socialize"),
+        "protocol_fee_without_reserve_sync_review": ("fee", "skim", "reserve"),
+        "reserve_accounting_drift_review_required": ("reserve", "sync"),
+        "debt_state_transition_review_required": ("debt", "borrow", "repay", "accrue"),
+        "share_mint_without_asset_backing_review": ("mint", "shares", "totalsupply"),
+        "share_redeem_without_share_validation": ("redeem", "shares", "burn"),
+        "vault_conversion_review_required": ("convert", "preview", "assets", "shares"),
+        "assembly_review_required": ("assembly",),
+        "entropy_source_review_required": ("keccak256(", "block.timestamp", "blockhash(", "prevrandao"),
+        "storage_slot_write_review_required": ("sstore", ".slot", "storage"),
+        "public_initializer_surface": ("initialize", "initializer"),
+        "missing_zero_address_validation": ("address",),
+        "unvalidated_implementation_target": ("implementation",),
+        "upgrade_timelock_review_required": ("upgrade", "implementation"),
+        "unguarded_admin_surface": ("admin", "owner"),
+        "unguarded_role_management_surface": ("role", "grant", "revoke"),
+        "unguarded_pause_control_surface": ("pause", "unpause"),
+        "unguarded_privileged_state_change": ("owner", "admin", "role"),
+        "unguarded_upgrade_surface": ("upgrade", "implementation"),
+        "asset_exit_without_balance_validation": ("withdraw", "claim", "redeem", "transfer"),
+        "unguarded_rescue_or_sweep_flow": ("rescue", "sweep"),
+        "unguarded_rescue_or_sweep_surface": ("rescue", "sweep"),
+        "unguarded_selfdestruct_surface": ("selfdestruct(", "suicide("),
+    }
+    return token_map.get(family, ())
 
 
 def _extract_braced_block(code: str, brace_index: int) -> tuple[str, int]:

@@ -1,7 +1,7 @@
-# Примеры форм отчета
+# Примеры форм отчёта
 
-Это сокращенные примеры структуры отчета для безопасной оценки проекта. Они
-показывают форму полезного вывода без заявлений о реальной цели. Реальные отчеты
+Это сокращённые примеры структуры отчёта для безопасной оценки проекта. Они
+показывают форму полезного вывода без заявлений о реальной цели. Реальные отчёты
 зависят от локального входа, выбранного pack, настроенных инструментов и
 доступной доказательной базы.
 
@@ -9,21 +9,6 @@
 
 Это короткие примеры для оценки проекта. Они описывают, что проверяющий должен
 увидеть в результате запуска, а не заявляют находку в реальной цели.
-
-### ECC: проверка пограничных форматов точки
-
-Форма входа:
-
-- secp256k1-focused seed про префикс точки, compressed/uncompressed encoding и
-  локальные проверки согласованности
-- ожидаемый маршрут: `point_format_inspection_pack`
-
-Что должен увидеть проверяющий:
-
-- point-format evidence показана как локальная доказательная база
-- malformed или edge-format наблюдения остаются сигналами для review
-- уверенность остается ограниченной, без заявлений о key recovery или взломе
-  промышленной библиотеки
 
 ### Смарт-контракт: vault permission lane
 
@@ -55,50 +40,22 @@
 - casebook/benchmark posture и первые приоритеты ручной проверки
 - нет заявления о полном аудите протокола или подтвержденной insolvency-уязвимости
 
-## ECC benchmark-отчет
+### ECC: проверка пограничных форматов точки
 
-Команда:
+Форма входа:
 
-```powershell
-python -m app.main --pack ecc_family_depth_benchmark_pack "Review curve-family transitions, parameter labels, and encoding assumptions for defensive ECC analysis."
-```
+- secp256k1-focused seed про префикс точки, compressed/uncompressed encoding и
+  локальные проверки согласованности
+- ожидаемый маршрут: `point_format_inspection_pack`
 
-Типичные области отчета:
+Что должен увидеть проверяющий:
 
-```text
-Research target:
-- ECC curve/domain metadata, family transitions, and encoding assumptions.
+- point-format evidence показана как локальная доказательная база
+- malformed или edge-format наблюдения остаются сигналами для review
+- уверенность остаётся ограниченной, без заявлений о key recovery или взломе
+  промышленной библиотеки
 
-Experiment pack:
-- ecc_family_depth_benchmark_pack.
-
-Evidence:
-- curve parameter and metadata checks
-- family transition benchmark steps
-- point or encoding format review where applicable
-
-Report focus:
-- labels and aliases that require manual confirmation
-- family-limited encoding assumptions
-- missing or incomplete domain fields
-- cautious comparison notes if a baseline is attached
-
-ECC triage snapshot:
-- primary ECC family
-- current support labels
-- next ECC check
-
-Confidence:
-- bounded by local tool evidence
-- no cryptographic break claimed
-- manual review required for production conclusions
-```
-
-Хороший вывод в этой линии показывает неопределенность. Полезный запуск сужает
-следующий маршрут проверки и отделяет слабые сигналы по метаданным от
-подтвержденной доказательной базы.
-
-## Smart-contract static benchmark-отчет
+## Smart-contract static benchmark-отчёт
 
 Команда:
 
@@ -106,7 +63,7 @@ Confidence:
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --pack contract_static_benchmark_pack "Benchmark the contract with bounded static analysis and parser-to-surface cross-checks."
 ```
 
-Типичные области отчета:
+Типичные области отчёта:
 
 ```text
 Contract surface:
@@ -140,7 +97,7 @@ Confidence:
 сохранять, что было проверено, что не было проверено и что требует ручного
 подтверждения.
 
-## Repo-casebook отчет
+## Repo-casebook отчёт
 
 Команда:
 
@@ -148,7 +105,7 @@ Confidence:
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --pack repo_casebook_benchmark_pack "Compare the bounded repo inventory against supported protocol-style review lanes."
 ```
 
-Типичные области отчета:
+Типичные области отчёта:
 
 ```text
 Repo inventory:
@@ -174,7 +131,7 @@ Confidence:
 - it is not proof of a bug by itself
 ```
 
-## Before/after validation отчет
+## Before/after validation отчёт
 
 Команда:
 
@@ -182,7 +139,7 @@ Confidence:
 python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vault.sol --compare-session .\artifacts\sessions\baseline.json "Re-run the bounded audit and record before/after deltas against the saved baseline session."
 ```
 
-Типичные области отчета:
+Типичные области отчёта:
 
 ```text
 Comparison source:
@@ -209,3 +166,46 @@ Confidence:
 Эта линия полезна для проверки защитных доработок. Она помогает понять, стал ли
 новый запуск лучше, хуже или просто отличается в рамках той же ограниченной
 модели проверки.
+
+## ECC benchmark-отчёт
+
+Команда:
+
+```powershell
+python -m app.main --pack ecc_family_depth_benchmark_pack "Review curve-family transitions, parameter labels, and encoding assumptions for defensive ECC analysis."
+```
+
+Типичные области отчёта:
+
+```text
+Research target:
+- ECC curve/domain metadata, family transitions, and encoding assumptions.
+
+Experiment pack:
+- ecc_family_depth_benchmark_pack.
+
+Evidence:
+- curve parameter and metadata checks
+- family transition benchmark steps
+- point or encoding format review where applicable
+
+Report focus:
+- labels and aliases that require manual confirmation
+- family-limited encoding assumptions
+- missing or incomplete domain fields
+- cautious comparison notes if a baseline is attached
+
+ECC triage snapshot:
+- primary ECC family
+- current support labels
+- next ECC check
+
+Confidence:
+- bounded by local tool evidence
+- no cryptographic break claimed
+- manual review required for production conclusions
+```
+
+Хороший вывод в этой линии показывает неопределённость. Полезный запуск сужает
+следующий маршрут проверки и отделяет слабые сигналы по метаданным от
+подтверждённой доказательной базы.

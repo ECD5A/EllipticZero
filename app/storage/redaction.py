@@ -41,7 +41,7 @@ _ENV_ASSIGNMENT_PATTERNS = tuple(
 
 
 def redaction_summary() -> list[str]:
-    """Human-readable summary of the built-in export redaction policy."""
+    """Readable summary of the built-in export redaction policy."""
 
     return [
         "Secret redaction is enabled for saved session JSON, trace JSONL, manifest, "

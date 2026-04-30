@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import Counter, defaultdict
 from collections.abc import Iterable
 from pathlib import Path
@@ -2470,7 +2471,11 @@ def build_contract_priority_findings(session: ResearchSession) -> list[str]:
                 priority = _as_optional_str(item.get("priority")) or "medium"
                 summary = _as_optional_str(item.get("summary"))
                 if summary:
-                    items.append(f"{priority.capitalize()} priority: {summary}.")
+                    line = f"{priority.capitalize()} priority: {summary}"
+                    hint = _contract_line_hint_suffix_from_priority_item(item, result_data)
+                    if hint:
+                        line += f" ({hint})"
+                    items.append(line + ".")
         elif evidence.tool_name == "slither_audit_tool":
             impact_counts = result_data.get("impact_counts")
             if isinstance(impact_counts, dict):
@@ -2634,8 +2639,16 @@ def build_contract_finding_cards(session: ResearchSession) -> list[str]:
             keywords,
             fallback_recheck,
         )
+        potential_excerpt = _contract_card_excerpt(potential, 82)
+        line_hint = _contract_card_line_hint(potential, evidence, why, fix, recheck)
+        line_hint_note = (
+            f" Line hint: {line_hint}."
+            if line_hint and f"Line hint: {line_hint}" not in potential_excerpt
+            else ""
+        )
         cards.append(
-            f"Finding card {index + 1}: Potential finding: {_contract_card_excerpt(potential, 90)} "
+            f"Finding card {index + 1}: Potential finding: {potential_excerpt}"
+            f"{line_hint_note} "
             f"Evidence: {_contract_card_excerpt(evidence, 95)} "
             f"Why it matters: {_contract_card_excerpt(why, 85)} "
             f"Fix direction: {_contract_card_excerpt(fix, 85)} "
@@ -2722,6 +2735,102 @@ def _contract_card_keywords(text: str) -> list[str]:
     return ordered_unique(keywords)
 
 
+def _contract_card_line_hint(*values: str) -> str | None:
+    for value in values:
+        hint = _extract_contract_line_hint(value)
+        if hint is not None:
+            return hint
+    return None
+
+
+def _extract_contract_line_hint(text: str) -> str | None:
+    match = re.search(r"\bLine hint:\s*(\d+)\b", text)
+    if match is None:
+        return None
+    return match.group(1)
+
+
+def _contract_line_hint_summary(result_data: dict[str, Any], *, limit: int = 3) -> str:
+    items: list[str] = []
+    for hint in _contract_issue_line_hints(result_data):
+        issue = _as_optional_str(hint.get("issue")) or "issue"
+        line = _contract_hint_line_number(hint)
+        if line is None:
+            continue
+        family, _, detail = issue.partition(":")
+        label = detail.strip() or family
+        items.append(f"{label}@{line}")
+        if len(items) >= limit:
+            break
+    return ", ".join(items)
+
+
+def _contract_line_hint_suffix_from_priority_item(
+    item: dict[str, Any],
+    result_data: dict[str, Any],
+) -> str:
+    line = _contract_hint_line_number(item)
+    if line is None:
+        issue = _as_optional_str(item.get("issue"))
+        return _contract_line_hint_suffix_for_issue(issue, result_data) if issue else ""
+    return f"Line hint: {line}"
+
+
+def _contract_line_hint_suffix_for_issue(issue: str, result_data: dict[str, Any]) -> str:
+    hint = _contract_issue_line_hint_for_issue(issue, result_data)
+    line = _contract_hint_line_number(hint) if hint is not None else None
+    if line is None:
+        return ""
+    return f"Line hint: {line}"
+
+
+def _append_contract_line_hint(text: str, hint: str) -> str:
+    if not hint or hint in text:
+        return text
+    stripped = text.strip()
+    if not stripped:
+        return stripped
+    if stripped.endswith("."):
+        return stripped[:-1].rstrip() + f" ({hint})."
+    return stripped + f" ({hint})"
+
+
+def _contract_issue_line_hint_for_issue(
+    issue: str,
+    result_data: dict[str, Any],
+) -> dict[str, Any] | None:
+    for hint in _contract_issue_line_hints(result_data):
+        if _as_optional_str(hint.get("issue")) == issue and _contract_hint_line_number(hint) is not None:
+            return hint
+    prioritized = result_data.get("prioritized_issues")
+    if isinstance(prioritized, list):
+        for item in prioritized:
+            if not isinstance(item, dict):
+                continue
+            if _as_optional_str(item.get("issue")) == issue and _contract_hint_line_number(item) is not None:
+                return item
+    return None
+
+
+def _contract_issue_line_hints(result_data: dict[str, Any]) -> list[dict[str, Any]]:
+    hints = result_data.get("issue_line_hints")
+    if not isinstance(hints, list):
+        return []
+    return [hint for hint in hints if isinstance(hint, dict)]
+
+
+def _contract_hint_line_number(item: dict[str, Any] | None) -> int | None:
+    if item is None:
+        return None
+    raw_line = item.get("line")
+    if isinstance(raw_line, int) and raw_line > 0:
+        return raw_line
+    if isinstance(raw_line, str) and raw_line.isdigit():
+        line = int(raw_line)
+        return line if line > 0 else None
+    return None
+
+
 def build_contract_static_findings(session: ResearchSession) -> list[str]:
     if not _is_smart_contract_session(session):
         return []
@@ -2738,6 +2847,9 @@ def build_contract_static_findings(session: ResearchSession) -> list[str]:
                     line += f" Top issue families: {family_counts}."
                 if note_counts:
                     line += f" Supporting notes: {note_counts}."
+                line_hint_summary = _contract_line_hint_summary(result_data)
+                if line_hint_summary:
+                    line += f" Line hints: {line_hint_summary}."
                 items.append(line)
         elif evidence.tool_name == "slither_audit_tool":
             result, result_data = _extract_result(evidence)
@@ -4489,6 +4601,10 @@ def build_contract_manual_review_items(session: ResearchSession) -> list[str]:
             for issue in _as_str_list(result_data.get("issues")):
                 item = _manual_review_item_for_contract_issue(issue)
                 if item:
+                    item = _append_contract_line_hint(
+                        item,
+                        _contract_line_hint_suffix_for_issue(issue, result_data),
+                    )
                     items.append(item)
         elif evidence.tool_name == "slither_audit_tool":
             detector_counts = _as_count_summary(result_data.get("detector_name_counts"))

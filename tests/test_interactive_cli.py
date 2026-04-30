@@ -358,6 +358,18 @@ def test_interactive_contract_source_accepts_contract_folder(tmp_path: Path) -> 
     assert source_root == str(contracts_dir.resolve())
 
 
+def test_interactive_contract_source_scope_uses_relative_entry_and_count(tmp_path: Path) -> None:
+    contracts_dir = tmp_path / "repo" / "contracts"
+    contracts_dir.mkdir(parents=True)
+    vault_path = contracts_dir / "Vault.sol"
+    vault_path.write_text("pragma solidity ^0.8.20; contract Vault {}", encoding="utf-8")
+    (contracts_dir / "Token.sol").write_text("pragma solidity ^0.8.20; contract Token {}", encoding="utf-8")
+    console = object.__new__(InteractiveConsole)
+
+    assert console._contract_source_display(str(vault_path), str(contracts_dir.resolve())) == "Vault.sol"
+    assert console._contract_file_count_display(str(contracts_dir.resolve())) == "2"
+
+
 def test_interactive_contract_source_keeps_inline_code_out_of_path_errors() -> None:
     console = object.__new__(InteractiveConsole)
 

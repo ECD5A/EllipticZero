@@ -85,7 +85,7 @@ python -m app.main --domain smart_contract_audit --contract-file .\examples\gold
 - collateral/liquidation и fee/reserve/debt-accounting lanes
 - границы ручной проверки
 
-## 6. Сверить ожидаемые формы отчета
+## 6. Сверить ожидаемые формы отчёта
 
 Сравни вывод с:
 
@@ -94,4 +94,4 @@ python -m app.main --domain smart_contract_audit --contract-file .\examples\gold
 
 Формулировки не обязаны совпадать дословно. Главное, чтобы сохранялась та же
 позиция по доказательной базе: что реально наблюдалось локально, что является
-только review priority, а что все еще требует экспертной проверки.
+только review priority, а что всё ещё требует экспертной проверки.

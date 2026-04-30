@@ -7,6 +7,7 @@ from app.core.threat_intel import ThreatIntelCache, ThreatIntelProfile, match_th
 from app.models.tool_payloads import SmartContractAuditPayload
 from app.tools.base import BaseTool
 from app.tools.smart_contract_utils import (
+    build_contract_issue_line_hints,
     build_contract_outline,
     detect_contract_patterns,
     infer_contract_language,
@@ -72,10 +73,19 @@ class ContractPatternCheckTool(BaseTool):
         for note in notes:
             family = note.split(":", 1)[0]
             note_type_counts[family] = note_type_counts.get(family, 0) + 1
-        prioritized_issues = prioritize_contract_issues(issues)
+        issue_line_hints = build_contract_issue_line_hints(outline, issues)
+        issue_line_hint_map = {
+            str(hint.get("issue")): hint
+            for hint in issue_line_hints
+            if str(hint.get("issue", "")).strip()
+        }
+        prioritized_issues = _attach_issue_line_hints(
+            prioritize_contract_issues(issues),
+            issue_line_hint_map,
+        )
         priority_counts: dict[str, int] = {}
         for item in prioritized_issues:
-            priority = item["priority"]
+            priority = str(item.get("priority", "medium"))
             priority_counts[priority] = priority_counts.get(priority, 0) + 1
 
         return self.make_result(
@@ -94,6 +104,8 @@ class ContractPatternCheckTool(BaseTool):
                 "issue_count": len(issues),
                 "issue_type_counts": issue_counts,
                 "issue_family_counts": issue_family_counts,
+                "issue_line_hints": issue_line_hints,
+                "issue_line_hint_count": len(issue_line_hints),
                 "prioritized_issues": prioritized_issues[:12],
                 "priority_counts": priority_counts,
                 "highest_priority": prioritized_issues[0]["priority"] if prioritized_issues else None,
@@ -107,3 +119,26 @@ class ContractPatternCheckTool(BaseTool):
                 "bounded_static_analysis": True,
             },
         )
+
+
+def _attach_issue_line_hints(
+    prioritized_issues: list[dict[str, str]],
+    line_hints_by_issue: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    enriched: list[dict[str, object]] = []
+    for item in prioritized_issues:
+        enriched_item: dict[str, object] = dict(item)
+        hint = line_hints_by_issue.get(str(item.get("issue", "")))
+        if isinstance(hint, dict):
+            line = hint.get("line")
+            if isinstance(line, int) and line > 0:
+                enriched_item["line"] = line
+                enriched_item["line_hint"] = f"Line hint: {line}"
+            function = hint.get("function")
+            if isinstance(function, str) and function.strip():
+                enriched_item["function"] = function.strip()
+            evidence = hint.get("evidence")
+            if isinstance(evidence, str) and evidence.strip():
+                enriched_item["line_evidence"] = evidence.strip()
+        enriched.append(enriched_item)
+    return enriched

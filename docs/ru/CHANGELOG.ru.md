@@ -3,23 +3,27 @@
 Здесь кратко фиксируются заметные публичные изменения EllipticZero.
 
 Проект идёт по source-available release track под `FSL-1.1-ALv2`.
-Версия пакета: `0.1.5`.
+Версия пакета: `0.1.6`.
 
-## В разработке
+## 0.1.6 - 2026-04-30
 
 ### Добавлено
 
-- Интерактивный smart-contract ввод теперь принимает папку контрактов:
+- Интерактивный smart-contract ввод принимает папку контрактов:
   консоль выбирает представительный Solidity/Vyper файл и сохраняет scoped
   contract root для repo-scale review.
 - Добавлен `contract-reentrancy-review-lane` - безопасный синтетический golden
   case для external-call ordering, withdrawal accounting и reentrancy-adjacent
   review lanes.
+- Добавлены подсказки по строкам для встроенных smart-contract сигналов,
+  карточек находок, пунктов ручной проверки и SARIF-экспорта.
 
 ### Изменено
 
 - Публичное позиционирование переставлено на smart-contract audit первым, а
   defensive ECC research оставлен вторым поддерживаемым доменом.
+- README и документы оценки ужаты: меньше повторяющихся списков, короче
+  описания для ревьюеров.
 
 ## 0.1.5 - 2026-04-29
 
@@ -60,7 +64,7 @@
   Markdown-отчёта.
 - Улучшено первое знакомство в mock-режиме: локализованы ошибки валидации,
   вход больше не режется по списку знакомых терминов, добавлены компактные
-  примеры ввода и итог в консоли теперь выводится отдельным блоком.
+  примеры ввода, а итог в консоли выводится отдельным блоком.
 - Добавлено меню действий после завершения сессии, включая выгрузку
   `report.md` и `review.sarif` в один шаг.
 - Добавлен интерактивный раздел `ЛАБОРАТОРИЯ ОЦЕНКИ` для golden cases,
@@ -89,7 +93,7 @@
 ### Добавлено
 
 - `report_snapshot_summary` и `report_snapshot_count` в manifest и bundle
-  overview, чтобы compact ECC / smart-contract triage и remediation-delta
+  overview, чтобы compact smart-contract / ECC triage и remediation-delta
   сигналы были видны без открытия полного session JSON.
 - Режим `--evaluation-summary --replay-session/--replay-manifest/--replay-bundle`
   для короткой сводки сохранённого запуска без повторного выполнения.
@@ -114,8 +118,8 @@
 - Более компактный текст smart-contract finding cards для первого экрана отчёта.
 - Компактная CLI-команда `--evaluation-summary` для быстрой оценки проекта без
   API-ключей.
-- Короткие case-study snapshots для оценки ECC point-format review,
-  vault-permission review и repo-scale lending-protocol triage.
+- Короткие case-study snapshots для оценки vault-permission review,
+  repo-scale lending-protocol triage и ECC point-format review.
 
 ## 0.1.0 - 2026-04-13
 
@@ -123,20 +127,20 @@
 
 ### Добавлено
 
-- Локальный ограниченный исследовательский workflow для ECC и аудита
-  смарт-контрактов.
+- Локальный ограниченный исследовательский workflow для аудита
+  смарт-контрактов и ECC-исследований.
 - Оркестрируемые агентные роли: Orchestrator, Math, Cryptography, Strategy,
   Hypothesis, Critic и Report.
 - Воспроизводимые session artifacts, traces, manifests, bundles, replay и
   doctor/self-check пути.
-- ECC benchmark depth для point formats, curve metadata, aliases, curve-family
-  transitions, subgroup/cofactor hygiene, twist hygiene и ограниченных
-  domain-completeness проверок.
 - Smart-contract repo-scale audit слой с parser, compile, inventory,
   first-party/dependency scoping, protocol maps, entrypoint lanes,
   function-family priorities, casebook matching, benchmark packs и before/after
   comparison support.
-- Golden/synthetic evaluator cases для стабильных ECC и smart-contract
+- ECC benchmark depth для point formats, curve metadata, aliases, curve-family
+  transitions, subgroup/cofactor hygiene, twist hygiene и ограниченных
+  domain-completeness проверок.
+- Golden/synthetic evaluator cases для стабильных smart-contract и ECC
   smoke-проверок.
 - Конфигурация провайдеров `mock`, `openai`, `openrouter`, `gemini` и
   `anthropic`, а также live smoke проверки, если пользователь передаёт свои

@@ -1,57 +1,15 @@
-# Ожидаемые формы отчетов
+# Ожидаемые формы отчётов
 
-Этот файл описывает, что должен сохранять полезный отчет EllipticZero при
+Этот файл описывает, что должен сохранять полезный отчёт EllipticZero при
 запуске golden synthetic cases. Описание намеренно качественное: точные
 формулировки и количество артефактов могут зависеть от локальных инструментов,
 опциональных адаптеров и выбранного провайдера.
-
-## `ecc-secp256k1-domain-completeness`
-
-Что ожидается в полезном выводе:
-
-- выбран пакет `ecc_domain_completeness_benchmark_pack`
-- выполненные шаги пакета видны в сессии и отчете
-- curve-domain metadata описана как локальное доказательство
-- границы по generator/order/cofactor или family-completeness явно обозначены
-- уверенность остается ограниченной и не превращается в заявление о криптографическом взломе
-
-Хороший сигнал для оценки:
-
-- по отчету понятно, что именно было проверено и что остается вопросом для ручной проверки
-
-## `ecc-25519-subgroup-hygiene`
-
-Что ожидается в полезном выводе:
-
-- выбран пакет `ecc_subgroup_hygiene_benchmark_pack`
-- видны линии проверки по subgroup, cofactor, twist или encoding
-- оговорки по координатам или семейству отделены от более сильного вывода
-- уверенность остается ограниченной
-- границы ручной проверки сохранены
-
-Хороший сигнал для оценки:
-
-- отчет отделяет локальные сигналы для проверки от подтвержденных доказательств по конкретной реализации
-
-## `ecc-secp256k1-point-format-edge`
-
-Что ожидается в полезном выводе:
-
-- выбран пакет `point_format_inspection_pack`
-- видны сигналы по point-format или prefix
-- bounded consistency output отделен от более сильных криптографических заявлений
-- уверенность остается ограниченной
-- отчет не заявляет восстановление закрытого ключа или уязвимость production-библиотеки
-
-Хороший сигнал для оценки:
-
-- отчет трактует malformed или edge-format evidence как сигнал для проверки, а не как exploit
 
 ## `contract-vault-permission-lane`
 
 Что должно быть видно оценщику в этом кейсе:
 
-- `Finding Cards` видны в верхней части отчета и сохраняют potential finding, evidence, why it matters, fix direction и recheck path
+- `Finding Cards` видны в верхней части отчёта и сохраняют potential finding, evidence, why it matters, fix direction и recheck path
 - `Evidence Coverage` и артефакты воспроизводимости видны без погружения в raw JSON artifacts
 - `Toolchain Fingerprint` и `Secret Redaction` остаются доступны в export-quality слое
 
@@ -61,11 +19,11 @@
 - parser output включает синтетический vault-контракт и его externally reachable функции
 - surface summary подсвечивает payable, value-flow, share/accounting, permission или signature-style lanes, если они есть в локальном разборе
 - manual review queue и строки с остаточным риском остаются видны
-- отчет не заявляет подтвержденный exploit только на основании pattern evidence
+- отчёт не заявляет подтверждённый exploit только на основании pattern evidence
 
 Хороший сигнал для оценки:
 
-- отчет дает покупателю или ревьюеру понятный первый путь первичного разбора без завышения результата
+- отчёт даёт покупателю или ревьюеру понятный первый путь первичного разбора без завышения результата
 
 ## `contract-reentrancy-review-lane`
 
@@ -75,11 +33,11 @@
 - parser output включает синтетический reentrancy-style vault и его externally reachable функции
 - surface или pattern summary подсвечивает external-call ordering, value-flow, withdrawal accounting или reentrancy-adjacent lanes, если они есть в локальном разборе
 - manual review queue и bounded confidence остаются видны
-- отчет не заявляет подтвержденный exploit только на основании pattern evidence
+- отчёт не заявляет подтверждённый exploit только на основании pattern evidence
 
 Хороший сигнал для оценки:
 
-- отчет показывает конкретную линию проверки и путь перепроверки, не превращая синтетическую фикстуру в эксплуатационную инструкцию
+- отчёт показывает конкретную линию проверки и путь перепроверки, не превращая синтетическую фикстуру в эксплуатационную инструкцию
 
 ## `contract-governance-timelock-lane`
 
@@ -89,11 +47,11 @@
 - видны governance, timelock, emergency, upgrade-control, delegatecall или timestamp lanes, если локальный разбор их поддерживает
 - execution и upgrade surfaces описаны как ограниченные review priorities
 - manual review queue и exit criteria остаются видны
-- отчет не заявляет полную безопасность upgrade-логики или подтвержденный takeover path
+- отчёт не заявляет полную безопасность upgrade-логики или подтверждённый takeover path
 
 Хороший сигнал для оценки:
 
-- отчет показывает, куда человеку-ревьюеру смотреть дальше и какие локальные сигналы это обосновали
+- отчёт показывает, куда человеку-ревьюеру смотреть дальше и какие локальные сигналы это обосновали
 
 ## `contract-repo-scale-lending-protocol`
 
@@ -104,8 +62,50 @@
 - local import graph связывает `LendingPool.sol`, `OracleAdapter.sol` и `ReserveVault.sol`
 - entrypoint review lanes включают collateral, liquidation, reserve, fee или debt-accounting signals
 - manual review queue и bounded confidence остаются видны
-- отчет не заявляет complete protocol audit или confirmed insolvency exploit
+- отчёт не заявляет complete protocol audit или confirmed insolvency exploit
 
 Хороший сигнал для оценки:
 
-- отчет демонстрирует repo-scale triage: должно быть понятно, какие файлы и линии проверки человеку проверять первыми
+- отчёт демонстрирует repo-scale triage: должно быть понятно, какие файлы и линии проверки человеку проверять первыми
+
+## `ecc-secp256k1-domain-completeness`
+
+Что ожидается в полезном выводе:
+
+- выбран пакет `ecc_domain_completeness_benchmark_pack`
+- выполненные шаги пакета видны в сессии и отчёте
+- curve-domain metadata описана как локальное доказательство
+- границы по generator/order/cofactor или family-completeness явно обозначены
+- уверенность остаётся ограниченной и не превращается в заявление о криптографическом взломе
+
+Хороший сигнал для оценки:
+
+- по отчёту понятно, что именно было проверено и что остаётся вопросом для ручной проверки
+
+## `ecc-25519-subgroup-hygiene`
+
+Что ожидается в полезном выводе:
+
+- выбран пакет `ecc_subgroup_hygiene_benchmark_pack`
+- видны линии проверки по subgroup, cofactor, twist или encoding
+- оговорки по координатам или семейству отделены от более сильного вывода
+- уверенность остаётся ограниченной
+- границы ручной проверки сохранены
+
+Хороший сигнал для оценки:
+
+- отчёт отделяет локальные сигналы для проверки от подтверждённых доказательств по конкретной реализации
+
+## `ecc-secp256k1-point-format-edge`
+
+Что ожидается в полезном выводе:
+
+- выбран пакет `point_format_inspection_pack`
+- видны сигналы по point-format или prefix
+- bounded consistency output отделён от более сильных криптографических заявлений
+- уверенность остаётся ограниченной
+- отчёт не заявляет восстановление закрытого ключа или уязвимость production-библиотеки
+
+Хороший сигнал для оценки:
+
+- отчёт трактует malformed или edge-format evidence как сигнал для проверки, а не как exploit

@@ -866,8 +866,20 @@ def test_contract_pattern_check_tool_flags_bounded_review_signals() -> None:
     assert result["result_data"]["issue_family_counts"]["selfdestruct_usage"] == 1
     assert result["result_data"]["highest_priority"] == "high"
     assert result["result_data"]["priority_counts"]["high"] >= 1
+    assert result["result_data"]["issue_line_hint_count"] >= 1
+    assert any(
+        item["issue"].startswith("reentrancy_review_required:withdraw")
+        and isinstance(item.get("line"), int)
+        and item["line"] > 0
+        for item in result["result_data"]["issue_line_hints"]
+    )
     assert any(
         item["issue"].startswith("reentrancy_review_required:withdraw") and item["priority"] == "high"
+        for item in result["result_data"]["prioritized_issues"]
+    )
+    assert any(
+        item["issue"].startswith("reentrancy_review_required:withdraw")
+        and item.get("line_hint", "").startswith("Line hint:")
         for item in result["result_data"]["prioritized_issues"]
     )
 
@@ -1710,6 +1722,7 @@ def test_orchestrator_can_run_bounded_smart_contract_session() -> None:
         and "Recheck:" in item
         for item in session.report.contract_finding_cards
     )
+    assert any("Line hint:" in item for item in session.report.contract_finding_cards)
     assert all(len(item) <= 600 for item in session.report.contract_finding_cards)
     assert "contract_remediation_validation" in session.model_dump()["report"]
     assert any("contract_" in item for item in session.report.local_experiment_summary)

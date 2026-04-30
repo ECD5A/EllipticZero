@@ -1286,6 +1286,11 @@ class InteractiveConsole:
             hinted_language=None,
             contract_code=contract_code,
         )
+        self._print_contract_source_scope(
+            source_label=source_label,
+            source_root=source_root,
+            language=language,
+        )
 
         while True:
             print(self.ui.center_text(self.t("prompt.contract.idea_hint"), color=GRAY, dim=True))
@@ -1365,6 +1370,49 @@ class InteractiveConsole:
                 print(self.ui.center_text(self.t("message.contract_code_required"), color=RED, bold=True))
                 continue
             return contract_code, None, None
+
+    def _print_contract_source_scope(
+        self,
+        *,
+        source_label: str | None,
+        source_root: str | None,
+        language: str,
+    ) -> None:
+        rows = [
+            self._summary_row(self.t("label.entry_file"), self._contract_source_display(source_label, source_root)),
+            self._summary_row(
+                self.t("label.contract_root"),
+                self._contract_root_display(source_root),
+            ),
+            self._summary_row(self.t("label.contract_files"), self._contract_file_count_display(source_root)),
+            self._summary_row(self.t("label.language"), language),
+        ]
+        self._print_panel_block(self.t("block.contract_source_scope"), rows, title_color=CYAN)
+
+    def _contract_source_display(self, source_label: str | None, source_root: str | None) -> str:
+        if not source_label:
+            return self.t("value.pasted_contract")
+        try:
+            source_path = Path(source_label)
+            if source_root:
+                return str(source_path.resolve().relative_to(Path(source_root).resolve()))
+            return source_path.name
+        except (OSError, ValueError):
+            return source_label
+
+    def _contract_root_display(self, source_root: str | None) -> str:
+        if not source_root:
+            return self.t("value.single_file_or_paste")
+        return str(Path(source_root))
+
+    def _contract_file_count_display(self, source_root: str | None) -> str:
+        if not source_root:
+            return "1"
+        try:
+            count = len(self._bounded_contract_files_for_interactive_root(Path(source_root)))
+        except OSError:
+            count = 0
+        return str(count) if count > 0 else self.t("value.unavailable")
 
     def _load_contract_source_path(self, value: str) -> tuple[str, str, str | None] | None:
         try:
