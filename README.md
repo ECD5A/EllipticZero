@@ -262,7 +262,7 @@ The project passes the test suite in mock mode.
 If EllipticZero is useful to your work, you can support the project here:
 
 - Bitcoin (BTC): `1ECDSA1b4d5TcZHtqNpcxmY8pBH1GgHntN`
-- USDT (TRC20): `TSWcFVfqCp4WCXrUkkzdCkcLnhtFLNN3Ba`
+- USDT (TRC20): `TUF4vPdB6QkjCvZq18rBL4Qj4dK5ihCN75`
 
 ## Responsible Use
 
