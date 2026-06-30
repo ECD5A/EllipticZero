@@ -755,7 +755,12 @@ def build_calibration_blockers(session: ResearchSession) -> list[str]:
         items.append(
             "Calibration blocker: only one bounded tool path contributed evidence; repeat under a second local check before stronger conclusions."
         )
-    if session.report.regression_flags:
+    cross_session = (
+        session.comparative_report.cross_session_comparison
+        if session.comparative_report is not None
+        else None
+    )
+    if cross_session is not None and cross_session.regressions:
         items.append(
             "Calibration blocker: before/after comparison still shows regression-like deltas or missing reproduction against the baseline."
         )

@@ -1556,7 +1556,7 @@ def _looks_admin_function(name: str) -> bool:
         return False
     return any(
         token in lowered
-        for token in ("admin", "owner", "pause", "upgrade", "mint", "burn", "set", "withdraw")
+        for token in ("admin", "owner", "governor", "governance", "controller", "mint")
     )
 
 

@@ -1,5 +1,18 @@
 # Руководство по вкладу
 
+## Обратная связь и вопросы
+
+Публичная обратная связь приветствуется:
+
+- [сообщить о воспроизводимой ошибке](https://github.com/ECD5A/EllipticZero/issues/new?template=bug_report.yml)
+- [предложить ограниченное улучшение](https://github.com/ECD5A/EllipticZero/issues/new?template=feature_request.yml)
+- [задать вопрос или оставить отзыв](https://github.com/ECD5A/EllipticZero/issues/new?template=feedback.yml)
+- [открыть свободное issue](https://github.com/ECD5A/EllipticZero/issues/new), если шаблоны не подходят
+
+Не публикуй в открытом issue секреты, закрытый код контрактов или чувствительные
+сведения об уязвимости. Для таких сообщений используй
+[приватный отчёт об уязвимости](https://github.com/ECD5A/EllipticZero/security/advisories/new).
+
 ## Область
 
 Это руководство объясняет, как вносить вклад, не ослабляя базовые
@@ -92,6 +105,8 @@ python -m venv .venv
 Обязательная схема English-to-Russian:
 
 - `README.md` -> `README.ru.md`
+- `EVALUATION.md` -> `docs/ru/EVALUATION.ru.md`
+- `docs/CASE_STUDY_SMARTBUGS.md` -> `docs/ru/CASE_STUDY_SMARTBUGS.ru.md`
 - `ARCHITECTURE.md` -> `docs/ru/ARCHITECTURE.ru.md`
 - `AGENTS.md` -> `docs/ru/AGENTS.ru.md`
 - `COMMERCIAL_LICENSE.md` -> `docs/ru/COMMERCIAL_LICENSE.ru.md`
@@ -106,6 +121,9 @@ python -m venv .venv
 должен обновляться в той же правке.
 
 ## Ожидания от Pull Request
+
+Pull Request можно открывать, когда понятны проблема и границы изменения.
+Существенные или архитектурные правки сначала стоит обсудить в issue.
 
 Хорошее изменение обычно включает:
 

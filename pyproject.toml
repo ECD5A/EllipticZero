@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ellipticzero"
-version = "0.1.8"
+version = "0.1.9"
 description = "An independent source-available research lab by ECD5A for scoped smart-contract security review, defensive ECC analysis, and reproducible evidence-driven computation."
 readme = "README.md"
 requires-python = ">=3.11"

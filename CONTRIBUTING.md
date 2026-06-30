@@ -1,5 +1,19 @@
 # Contributing
 
+## Feedback And Questions
+
+Public feedback is welcome:
+
+- [report a reproducible bug](https://github.com/ECD5A/EllipticZero/issues/new?template=bug_report.yml)
+- [propose a bounded feature](https://github.com/ECD5A/EllipticZero/issues/new?template=feature_request.yml)
+- [ask a question or share feedback](https://github.com/ECD5A/EllipticZero/issues/new?template=feedback.yml)
+- [open a blank issue](https://github.com/ECD5A/EllipticZero/issues/new) when the templates do not fit
+
+Do not post secrets, private contract code, or sensitive vulnerability details
+in a public issue. Use
+[private vulnerability reporting](https://github.com/ECD5A/EllipticZero/security/advisories/new)
+for security-sensitive reports.
+
 ## Scope
 
 This guide explains how to contribute without weakening the project's core constraints. Contributions are welcome, but the project should remain:
@@ -84,6 +98,8 @@ English documentation is authoritative.
 Required English-to-Russian mapping:
 
 - `README.md` -> `README.ru.md`
+- `EVALUATION.md` -> `docs/ru/EVALUATION.ru.md`
+- `docs/CASE_STUDY_SMARTBUGS.md` -> `docs/ru/CASE_STUDY_SMARTBUGS.ru.md`
 - `ARCHITECTURE.md` -> `docs/ru/ARCHITECTURE.ru.md`
 - `AGENTS.md` -> `docs/ru/AGENTS.ru.md`
 - `COMMERCIAL_LICENSE.md` -> `docs/ru/COMMERCIAL_LICENSE.ru.md`
@@ -97,6 +113,9 @@ Required English-to-Russian mapping:
 If an English file above changes, update the mapped Russian file in the same change.
 
 ## Pull Request Expectations
+
+A pull request is welcome after the problem and scope are clear. Substantial or
+architectural changes should be discussed in an issue first.
 
 A good change usually includes:
 

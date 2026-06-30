@@ -25,6 +25,23 @@
   <img src="docs/assets/console-home-ru.png" alt="Стартовый экран EllipticZero" width="820">
 </p>
 
+## Проверенная доказательная база
+
+| Проверка | Подтверждённый результат |
+| --- | --- |
+| Проверка релиза | `v0.1.9`: прошли 325 тестов, проверка метаданных пакета и установленного wheel |
+| Детерминированный benchmark | Пройдены `80/80` машиночитаемых проверок |
+| Целевая внешняя проверка | Обнаружены `5/5` размеченных положительных кейсов; `1/1` синтетический отрицательный контроль остался чистым |
+| Проверка поставки | Для `v0.1.9` прошли Ubuntu, Windows, macOS, Python 3.11/3.14 и CodeQL |
+
+На целевом наборе текущий валидатор показывает `100%` recall, `0%` miss rate и
+`0%` целевой false-positive rate. Эти значения относятся только к пяти
+выбранным кейсам SmartBugs и одному синтетическому отрицательному контролю.
+
+[Воспроизвести практический пример](docs/ru/CASE_STUDY_SMARTBUGS.ru.md) ·
+[Посмотреть границы оценки](docs/ru/EVALUATION.ru.md) ·
+[Открыть релиз v0.1.9](https://github.com/ECD5A/EllipticZero/releases/tag/v0.1.9)
+
 <details>
 <summary>Предпросмотр итогового отчёта и выгрузки</summary>
 
@@ -270,6 +287,8 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 
 - [INDEX.ru.md](docs/ru/INDEX.ru.md) — полная карта документации.
 - [EVALUATION.ru.md](docs/ru/EVALUATION.ru.md) — самый быстрый путь для ревьюеров и коммерческой оценки.
+- [CASE_STUDY_SMARTBUGS.ru.md](docs/ru/CASE_STUDY_SMARTBUGS.ru.md) — воспроизводимый путь от уязвимого кейса до перепроверки исправления.
+- [CONTRIBUTING.ru.md](docs/ru/CONTRIBUTING.ru.md) — обратная связь, Issues и Pull Requests.
 - [SECURITY.ru.md](docs/ru/SECURITY.ru.md), [REPRODUCIBILITY.ru.md](docs/ru/REPRODUCIBILITY.ru.md) и [REPORT_SPEC.ru.md](docs/ru/REPORT_SPEC.ru.md) описывают доказательную базу, безопасность и границы отчётов.
 - [LICENSE_FAQ.ru.md](docs/ru/LICENSE_FAQ.ru.md), [COMMERCIAL_LICENSE.ru.md](docs/ru/COMMERCIAL_LICENSE.ru.md) и [TRADEMARKS.ru.md](docs/ru/TRADEMARKS.ru.md) описывают лицензию, коммерческое использование и бренд.
 
@@ -281,6 +300,19 @@ python scripts\release_gate.py
 
 Gate запускает lint, тесты, детерминированную benchmark-сводку, проверку
 метаданных дистрибутива и smoke-тест установленного wheel.
+
+## Обратная связь и вклад
+
+Сообщения об ошибках, ограниченные предложения новых функций, вопросы и отзывы
+можно свободно оставлять через
+[GitHub Issues](https://github.com/ECD5A/EllipticZero/issues/new/choose).
+Изменения кода принимаются через
+[Pull Requests](https://github.com/ECD5A/EllipticZero/pulls) после ознакомления
+с [руководством по вкладу](docs/ru/CONTRIBUTING.ru.md).
+
+Чувствительные сведения об уязвимостях отправляй только через
+[приватный отчёт](https://github.com/ECD5A/EllipticZero/security/advisories/new),
+а не через открытое issue.
 
 ## Как поддержать проект
 

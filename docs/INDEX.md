@@ -21,6 +21,7 @@ Start here if you need to understand the project quickly.
 
 - [Report Specification](../REPORT_SPEC.md)
 - [Reproducibility Policy](../REPRODUCIBILITY.md)
+- [SmartBugs Reentrancy Case Study](CASE_STUDY_SMARTBUGS.md)
 
 ## Security And Use
 
@@ -46,3 +47,4 @@ Start here if you need to understand the project quickly.
 - [Russian golden cases runbook](../examples/golden_cases/RUNBOOK.ru.md)
 - [Russian golden expected report shapes](../examples/golden_cases/EXPECTED_REPORT_SHAPES.ru.md)
 - [Russian environment profiles](ru/ENVIRONMENT_PROFILES.ru.md)
+- [Russian SmartBugs case study](ru/CASE_STUDY_SMARTBUGS.ru.md)

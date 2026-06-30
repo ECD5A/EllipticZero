@@ -21,7 +21,7 @@ Please do not publish unconfirmed security issues as public GitHub issues.
 
 Preferred contact flow:
 
-1. Use GitHub private vulnerability reporting if it is enabled for the repository.
+1. Use [GitHub private vulnerability reporting](https://github.com/ECD5A/EllipticZero/security/advisories/new) if it is enabled for the repository.
 2. If that is not available, contact the maintainer at `stelmak159@gmail.com`.
 3. If no private channel exists yet, open a minimal public issue asking for a secure contact path without posting sensitive details.
 

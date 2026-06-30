@@ -517,6 +517,31 @@ contract VaultHarness {
     assert "unguarded_admin_surface:echidna_owner_is_not_zero" not in issues
 
 
+def test_contract_pattern_tool_does_not_treat_user_actions_as_admin_surfaces() -> None:
+    tool = ContractPatternCheckTool()
+    payload = tool.validate_payload(
+        {
+            "contract_code": """
+pragma solidity 0.8.24;
+contract UserActions {
+    mapping(address => uint256) public balances;
+    function withdraw(uint256 amount) external { balances[msg.sender] -= amount; }
+    function burn(uint256 amount) external { balances[msg.sender] -= amount; }
+    function setPreference(uint256 value) external { balances[msg.sender] = value; }
+    function mint(address account, uint256 amount) external { balances[account] += amount; }
+}
+""".strip(),
+            "language": "solidity",
+        }
+    )
+    issues = tool.run(payload)["result_data"]["issues"]
+
+    assert "unguarded_admin_surface:withdraw" not in issues
+    assert "unguarded_admin_surface:burn" not in issues
+    assert "unguarded_admin_surface:setPreference" not in issues
+    assert "unguarded_admin_surface:mint" in issues
+
+
 def test_contract_language_is_inferred_from_source_or_code() -> None:
     assert infer_contract_language(source_label="contracts/Vault.sol", hinted_language=None) == "solidity"
     assert infer_contract_language(source_label="contracts/Vault.vy", hinted_language=None) == "vyper"

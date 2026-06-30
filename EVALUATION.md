@@ -184,15 +184,24 @@ SmartBugs Curated contracts plus the clean built-in control. It reads a local
 checkout only and does not download or execute remote code:
 
 ```powershell
-git clone --depth 1 https://github.com/smartbugs/smartbugs-curated.git .test_runs\smartbugs-curated
-python scripts\validate_smartbugs_subset.py --dataset-root .test_runs\smartbugs-curated --require-pinned-commit
+git clone --filter=blob:none --no-checkout https://github.com/smartbugs/smartbugs-curated.git .test_runs\smartbugs-curated
+git -C .test_runs\smartbugs-curated fetch --depth 1 origin 230e649123477eff332742a59a1c7cc6dc286cab
+git -C .test_runs\smartbugs-curated checkout --detach 230e649123477eff332742a59a1c7cc6dc286cab
+python scripts\validate_smartbugs_subset.py --dataset-root .test_runs\smartbugs-curated --require-pinned-commit --format markdown --output .test_runs\smartbugs-validation.md
 ```
 
-At pinned commit `230e649123477eff332742a59a1c7cc6dc286cab`, the release
-candidate passes `6/6` targeted cases across access control, legacy reentrancy,
-unchecked low-level calls, external calls in loops, bad randomness, and the
-clean control. This is a focused family check, not a complete SmartBugs score,
-an exploitability claim, or a general false-positive rate.
+At pinned commit `230e649123477eff332742a59a1c7cc6dc286cab`, the validator
+passes `6/6` targeted cases: five labeled positives and one synthetic negative
+control. It reports case-level recall, miss rate, precision, specificity, and a
+targeted false-positive rate. The current result is `100%` recall, `0%` miss
+rate, and `0%` targeted false-positive rate.
+
+These metrics cover only the selected access-control, legacy-reentrancy,
+unchecked-call, call-in-loop, and bad-randomness cases. The negative support is
+one synthetic control, so the result is not a complete SmartBugs score, an
+exploitability claim, or a general false-positive estimate. See the
+[reproducible reentrancy case study](docs/CASE_STUDY_SMARTBUGS.md) for the full
+session, hardening, baseline-comparison, and residual-signal path.
 
 ## Benchmark Evidence Checklist
 

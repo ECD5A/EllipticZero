@@ -21,6 +21,7 @@
 
 - [Спецификация отчёта](REPORT_SPEC.ru.md)
 - [Политика воспроизводимости](REPRODUCIBILITY.ru.md)
+- [Практический пример: reentrancy-кейс SmartBugs](CASE_STUDY_SMARTBUGS.ru.md)
 
 ## Безопасность и использование
 
@@ -46,3 +47,4 @@
 - [English golden cases runbook](../../examples/golden_cases/RUNBOOK.md)
 - [English golden expected report shapes](../../examples/golden_cases/EXPECTED_REPORT_SHAPES.md)
 - [English environment profiles](../ENVIRONMENT_PROFILES.md)
+- [English SmartBugs case study](../CASE_STUDY_SMARTBUGS.md)

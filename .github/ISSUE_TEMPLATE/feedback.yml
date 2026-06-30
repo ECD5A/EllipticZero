@@ -1,0 +1,29 @@
+name: Question or feedback
+description: Ask about EllipticZero, its workflow, or share practical feedback
+title: "[Feedback] "
+labels: []
+body:
+  - type: textarea
+    id: message
+    attributes:
+      label: Question or feedback
+      description: Describe what you tried, what was unclear, or what would improve the workflow.
+      placeholder: A short, concrete description is enough.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Optional context
+      description: Add the relevant domain, command, screenshot, report section, or environment details if useful.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: sensitive-data
+    attributes:
+      label: Public issue safety
+      options:
+        - label: I have removed secrets, private contract code, and sensitive vulnerability details.
+          required: true

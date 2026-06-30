@@ -25,7 +25,7 @@ manifest и bundle должны фильтроваться, если они ра
 
 Предпочтительный порядок связи:
 
-1. Использовать GitHub private vulnerability reporting, если он включён для репозитория.
+1. Использовать [GitHub private vulnerability reporting](https://github.com/ECD5A/EllipticZero/security/advisories/new), если он включён для репозитория.
 2. Если он недоступен, написать сопровождающему проекта на `stelmak159@gmail.com`.
 3. Если приватного канала пока нет, открыть минимальное публичное issue с запросом на безопасный способ связи без публикации чувствительных деталей.
 

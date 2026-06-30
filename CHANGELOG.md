@@ -3,7 +3,26 @@
 All notable public changes for EllipticZero are summarized here.
 
 The project follows a source-available release track under `FSL-1.1-ALv2`.
-Package version: `0.1.8`.
+Package version: `0.1.9`.
+
+## 0.1.9 - 2026-06-30
+
+### Added
+
+- Added case-level recall, miss-rate, precision, specificity, and targeted
+  false-positive metrics to the pinned SmartBugs validator.
+- Added a reproducible reentrancy case study with a local hardened fixture,
+  Markdown export, full-session commands, and before/after verification.
+- Added public feedback routing with free-form Issues, a feedback template,
+  stronger Pull Request checks, and direct private vulnerability reporting.
+
+### Changed
+
+- Added compact verified-evidence sections to both README files.
+- Narrowed admin-surface detection so ordinary withdrawal, burn, and preference
+  functions are not mislabeled as administrative paths.
+- Fixed calibration blockers so a baseline comparison with no regressions no
+  longer reports a regression-like blocker.
 
 ## 0.1.8 - 2026-06-30
 

@@ -1,5 +1,5 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
-  - name: Security issue
-    url: mailto:stelmak159@gmail.com
-    about: Use this contact for sensitive security reports if GitHub private vulnerability reporting is not enabled.
+  - name: Private security report
+    url: https://github.com/ECD5A/EllipticZero/security/advisories/new
+    about: Report sensitive vulnerabilities privately. Do not include them in a public issue.

@@ -265,6 +265,11 @@ def test_direct_session_can_attach_before_after_comparison() -> None:
     assert compared.report.quality_gates
     assert compared.report.hardening_summary
     assert any("before/after posture" in item.lower() for item in compared.report.remediation_delta_summary)
+    if not compared.comparative_report.cross_session_comparison.regressions:
+        assert not any(
+            "regression-like deltas" in item.lower()
+            for item in compared.report.calibration_blockers
+        )
     assert compared.manifest_file_path is not None
     manifest = json.loads(Path(compared.manifest_file_path).read_text(encoding="utf-8"))
     assert manifest["comparison_ready"] is True
