@@ -24,23 +24,6 @@ risk lanes, confidence, and follow-up guidance.
   <img src="docs/assets/console-home.png" alt="EllipticZero interactive home screen" width="820">
 </p>
 
-## Verified Evidence
-
-| Check | Verified result |
-| --- | --- |
-| Production release gate | `v0.1.9`: 325 tests, package metadata, and installed-wheel smoke passed |
-| Deterministic golden benchmark | `80/80` machine-readable checks passed |
-| Targeted external validation | `5/5` labeled positives detected; `1/1` synthetic negative remained clean |
-| Delivery checks | Ubuntu, Windows, macOS, Python 3.11/3.14, and CodeQL passed for `v0.1.9` |
-
-The targeted subset currently reports `100%` recall, `0%` miss rate, and `0%`
-targeted false-positive rate. These figures apply only to five selected
-SmartBugs cases and one synthetic negative control.
-
-[Reproduce the case study](docs/CASE_STUDY_SMARTBUGS.md) ·
-[Review the evaluation scope](EVALUATION.md) ·
-[Open release v0.1.9](https://github.com/ECD5A/EllipticZero/releases/tag/v0.1.9)
-
 <details>
 <summary>Session report and export preview</summary>
 
@@ -63,6 +46,23 @@ SmartBugs cases and one synthetic negative control.
 </p>
 
 </details>
+
+## Verified Evidence
+
+| Check | Verified result |
+| --- | --- |
+| Production release gate | `v0.1.9`: 325 tests, package metadata, and installed-wheel smoke passed |
+| Deterministic golden benchmark | `80/80` machine-readable checks passed |
+| Targeted external validation | `5/5` labeled positives detected; `1/1` synthetic negative remained clean |
+| Delivery checks | Ubuntu, Windows, macOS, Python 3.11/3.14, and CodeQL passed for `v0.1.9` |
+
+The targeted subset currently reports `100%` recall, `0%` miss rate, and `0%`
+targeted false-positive rate. These figures apply only to five selected
+SmartBugs cases and one synthetic negative control.
+
+[Reproduce the case study](docs/CASE_STUDY_SMARTBUGS.md) ·
+[Review the evaluation scope](EVALUATION.md) ·
+[Open release v0.1.9](https://github.com/ECD5A/EllipticZero/releases/tag/v0.1.9)
 
 ## What You Get
 
