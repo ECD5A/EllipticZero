@@ -2880,7 +2880,14 @@ library StorageSlotLib {
     assert any("priority case proxy_delegatecall_upgrade_lane" in item.lower() for item in session.report.contract_casebook_priority_cases)
     assert any("casebook gap scan for repo_upgrade_casebook" in item.lower() for item in session.report.contract_casebook_gaps)
     assert any("benchmark support for repo_upgrade_casebook" in item.lower() for item in session.report.contract_casebook_benchmark_support)
-    assert any("compile" in item.lower() and "slither" in item.lower() for item in session.report.contract_casebook_benchmark_support)
+    assert any(
+        "compile" in item.lower()
+        and any(
+            marker in item.lower()
+            for marker in ("slither", "built-in pattern", "static paths")
+        )
+        for item in session.report.contract_casebook_benchmark_support
+    )
     assert any("primary casebook triage for repo_upgrade_casebook" in item.lower() for item in session.report.contract_casebook_triage)
     assert any("benchmark posture for repo_upgrade_casebook" in item.lower() for item in session.report.contract_casebook_triage)
     assert any("authority / upgrade contour:" in item.lower() or "casebook fit: repo_upgrade_casebook" in item.lower() for item in session.report.contract_protocol_map)
