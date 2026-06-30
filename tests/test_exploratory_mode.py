@@ -254,6 +254,27 @@ def test_role_guided_mapping_can_push_symbolic_formal_and_property_paths() -> No
     )
 
 
+def test_exploration_stops_before_an_incomplete_agent_round() -> None:
+    run_root = Path(".test_runs") / make_id("explorebudget")
+    config = _exploratory_config(run_root).model_copy(update={"max_hypotheses": 5})
+    orchestrator = build_orchestrator(config)
+
+    session = orchestrator.run_session(
+        seed_text=(
+            "Explore bounded secp256k1 point parsing invariants and malformed encoding "
+            "behavior while preserving enough provider budget for the final report."
+        ),
+        author="exploratory-budget-test",
+        research_mode=ResearchMode.SANDBOXED_EXPLORATORY,
+    )
+
+    assert session.exploratory_rounds_executed == 1
+    assert session.report is not None
+    assert session.trace_file_path is not None
+    trace_text = Path(session.trace_file_path).read_text(encoding="utf-8")
+    assert "exploratory_round_budget_exhausted" in trace_text
+
+
 def test_replay_preserves_exploratory_research_mode() -> None:
     run_root = Path(".test_runs") / make_id("explorereplay")
     config = _exploratory_config(run_root)

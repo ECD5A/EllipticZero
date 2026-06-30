@@ -161,6 +161,10 @@ Must not:
 ## 6. Interaction Rules
 
 - Agents do not freely call one another; the Orchestrator controls sequencing.
+- Cryptography and Strategy agents may request names from the approved local
+  tool list. Requests are advisory: the Orchestrator records accepted and
+  rejected names, then applies registry, scope, and sandbox checks before any
+  local execution.
 - Shared state is allowed, but each invocation should receive only bounded context.
 - Nontrivial assumptions must be carried forward as explicit session artifacts.
 - Any claim stronger than a planning statement must be linked to evidence or clearly marked as provisional reasoning.

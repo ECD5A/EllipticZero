@@ -9,6 +9,7 @@ client code or live provider keys.
 python -m app.main --doctor
 python -m app.main --list-packs
 python -m app.main --list-golden-cases
+python -m app.main --benchmark-scorecard
 ```
 
 Expected evaluator signal:
@@ -16,6 +17,7 @@ Expected evaluator signal:
 - the CLI starts
 - benchmark packs are listed
 - golden cases are listed
+- the benchmark scorecard passes its detection and clean-control assertions
 - missing optional tools are reported as optional or unavailable, not hidden
 
 Shortest direct run:

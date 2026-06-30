@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -9,6 +14,7 @@ export PIP_CACHE_DIR="$ROOT_DIR/.ellipticzero/pip-cache"
 export PIP_DISABLE_PIP_VERSION_CHECK=1
 
 PROFILE="lab"
+VENV_DIR="${ELLIPTICZERO_VENV_DIR:-.venv}"
 MANAGED_SOLC_VERSIONS=("0.8.20" "0.8.24" "0.8.25" "0.8.30")
 SKIP_MANAGED_SOLC="0"
 RUN_DOCTOR="1"
@@ -17,6 +23,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --profile)
       PROFILE="$2"
+      shift 2
+      ;;
+    --venv-dir)
+      VENV_DIR="$2"
       shift 2
       ;;
     --managed-solc-version)
@@ -54,13 +64,28 @@ case "$PROFILE" in
     ;;
 esac
 
-echo
-echo "==> Preparing local .venv in project root"
-if [[ ! -x ".venv/bin/python" ]]; then
-  python3 -m venv .venv
+if [[ -z "$VENV_DIR" ]]; then
+  echo "Virtual environment directory must not be empty." >&2
+  exit 2
 fi
 
-PYTHON_BIN="$ROOT_DIR/.venv/bin/python"
+if [[ "$VENV_DIR" = /* ]]; then
+  VENV_PATH="$VENV_DIR"
+else
+  VENV_PATH="$ROOT_DIR/$VENV_DIR"
+fi
+
+echo
+echo "==> Preparing local environment: $VENV_PATH"
+if [[ ! -x "$VENV_PATH/bin/python" ]]; then
+  if ! python3 -m venv "$VENV_PATH"; then
+    echo "Could not create the virtual environment." >&2
+    echo "On Ubuntu/Debian, install python3-venv and run this script again." >&2
+    exit 1
+  fi
+fi
+
+PYTHON_BIN="$VENV_PATH/bin/python"
 
 echo
 echo "==> Upgrading pip"
@@ -95,7 +120,7 @@ if [[ "$RUN_DOCTOR" == "1" ]]; then
 fi
 
 echo
-echo "Local lab environment is ready in: $ROOT_DIR/.venv"
+echo "Local lab environment is ready in: $VENV_PATH"
 echo "All Python-installable research dependencies are now local to this project folder."
 echo "Run interactive console with:"
-echo "  ./.venv/bin/python -m app.main --interactive"
+echo "  \"$PYTHON_BIN\" -m app.main --interactive"

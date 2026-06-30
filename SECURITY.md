@@ -98,6 +98,12 @@ EllipticZero does not claim OS-grade isolation, malware containment, or safe
 execution of arbitrary untrusted programs. Evaluate hostile targets in an
 environment you already trust for that purpose.
 
+External analyzers receive a minimal environment without provider API keys.
+Foundry build artifacts are redirected to a temporary local directory. Forge
+tests are skipped when project configuration or Solidity sources expose FFI,
+filesystem, RPC, environment, signing, or broadcast cheatcode surfaces. This
+gate reduces accidental exposure; it is not a substitute for OS isolation.
+
 ## Artifact, SARIF, And Claim Boundary
 
 Saved session and trace snapshots apply secret redaction for likely credentials,

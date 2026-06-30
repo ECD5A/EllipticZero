@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -26,19 +31,23 @@ class OpenAIProvider(BaseLLMProvider):
         user_prompt: str,
         metadata: Mapping[str, Any] | None = None,
     ) -> str:
-        del max_request_tokens
         if not self.api_key:
             raise RuntimeError(
                 "OpenAIProvider selected, but the configured OpenAI API key is not available."
             )
+        request_metadata = self._request_metadata(metadata)
+        payload: dict[str, Any] = {
+            "model": model,
+            "instructions": system_prompt,
+            "input": user_prompt,
+            "max_output_tokens": max(1, max_request_tokens),
+            "store": False,
+        }
+        if request_metadata:
+            payload["metadata"] = request_metadata
         response = post_json(
             url=self.endpoint,
-            payload={
-                "model": model,
-                "instructions": system_prompt,
-                "input": user_prompt,
-                "metadata": dict(metadata or {}),
-            },
+            payload=payload,
             headers={"Authorization": f"Bearer {self.api_key}"},
             timeout_seconds=timeout_seconds,
         )
@@ -46,6 +55,18 @@ class OpenAIProvider(BaseLLMProvider):
         if not text:
             raise RuntimeError("OpenAIProvider returned an empty text response.")
         return text
+
+    def _request_metadata(self, metadata: Mapping[str, Any] | None) -> dict[str, str]:
+        """Keep API metadata small and free of code, evidence, or secrets."""
+        allowed_keys = {"agent", "domain", "round_index", "variant_index"}
+        result: dict[str, str] = {}
+        for key, value in (metadata or {}).items():
+            if key not in allowed_keys or value is None:
+                continue
+            rendered = str(value).strip()
+            if rendered:
+                result[key] = rendered[:500]
+        return result
 
     def _extract_text(self, payload: Mapping[str, Any]) -> str:
         output_text = payload.get("output_text")

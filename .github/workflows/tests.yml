@@ -4,24 +4,47 @@ on:
   push:
     branches: ["main"]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.14"
+          - os: windows-latest
+            python-version: "3.11"
+          - os: macos-latest
+            python-version: "3.11"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
+          cache: pip
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .[lab]
+          python -m pip install -e ".[test]"
 
       - name: Dependency sanity
         run: python -m pip check
@@ -33,4 +56,75 @@ jobs:
         run: python -m ruff check .
 
       - name: Run tests
-        run: pytest -q
+        run: python -m pytest -q
+
+      - name: CLI resource smoke
+        run: python -m app.main --evaluation-summary
+
+      - name: Deterministic benchmark gate
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        run: python -m app.main --benchmark-scorecard
+
+      - name: Validate shell setup syntax
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: bash -n scripts/setup_local_lab.sh
+
+      - name: Validate PowerShell setup syntax
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path scripts/setup_local_lab.ps1),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
+  package:
+    name: Build and installed-wheel smoke
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install release tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[release]"
+
+      - name: Build distributions
+        run: python -m build
+
+      - name: Validate distribution metadata
+        run: python -m twine check dist/*
+
+      - name: Test installed wheel outside repository
+        shell: bash
+        run: |
+          python -m venv .test_runs/wheel-smoke
+          .test_runs/wheel-smoke/bin/python -m pip install dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$GITHUB_WORKSPACE/.test_runs/wheel-smoke/bin/ellipticzero" --evaluation-summary
+          "$GITHUB_WORKSPACE/.test_runs/wheel-smoke/bin/ellipticzero" --list-golden-cases
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v7
+        with:
+          name: ellipticzero-distributions
+          path: dist/*
+          if-no-files-found: error

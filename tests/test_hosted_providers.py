@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import io
 import json
+from urllib import error as urllib_error
+
+import pytest
 
 from app.llm.providers import http_utils
 from app.llm.providers.anthropic_provider import AnthropicProvider
@@ -13,8 +17,8 @@ class _FakeResponse:
     def __init__(self, payload: dict[str, object]) -> None:
         self._payload = json.dumps(payload).encode("utf-8")
 
-    def read(self) -> bytes:
-        return self._payload
+    def read(self, size: int = -1) -> bytes:
+        return self._payload if size < 0 else self._payload[:size]
 
     def __enter__(self) -> "_FakeResponse":
         return self
@@ -42,7 +46,11 @@ def test_openai_provider_builds_responses_request(monkeypatch) -> None:
         max_request_tokens=256,
         system_prompt="system",
         user_prompt="user",
-        metadata={"agent": "math_agent"},
+        metadata={
+            "agent": "math_agent",
+            "seed": "private contract source",
+            "api_key": "must-not-leave-process",
+        },
     )
 
     assert text == "hosted-openai-text"
@@ -53,8 +61,62 @@ def test_openai_provider_builds_responses_request(monkeypatch) -> None:
         "model": "gpt-test",
         "instructions": "system",
         "input": "user",
+        "max_output_tokens": 256,
+        "store": False,
         "metadata": {"agent": "math_agent"},
     }
+
+
+def test_http_transport_preserves_rate_limit_status_without_credentials(monkeypatch) -> None:
+    def fake_urlopen(request, timeout):
+        del request, timeout
+        raise urllib_error.HTTPError(
+            url="https://provider.invalid",
+            code=429,
+            msg="Too Many Requests",
+            hdrs=None,
+            fp=io.BytesIO(b'{"error":{"message":"rate limit exceeded"}}'),
+        )
+
+    monkeypatch.setattr(http_utils.urllib_request, "urlopen", fake_urlopen)
+
+    with pytest.raises(RuntimeError, match="HTTP 429: rate limit exceeded"):
+        http_utils.post_json(
+            url="https://provider.invalid",
+            payload={"input": "bounded"},
+            headers={"Authorization": "Bearer secret"},
+            timeout_seconds=3,
+        )
+
+
+def test_http_transport_rejects_oversized_response(monkeypatch) -> None:
+    monkeypatch.setattr(http_utils, "MAX_HOSTED_RESPONSE_BYTES", 16)
+
+    def fake_urlopen(request, timeout):
+        del request, timeout
+        return _FakeResponse({"output_text": "x" * 64})
+
+    monkeypatch.setattr(http_utils.urllib_request, "urlopen", fake_urlopen)
+
+    with pytest.raises(RuntimeError, match="response exceeds"):
+        http_utils.post_json(
+            url="https://provider.invalid",
+            payload={"input": "bounded"},
+            headers={},
+            timeout_seconds=3,
+        )
+
+
+def test_http_transport_rejects_oversized_request(monkeypatch) -> None:
+    monkeypatch.setattr(http_utils, "MAX_HOSTED_REQUEST_BYTES", 16)
+
+    with pytest.raises(RuntimeError, match="request payload exceeds"):
+        http_utils.post_json(
+            url="https://provider.invalid",
+            payload={"input": "x" * 64},
+            headers={},
+            timeout_seconds=3,
+        )
 
 
 def test_gemini_provider_builds_generate_content_request(monkeypatch) -> None:
@@ -96,6 +158,7 @@ def test_gemini_provider_builds_generate_content_request(monkeypatch) -> None:
     assert captured["body"] == {
         "system_instruction": {"parts": [{"text": "system"}]},
         "contents": [{"role": "user", "parts": [{"text": "user"}]}],
+        "generationConfig": {"maxOutputTokens": 384},
     }
 
 

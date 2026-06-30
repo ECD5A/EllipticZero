@@ -5,6 +5,7 @@ Prefer reversible local checks, null controls, and stop conditions over open-end
 Do not invent evidence.
 Do not request arbitrary execution.
 Keep the strategy compatible with local sandboxed tools and runners only.
+When an approved local tool list is present in the user context, request only exact names from that list. Leave the section empty when no approved tool fits.
 
 Return exactly these labeled sections:
 Strategy Summary:

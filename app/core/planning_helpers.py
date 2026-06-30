@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -50,9 +55,14 @@ def build_tool_plan(
     research_target: ResearchTarget | None = None,
 ) -> ToolPlan:
     combined_text = f"{seed_text} {hypothesis.summary} {hypothesis.planned_test or ''}"
+    preserve_neutral_target = (
+        research_target is not None
+        and research_target.target_kind == "generic"
+        and not _seed_has_direct_domain_signal(seed_text)
+    )
     target_kind = (
         research_target.target_kind
-        if uses_fixed_research_target(research_target)
+        if uses_fixed_research_target(research_target) or preserve_neutral_target
         else determine_target_kind(
             seed_text=seed_text,
             planned_test=hypothesis.planned_test or "",
@@ -147,11 +157,16 @@ def build_standard_smart_contract_tool_plans(
 
     if contract_root:
         stack.insert(0, "contract_inventory_tool")
-    if language == "solidity" and select_smart_contract_testbed_reference(
+    testbed_reference = select_smart_contract_testbed_reference(
+        text=seed_text,
+        preferred_testbeds=normalized_testbed_hints(session),
+        prefer_repo_casebooks=bool(contract_root),
+    ) or select_smart_contract_testbed_reference(
         text=combined_text,
         preferred_testbeds=normalized_testbed_hints(session),
         prefer_repo_casebooks=bool(contract_root),
-    ):
+    )
+    if language == "solidity" and testbed_reference:
         stack.append("contract_testbed_tool")
 
     role_hints = normalized_role_tool_hints(session)
@@ -302,6 +317,16 @@ def build_experiment_spec(
             research_target.target_reference
             if uses_fixed_research_target(research_target)
             else select_smart_contract_testbed_reference(
+                text=seed_text,
+                preferred_testbeds=normalized_testbed_hints(session),
+                prefer_repo_casebooks=bool(
+                    extract_contract_root(seed_text)
+                    or extract_contract_root(formalization)
+                    or extract_contract_root(hypothesis.summary)
+                    or extract_contract_root(hypothesis.planned_test or "")
+                ),
+            )
+            or select_smart_contract_testbed_reference(
                 text=f"{seed_text} {formalization} {hypothesis.summary} {hypothesis.planned_test or ''}",
                 preferred_testbeds=normalized_testbed_hints(session),
                 prefer_repo_casebooks=bool(
@@ -1499,6 +1524,64 @@ def select_smart_contract_testbed_reference(
         if any(
             token in lowered
             for token in (
+                "signature",
+                "permit",
+                "ecrecover",
+                "meta-tx",
+                "meta transaction",
+                "nonce",
+            )
+        ):
+            return "signature_review_corpus"
+        if any(token in lowered for token in ("approve", "allowance", "spender", "approval")):
+            return "approval_review_corpus"
+        if any(
+            token in lowered
+            for token in (
+                "protocol fee",
+                "protocolfee",
+                "skim",
+                "reserve accounting",
+                "reserve sync",
+                "reserve factor",
+                "reservefactor",
+                "reserve buffer",
+                "reservebuffer",
+                "insurance fund",
+                "insurancefund",
+                "debt accounting",
+                "bad debt",
+                "baddebt",
+                "bad debt socialization",
+                "socialized debt",
+                "socialize",
+                "write off",
+                "writeoff",
+                "absorb debt",
+                "deficit",
+                "interest accrual",
+                "accrual",
+            )
+        ):
+            return "reserve_fee_accounting_corpus"
+        if any(
+            token in lowered
+            for token in (
+                "accounting",
+                "balance",
+                "balances",
+                "claim-state",
+                "claim state",
+                "redeem",
+                "insufficient balance",
+                "withdraw ordering",
+                "withdrawal-order",
+            )
+        ):
+            return "accounting_review_corpus"
+        if any(
+            token in lowered
+            for token in (
                 "permit",
                 "signature",
                 "nonce",
@@ -1540,44 +1623,6 @@ def select_smart_contract_testbed_reference(
             for token in ("zero address", "zero-address", "implementation validation", "code length", "upgrade target")
         ):
             return "upgrade_validation_corpus"
-        if any(
-            token in lowered
-            for token in (
-                "protocol fee",
-                "protocolfee",
-                "skim",
-                "reserve accounting",
-                "reserve sync",
-                "reserve factor",
-                "reservefactor",
-                "reserve buffer",
-                "reservebuffer",
-                "insurance fund",
-                "insurancefund",
-                "debt accounting",
-                "bad debt",
-                "baddebt",
-                "bad debt socialization",
-                "socialized debt",
-                "socialize",
-                "write off",
-                "writeoff",
-                "absorb debt",
-                "deficit",
-                "interest accrual",
-                "accrual",
-            )
-        ):
-            return "reserve_fee_accounting_corpus"
-        if any(token in lowered for token in ("approve", "allowance", "spender", "approval")):
-            return "approval_review_corpus"
-        if any(
-            token in lowered
-            for token in ("accounting", "balance", "balances", "claim", "redeem", "insufficient balance", "withdraw ordering")
-        ):
-            return "accounting_review_corpus"
-        if any(token in lowered for token in ("signature", "permit", "ecrecover", "meta-tx", "meta transaction", "nonce")):
-            return "signature_review_corpus"
         if any(
             token in lowered
             for token in (

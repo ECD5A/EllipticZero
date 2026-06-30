@@ -1,7 +1,13 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import logging
 
+from app.agents.base import BaseAgent
 from app.agents.critic_agent import CriticAgent
 from app.agents.cryptography_agent import CryptographyAgent
 from app.agents.hypothesis_agent import HypothesisAgent
@@ -121,6 +127,7 @@ from app.core.research_targets import ResearchTargetRegistry
 from app.core.sandbox_executor import SandboxExecutor
 from app.core.scoring import score_hypothesis
 from app.core.seed_parsing import extract_curve_name
+from app.llm.gateway import LLMGateway
 from app.models import (
     ComputeJob,
     CriticAgentResult,
@@ -320,6 +327,8 @@ class ResearchOrchestrator:
                     "plugins": [item.model_dump(mode="json") for item in session.plugin_metadata],
                 },
             )
+
+        self._reset_agent_request_budgets()
 
         (
             math_result,
@@ -613,6 +622,54 @@ class ResearchOrchestrator:
             hypotheses.append(hypothesis)
         return hypotheses
 
+    def _reset_agent_request_budgets(self) -> None:
+        seen_gateways: set[int] = set()
+        for agent, _required_calls in self._agent_request_requirements():
+            gateway = agent.gateway
+            gateway_id = id(gateway)
+            if gateway_id in seen_gateways:
+                continue
+            gateway.start_session()
+            seen_gateways.add(gateway_id)
+
+    def _agent_request_requirements(self) -> tuple[tuple[BaseAgent, int], ...]:
+        return (
+            (self.math_agent, 1),
+            (self.cryptography_agent, 1),
+            (self.strategy_agent, 1),
+            (self.hypothesis_agent, self.config.max_hypotheses),
+            (self.critic_agent, 1),
+            (self.report_agent, 1),
+        )
+
+    def _has_follow_up_request_budget(self) -> bool:
+        """Reserve enough provider calls for one complete agent round and reporting."""
+        required_by_gateway: dict[int, tuple[LLMGateway, int, int]] = {}
+        for agent, required_calls in self._agent_request_requirements():
+            gateway = agent.gateway
+            gateway_id = id(gateway)
+            request_limit = gateway.router.select(
+                agent.route_name
+            ).budget.max_total_requests_per_session
+            if gateway_id in required_by_gateway:
+                _, required, current_limit = required_by_gateway[gateway_id]
+                required_by_gateway[gateway_id] = (
+                    gateway,
+                    required + required_calls,
+                    min(current_limit, request_limit),
+                )
+            else:
+                required_by_gateway[gateway_id] = (
+                    gateway,
+                    required_calls,
+                    request_limit,
+                )
+
+        return all(
+            gateway.request_count + required <= request_limit
+            for gateway, required, request_limit in required_by_gateway.values()
+        )
+
     def _run_agent_round(
         self,
         *,
@@ -650,6 +707,7 @@ class ResearchOrchestrator:
         cryptography_result = self.cryptography_agent.run(
             seed=seed,
             math_formalization=math_result,
+            approved_local_tools=self.executor.registry.names(),
             round_index=round_index,
             follow_up_context=follow_up_context,
         )
@@ -671,6 +729,7 @@ class ResearchOrchestrator:
             seed=seed,
             math_formalization=math_result,
             cryptography_profile=cryptography_result,
+            approved_local_tools=self.executor.registry.names(),
             round_index=round_index,
             follow_up_context=follow_up_context,
         )
@@ -686,6 +745,12 @@ class ResearchOrchestrator:
                 "null_controls": strategy_result.null_controls,
                 "stop_conditions": strategy_result.stop_conditions,
             },
+        )
+        self._trace_agent_tool_request_review(
+            session=session,
+            round_index=round_index,
+            cryptography_result=cryptography_result,
+            strategy_result=strategy_result,
         )
 
         hypothesis_result = self.hypothesis_agent.run(
@@ -736,6 +801,53 @@ class ResearchOrchestrator:
             hypothesis_result,
             critic_result,
             hypotheses,
+        )
+
+    def _trace_agent_tool_request_review(
+        self,
+        *,
+        session: ResearchSession,
+        round_index: int,
+        cryptography_result: CryptographyAgentResult,
+        strategy_result: StrategyAgentResult,
+    ) -> None:
+        approved_names = set(self.executor.registry.names())
+        requested_by_role = {
+            "CryptographyAgent": cryptography_result.preferred_local_tools,
+            "StrategyAgent": strategy_result.escalation_local_tools,
+        }
+        accepted_by_role: dict[str, list[str]] = {}
+        rejected_by_role: dict[str, list[str]] = {}
+        for role_name, requested in requested_by_role.items():
+            accepted: list[str] = []
+            rejected: list[str] = []
+            for raw_name in requested:
+                normalized = normalize_tool_hint(raw_name)
+                if normalized is not None and normalized in approved_names:
+                    if normalized not in accepted:
+                        accepted.append(normalized)
+                elif raw_name not in rejected:
+                    rejected.append(raw_name)
+            accepted_by_role[role_name] = accepted
+            rejected_by_role[role_name] = rejected
+
+        accepted_count = sum(len(items) for items in accepted_by_role.values())
+        rejected_count = sum(len(items) for items in rejected_by_role.values())
+        self._trace(
+            session=session,
+            event_type="agent_tool_requests_reviewed",
+            agent="orchestrator",
+            summary=(
+                "Reviewed agent tool requests against the local registry: "
+                f"accepted={accepted_count}; rejected={rejected_count}."
+            ),
+            data={
+                "round_index": round_index,
+                "approved_tool_names": sorted(approved_names),
+                "requested_by_role": requested_by_role,
+                "accepted_by_role": accepted_by_role,
+                "rejected_by_role": rejected_by_role,
+            },
         )
 
     def _apply_critic_result(
@@ -960,6 +1072,19 @@ class ResearchOrchestrator:
 
             remaining_job_budget = self._remaining_job_budget(session)
             if remaining_job_budget is not None and remaining_job_budget <= 0:
+                break
+
+            if not self._has_follow_up_request_budget():
+                self._trace(
+                    session=session,
+                    event_type="exploratory_round_budget_exhausted",
+                    agent="orchestrator",
+                    summary=(
+                        "Stopped bounded exploration before starting an incomplete agent "
+                        "round; the remaining LLM request budget is reserved for reporting."
+                    ),
+                    data={"round_index": round_index + 1},
+                )
                 break
 
             follow_up_context = self._derive_follow_up_context(

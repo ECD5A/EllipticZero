@@ -1,5 +1,6 @@
 # Local Python environment
 .venv/
+.venv-*/
 
 # Python cache and build outputs
 __pycache__/
@@ -7,8 +8,14 @@ __pycache__/
 *.pyo
 *.pyd
 .pytest_cache/
+.hypothesis/
 .ruff_cache/
 pytest-cache-files-*/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
 
 # Local temporary runs
 .tmp/
@@ -25,3 +32,5 @@ artifacts/
 .vscode/
 .DS_Store
 Thumbs.db
+/desktop.ini
+/ellipticzero_folder_icon_option2.ico

@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -41,7 +46,7 @@ class OpenRouterProvider(BaseLLMProvider):
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                "max_tokens": max_request_tokens,
+                "max_tokens": max(1, max_request_tokens),
             },
             headers={
                 "Authorization": f"Bearer {self.api_key}",

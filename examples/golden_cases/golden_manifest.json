@@ -8,6 +8,11 @@
       "input_file": "ecc/secp256k1_metadata_seed.txt",
       "synthetic_target": "toy_curve_secp256k1",
       "recommended_pack": "ecc_domain_completeness_benchmark_pack",
+      "benchmark_assertions": {
+        "required_tools": ["ecc_curve_parameter_tool", "curve_metadata_tool", "ecc_testbed_tool"],
+        "required_report_fields": ["ecc_benchmark_summary", "ecc_benchmark_posture"],
+        "minimum_evidence": 3
+      },
       "expected_report_shape": {
         "must_include": [
           "selected benchmark pack",
@@ -30,6 +35,11 @@
       "input_file": "ecc/curve25519_subgroup_seed.txt",
       "synthetic_target": "toy_coordinate_length_mismatch",
       "recommended_pack": "ecc_subgroup_hygiene_benchmark_pack",
+      "benchmark_assertions": {
+        "required_tools": ["ecc_point_format_tool", "ecc_consistency_check_tool", "ecc_testbed_tool"],
+        "required_report_fields": ["ecc_benchmark_summary", "ecc_review_focus"],
+        "minimum_evidence": 3
+      },
       "expected_report_shape": {
         "must_include": [
           "subgroup or cofactor review lane",
@@ -52,6 +62,11 @@
       "input_file": "ecc/secp256k1_point_format_edge_seed.txt",
       "synthetic_target": "toy_secp256k1_bad_prefix_compressed",
       "recommended_pack": "point_format_inspection_pack",
+      "benchmark_assertions": {
+        "required_tools": ["ecc_point_format_tool", "ecc_consistency_check_tool"],
+        "required_report_fields": ["ecc_review_focus", "ecc_triage_snapshot"],
+        "minimum_evidence": 2
+      },
       "expected_report_shape": {
         "must_include": [
           "point-format inspection",
@@ -74,6 +89,12 @@
       "input_file": "contracts/SyntheticVault.sol",
       "recommended_pack": "vault_permission_benchmark_pack",
       "fallback_pack": "contract_static_benchmark_pack",
+      "benchmark_assertions": {
+        "required_tools": ["contract_surface_tool", "contract_pattern_check_tool", "contract_testbed_tool"],
+        "required_report_fields": ["contract_surface_summary", "contract_finding_cards", "contract_review_queue"],
+        "expected_issue_families": ["share_mint_without_asset_backing_review", "signature_replay_review_required"],
+        "minimum_evidence": 3
+      },
       "expected_report_shape": {
         "must_include": [
           "contract parser outline",
@@ -96,6 +117,12 @@
       "input_file": "contracts/SyntheticReentrancyVault.sol",
       "recommended_pack": "contract_static_benchmark_pack",
       "fallback_pack": "vault_permission_benchmark_pack",
+      "benchmark_assertions": {
+        "required_tools": ["contract_parser_tool", "contract_surface_tool", "contract_pattern_check_tool"],
+        "required_report_fields": ["contract_static_findings", "contract_finding_cards", "contract_review_focus"],
+        "expected_issue_families": ["accounting_update_after_external_call", "reentrancy_review_required"],
+        "minimum_evidence": 3
+      },
       "expected_report_shape": {
         "must_include": [
           "contract parser outline",
@@ -118,6 +145,12 @@
       "input_file": "contracts/SyntheticGovernanceTimelock.sol",
       "recommended_pack": "governance_timelock_benchmark_pack",
       "fallback_pack": "contract_static_benchmark_pack",
+      "benchmark_assertions": {
+        "required_tools": ["contract_surface_tool", "contract_pattern_check_tool", "contract_testbed_tool"],
+        "required_report_fields": ["contract_static_findings", "contract_finding_cards", "contract_review_queue"],
+        "expected_issue_families": ["delegatecall_usage", "unvalidated_implementation_target"],
+        "minimum_evidence": 3
+      },
       "expected_report_shape": {
         "must_include": [
           "governance or timelock review lane",
@@ -141,6 +174,12 @@
       "contract_root": "protocols/SyntheticLendingProtocol/contracts",
       "recommended_pack": "lending_protocol_benchmark_pack",
       "fallback_pack": "repo_casebook_benchmark_pack",
+      "benchmark_assertions": {
+        "required_tools": ["contract_inventory_tool", "contract_surface_tool", "contract_pattern_check_tool", "contract_testbed_tool"],
+        "required_report_fields": ["contract_inventory_summary", "contract_protocol_map", "contract_finding_cards", "contract_review_queue"],
+        "expected_issue_families": ["collateral_ratio_review_required", "liquidation_fee_allocation_review_required", "debt_state_transition_review_required"],
+        "minimum_evidence": 4
+      },
       "expected_report_shape": {
         "must_include": [
           "bounded contract inventory",
@@ -158,6 +197,33 @@
         ]
       },
       "sample_command": "python -m app.main --domain smart_contract_audit --contract-file .\\examples\\golden_cases\\protocols\\SyntheticLendingProtocol\\contracts\\LendingPool.sol --pack lending_protocol_benchmark_pack \"Benchmark the scoped lending protocol for collateral, liquidation, reserve, fee, and debt-accounting review lanes.\""
+    },
+    {
+      "case_id": "contract-safe-ledger-control",
+      "domain": "smart_contract_audit",
+      "input_file": "contracts/SyntheticSafeLedger.sol",
+      "recommended_pack": "contract_static_benchmark_pack",
+      "benchmark_assertions": {
+        "required_tools": ["contract_parser_tool", "contract_surface_tool", "contract_pattern_check_tool"],
+        "required_report_fields": ["contract_overview", "contract_surface_summary", "contract_review_focus"],
+        "expect_no_pattern_issues": true,
+        "minimum_evidence": 3
+      },
+      "expected_report_shape": {
+        "must_include": [
+          "contract parser outline",
+          "bounded external surface",
+          "no built-in pattern finding",
+          "manual-review boundary",
+          "bounded confidence"
+        ],
+        "must_not_claim": [
+          "complete security proof",
+          "zero production risk",
+          "formal verification"
+        ]
+      },
+      "sample_command": "python -m app.main --domain smart_contract_audit --contract-file .\\examples\\golden_cases\\contracts\\SyntheticSafeLedger.sol --pack contract_static_benchmark_pack \"Run the safe control through the bounded static benchmark.\""
     }
   ]
 }

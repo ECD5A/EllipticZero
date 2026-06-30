@@ -56,7 +56,7 @@ risk lanes, confidence, and follow-up guidance.
 - reproducible sessions, traces, manifests, bundles, and replay
 - evidence coverage, toolchain fingerprints, and secret-redacted JSON exports
 - SARIF review exports with source-line regions when local hints are available
-- benchmark packs and golden cases for evaluator-facing smoke checks
+- a deterministic benchmark scorecard with detection fixtures and a clean control case
 - menu-first golden cases, experiment packs, evaluation summaries, baseline comparison, and provider context preview
 - cautious reports with manual-review boundaries and remediation direction
 
@@ -93,7 +93,9 @@ commercial partner, start with:
 - orchestrator-centered sessions with Math, Cryptography, Strategy, Hypothesis, Critic, and Report agent roles
 - smart-contract parser, compile, repo inventory, protocol-map, review-lane, benchmark, casebook, and finding-card paths
 - scoped smart-contract review families for access control, upgrade/storage, asset-flow, vault/share, oracle, liquidation, token accounting, signatures, rewards, AMM/liquidity, bridge/custody, staking, treasury, insurance, and related protocol surfaces
-- optional local adapters for `Slither`, `Foundry`, and `Echidna`; Slither findings keep severity and source locations, while Foundry can add build/test evidence for projects with `foundry.toml`
+- repo-aware Solidity compilation and optional `Slither`, `Foundry`, and
+  `Echidna` adapters; external findings retain source evidence, while unsafe
+  Forge test surfaces are reported instead of executed
 - cached known-case profile matching from allowlisted metadata sources such as SmartBugs and Slither detector families; remote code is not executed
 - ECC benchmark packs for point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor and twist hygiene, and bounded domain completeness
 - golden/synthetic cases with expected report shapes for evaluator-facing smart-contract and ECC smoke checks
@@ -121,6 +123,20 @@ Or use:
 
 ```powershell
 .\scripts\setup_local_lab.ps1
+```
+
+Linux/macOS:
+
+```bash
+bash scripts/setup_local_lab.sh
+.venv/bin/python -m app.main --interactive
+```
+
+WSL should use its own environment rather than the Windows `.venv`:
+
+```bash
+bash scripts/setup_local_lab.sh --venv-dir .venv-wsl
+.venv-wsl/bin/python -m app.main --interactive
 ```
 
 Smart-contract-focused local setup:
@@ -198,6 +214,7 @@ Built-in golden evaluator cases:
 ```powershell
 python -m app.main --list-golden-cases
 python -m app.main --golden-case contract-repo-scale-lending-protocol
+python -m app.main --benchmark-scorecard
 ```
 
 For the safe evaluation case from `Quick Start`, expected first-screen anchors
@@ -234,6 +251,9 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Comparison flags (`--compare-session`, `--compare-manifest`, `--compare-bundle`) attach saved baselines to fresh bounded runs for cautious before/after and regression-oriented notes.
 - Completed runs can store session JSON, trace JSONL, reproducibility bundles, `overview.json`, comparative reports, `report.md`, and `review.sarif` under `artifacts/`.
 - The interactive console can export `report.md` and `review.sarif` from the session-actions menu without requiring export commands.
+- Foundry writes build outputs to an isolated temporary directory. Project tests
+  with FFI, filesystem, RPC, environment, signing, or broadcast surfaces are
+  skipped and reported for manual execution in a trusted environment.
 - Export policy keeps manifest and bundle material inside approved storage roots, redacts likely secrets, and treats SARIF/finding cards as review items rather than proof.
 - Unsafe local plugin path layouts are blocked before registry loading. CodeQL and Dependabot workflows support repository hygiene.
 
@@ -249,13 +269,11 @@ See `.env.example` for local configuration options.
 ## Verification
 
 ```powershell
-python -m pip check
-python -m ruff check .
-python -m compileall app tests scripts
-pytest -q
+python scripts\release_gate.py
 ```
 
-The project passes the test suite in mock mode.
+The gate runs lint, tests, the deterministic benchmark scorecard, distribution
+metadata checks, and an installed-wheel smoke test.
 
 ## Donate
 

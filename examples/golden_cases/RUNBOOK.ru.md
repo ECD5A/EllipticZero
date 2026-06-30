@@ -9,6 +9,7 @@
 python -m app.main --doctor
 python -m app.main --list-packs
 python -m app.main --list-golden-cases
+python -m app.main --benchmark-scorecard
 ```
 
 Хороший сигнал для оценки:
@@ -16,6 +17,7 @@ python -m app.main --list-golden-cases
 - CLI запускается
 - benchmark-пакеты отображаются
 - golden cases отображаются
+- benchmark-сводка проходит detector- и clean-control ожидания
 - отсутствующие опциональные инструменты показаны явно, а не спрятаны
 
 Самый короткий прямой запуск:

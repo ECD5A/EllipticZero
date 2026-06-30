@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import re
@@ -2068,23 +2073,28 @@ def build_contract_casebook_benchmark_support(session: ResearchSession) -> list[
         elif evidence.tool_name == "slither_audit_tool":
             finding_count = int(result_data.get("finding_count", 0) or 0)
             impact_counts = _as_count_summary(result_data.get("impact_counts"))
-            if finding_count > 0:
+            analysis_succeeded = bool(result_data.get("analysis_succeeded"))
+            if analysis_succeeded and finding_count > 0:
                 detail = f"Slither={finding_count} finding(s)"
                 if impact_counts:
                     detail += f" ({impact_counts})"
                 static_support_parts.append(detail)
-            elif result.get("status") == "unavailable":
+            elif not analysis_succeeded or result.get("status") == "unavailable":
                 static_support_parts.append("Slither unavailable")
             else:
                 static_support_parts.append("Slither=ok")
         elif evidence.tool_name == "echidna_audit_tool":
-            if bool(result_data.get("analysis_applicable")):
+            if bool(result_data.get("analysis_applicable")) and bool(
+                result_data.get("analysis_succeeded")
+            ):
                 failing_test_count = int(result_data.get("failing_test_count", 0) or 0)
                 test_count = int(result_data.get("test_count", 0) or 0)
                 invariant_support = (
                     f"Echidna applicable (tests={test_count}; failing={failing_test_count})"
                 )
-            elif result.get("status") == "unavailable":
+            elif result.get("status") == "unavailable" or not bool(
+                result_data.get("analysis_succeeded")
+            ):
                 invariant_support = "Echidna unavailable"
             else:
                 invariant_support = "Echidna not applicable"
@@ -2377,6 +2387,9 @@ def build_contract_compile_summary(session: ResearchSession) -> list[str]:
         warning_count = int(result_data.get("warning_count", 0) or 0)
         error_count = int(result_data.get("error_count", 0) or 0)
         compiler_version = _as_optional_str(result_data.get("compiler_version"))
+        compilation_mode = _as_optional_str(result_data.get("compilation_mode"))
+        source_count = int(result_data.get("source_count", 0) or 0)
+        source_files = _as_str_list(result_data.get("source_files"))
         if status == "ok":
             line = (
                 f"Compile check succeeded for {len(compiled_names)} contract(s)"
@@ -2392,6 +2405,14 @@ def build_contract_compile_summary(session: ResearchSession) -> list[str]:
         if compiler_version:
             line += f" Compiler: {compiler_version}."
         items.append(line)
+        if compilation_mode or source_count:
+            scope_line = (
+                "Compile scope: "
+                f"mode={compilation_mode or 'unknown'}; sources={source_count}."
+            )
+            if source_files:
+                scope_line += " Files: " + ", ".join(source_files[:8]) + "."
+            items.append(scope_line)
     return ordered_unique(items)
 
 
@@ -2914,6 +2935,13 @@ def build_contract_static_findings(session: ResearchSession) -> list[str]:
                 if failing_tests:
                     test_line += f" Failing checks: {', '.join(failing_tests[:4])}."
                 items.append(test_line)
+            elif bool(result_data.get("tests_skipped_for_safety")):
+                safety_reasons = _as_str_list(result_data.get("test_safety_reasons"))
+                items.append(
+                    "Foundry tests were not executed because the bounded safety gate detected: "
+                    + ", ".join(safety_reasons[:4])
+                    + "."
+                )
             elif result.get("status") == "unavailable":
                 items.append(evidence.conclusion or evidence.summary)
     return ordered_unique(items)
@@ -3682,10 +3710,12 @@ def _collect_contract_toolchain_state(session: ResearchSession) -> dict[str, Any
                 state["testbed_families"].update(families)
         elif evidence.tool_name == "slither_audit_tool":
             state["slither_status"] = (
-                "unavailable" if result.get("status") == "unavailable" else "available"
+                "available" if bool(result_data.get("analysis_succeeded")) else "unavailable"
             )
         elif evidence.tool_name == "echidna_audit_tool":
-            if bool(result_data.get("analysis_applicable")):
+            if bool(result_data.get("analysis_applicable")) and bool(
+                result_data.get("analysis_succeeded")
+            ):
                 state["echidna_status"] = "applicable"
             elif result.get("status") == "unavailable":
                 state["echidna_status"] = "unavailable"
@@ -4198,12 +4228,14 @@ def _casebook_support_labels(session: ResearchSession) -> list[str]:
         elif evidence.tool_name == "contract_pattern_check_tool":
             labels.append("built-in-static")
         elif evidence.tool_name == "slither_audit_tool":
-            if result.get("status") == "unavailable":
+            if not bool(result_data.get("analysis_succeeded")):
                 labels.append("Slither-unavailable")
             else:
                 labels.append("Slither")
         elif evidence.tool_name == "echidna_audit_tool":
-            if bool(result_data.get("analysis_applicable")):
+            if bool(result_data.get("analysis_applicable")) and bool(
+                result_data.get("analysis_succeeded")
+            ):
                 labels.append("Echidna")
             elif result.get("status") == "unavailable":
                 labels.append("Echidna-unavailable")

@@ -3,7 +3,37 @@
 All notable public changes for EllipticZero are summarized here.
 
 The project follows a source-available release track under `FSL-1.1-ALv2`.
-Package version: `0.1.7`.
+Package version: `0.1.8`.
+
+## 0.1.8 - 2026-06-30
+
+### Added
+
+- Added a deterministic benchmark scorecard with anomaly-bearing smart-contract
+  fixtures, ECC golden cases, and a clean control contract.
+- Added a cross-platform production release gate for tests, benchmark
+  regression, package metadata, and installed-wheel smoke checks.
+- Added explicit agent tool-request review against the approved local registry.
+- Added a pinned SmartBugs Curated subset validator with five annotated
+  vulnerability-family cases and one clean control.
+- Added repository, copyright, and SPDX license headers to production source
+  files, enforced by the release gate.
+
+### Changed
+
+- Extended repo-scale Solidity compilation with bounded multi-file source maps
+  and project-aware Slither execution.
+- Hardened Foundry and Echidna execution with isolated outputs, sanitized
+  environments, deterministic Echidna settings, and safety-gated Forge tests.
+- Bounded hosted-provider transport payloads and responses, improved fallback
+  budget handling, and made report-agent evidence sharing visible in the
+  provider context preview.
+- Expanded CI across Linux, Windows, macOS, Python 3.11, and Python 3.14.
+- Separated managed Solidity compiler caches by operating system so Windows,
+  WSL/Linux, and macOS binaries cannot shadow one another.
+- Fixed live Foundry JSON inspection, Echidna property-name recovery, virtualenv
+  console-script discovery, and legacy `.call.value(...)` / `.send(...)`
+  review paths found during real WSL toolchain validation.
 
 ## 0.1.7 - 2026-04-30
 

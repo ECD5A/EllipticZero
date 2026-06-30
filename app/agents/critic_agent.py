@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from app.agents.base import BaseAgent
@@ -27,22 +32,28 @@ class CriticAgent(BaseAgent):
         round_index: int = 1,
         follow_up_context: str | None = None,
     ) -> CriticAgentResult:
-        user_prompt = self.seed_prompt(seed)
-        guidance_parts: list[str] = []
-        if cryptography_profile is not None:
-            guidance_parts.append(
-                f"Cryptography surface summary: {cryptography_profile.surface_summary}"
+        branch_context = "\n".join(
+            (
+                f"{index}. summary={branch.summary}; rationale={branch.rationale}; "
+                f"planned_test={branch.planned_test}; branch_type={branch.branch_type.value}; "
+                f"priority={branch.priority}"
             )
-        if strategy_profile is not None:
-            guidance_parts.append(
-                f"Strategy summary: {strategy_profile.strategy_summary}"
-            )
-        if follow_up_context:
-            guidance_parts.append(
-                f"Follow-up context for exploratory round {round_index}: {follow_up_context}"
-            )
-        if guidance_parts:
-            user_prompt = f"{self.seed_prompt(seed)}\n\n" + "\n".join(guidance_parts)
+            for index, branch in enumerate(hypothesis_result.branches)
+        )
+        user_prompt = self.context_prompt(
+            seed,
+            ("Math formalization", math_formalization.formalization_summary),
+            (
+                "Cryptography or contract surface",
+                cryptography_profile.surface_summary if cryptography_profile is not None else None,
+            ),
+            (
+                "Research strategy",
+                strategy_profile.strategy_summary if strategy_profile is not None else None,
+            ),
+            ("Candidate hypothesis branches", branch_context),
+            (f"Follow-up context for exploratory round {round_index}", follow_up_context),
+        )
         response = self.gateway.generate(
             agent_name=self.route_name,
             system_prompt=self.load_prompt(),
@@ -85,4 +96,12 @@ class CriticAgent(BaseAgent):
     def _parse_indices(self, value: str) -> list[int]:
         if not value.strip():
             return []
-        return [int(item.strip()) for item in value.split(",") if item.strip()]
+        indices: list[int] = []
+        for item in value.split(","):
+            try:
+                index = int(item.strip())
+            except ValueError:
+                continue
+            if index >= 0 and index not in indices:
+                indices.append(index)
+        return indices

@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import json
@@ -14,8 +19,10 @@ from app.compute.runners.toolchain_utils import (
     resolve_explicit_binary_path,
     resolve_local_binary,
     resolve_managed_solc_binary,
+    sanitized_tool_environment,
     select_best_solc_version,
 )
+from app.platform_paths import MANAGED_SOLC_DIR_TEMPLATE
 from app.tools.smart_contract_utils import build_contract_outline
 
 
@@ -26,13 +33,14 @@ class EchidnaRunner:
         self,
         *,
         enabled: bool = True,
-        managed_solc_dir: str = ".ellipticzero/tooling/solcx",
+        managed_solc_dir: str = MANAGED_SOLC_DIR_TEMPLATE,
         managed_solc_version: str = "0.8.20",
         echidna_binary: str = "echidna",
         solc_binary: str = "solc",
         timeout_seconds: int = 45,
         test_limit: int = 128,
         seq_len: int = 16,
+        seed: int = 1337,
     ) -> None:
         self.enabled = enabled
         self.managed_solc_dir = managed_solc_dir
@@ -42,9 +50,15 @@ class EchidnaRunner:
         self.timeout_seconds = timeout_seconds
         self.test_limit = test_limit
         self.seq_len = seq_len
+        self.seed = seed
 
     def is_available(self) -> bool:
-        return self.enabled and self._resolve_binary() is not None and self._resolve_solc_binary() is not None
+        return (
+            self.enabled
+            and self._resolve_binary() is not None
+            and self.analyzer_version() is not None
+            and self._resolve_solc_binary() is not None
+        )
 
     def resolved_binary(self) -> str | None:
         return self._resolve_binary()
@@ -67,6 +81,8 @@ class EchidnaRunner:
             )
         except (OSError, subprocess.SubprocessError):
             return None
+        if completed.returncode != 0:
+            return None
         text = (completed.stdout or completed.stderr or "").strip()
         return text.splitlines()[0].strip() if text else None
 
@@ -76,6 +92,7 @@ class EchidnaRunner:
         contract_code: str,
         language: str = "solidity",
         source_label: str | None = None,
+        contract_root: str | None = None,
     ) -> dict[str, Any]:
         if not self.enabled:
             return self._result(
@@ -135,15 +152,17 @@ class EchidnaRunner:
         version = self.analyzer_version()
         solc_binary = self._resolve_solc_binary(pragma_spec=pragma_spec, require_pragma_match=bool(pragma_spec))
 
-        if binary is None:
+        if binary is None or version is None:
             return self._result(
                 status="unavailable",
-                conclusion="No local Echidna binary was found for the scoped smart-contract fuzzing path.",
-                notes=["Install Echidna locally and expose the echidna binary to enable property-based contract fuzzing."],
+                conclusion="No runnable local Echidna binary was found for the scoped smart-contract fuzzing path.",
+                notes=[
+                    "Install or repair Echidna and expose a working binary to enable property-based contract fuzzing."
+                ],
                 result_data=self._base_result_data(
                     language=language,
                     source_label=source_label,
-                    analyzer_binary=None,
+                    analyzer_binary=binary,
                     analyzer_version=version,
                     solc_binary=solc_binary,
                     pragma_spec=pragma_spec,
@@ -214,16 +233,26 @@ class EchidnaRunner:
                     "failing_tests": [],
                     "test_status_counts": {},
                     "tests": [],
+                    "project_mode": False,
+                    "contract_root": contract_root,
                 },
             )
 
         temp_dir = self._create_workspace_temp_dir("ellipticzero_echidna_")
-        source_name = self._source_name(source_label)
+        project_root, project_source = self._resolve_project_source(
+            contract_root=contract_root,
+            source_label=source_label,
+        )
+        project_mode = project_root is not None and project_source is not None
         try:
-            source_path = temp_dir / source_name
+            source_path = project_source or (temp_dir / self._source_name(source_label))
             config_path = temp_dir / "echidna.yaml"
-            source_path.write_text(contract_code, encoding="utf-8")
-            config_path.write_text(self._config_text(test_mode=analysis_mode), encoding="utf-8")
+            if not project_mode:
+                source_path.write_text(contract_code, encoding="utf-8")
+            config_path.write_text(
+                self._config_text(test_mode=analysis_mode, solc_binary=solc_binary),
+                encoding="utf-8",
+            )
             completed = subprocess.run(
                 [
                     binary,
@@ -238,6 +267,8 @@ class EchidnaRunner:
                 encoding="utf-8",
                 timeout=self.timeout_seconds,
                 check=False,
+                cwd=str(project_root or temp_dir),
+                env=sanitized_tool_environment(),
             )
         except subprocess.TimeoutExpired:
             return self._result(
@@ -288,6 +319,11 @@ class EchidnaRunner:
             analysis_error = "echidna_output_not_json"
 
         tests = self._normalize_tests(payload.get("tests") if isinstance(payload, dict) else None)
+        tests = self._recover_test_names(
+            tests,
+            stdout=completed.stdout,
+            property_function_names=property_function_names,
+        )
         test_status_counts: dict[str, int] = {}
         failing_tests: list[str] = []
         passing_test_count = 0
@@ -307,11 +343,18 @@ class EchidnaRunner:
         notes: list[str] = []
         if completed.stderr.strip():
             notes.append(completed.stderr.strip())
+        if completed.returncode != 0:
+            notes.append(f"echidna_return_code={completed.returncode}")
         if analysis_error:
             notes.append(analysis_error)
 
-        analysis_succeeded = payload is not None and analysis_error in {None, ""}
-        if failing_test_count > 0:
+        payload_success = payload.get("success") if isinstance(payload, dict) else None
+        analysis_succeeded = (
+            payload is not None
+            and analysis_error in {None, ""}
+            and (bool(tests) or payload_success is True)
+        )
+        if analysis_succeeded and failing_test_count > 0:
             status = "observed_issue"
             conclusion = "The bounded Echidna analysis surfaced failing property or assertion checks."
         elif analysis_succeeded and tests:
@@ -321,8 +364,8 @@ class EchidnaRunner:
             status = "ok"
             conclusion = "The bounded Echidna analysis completed, but no explicit property result required escalation."
         else:
-            status = "observed_issue"
-            conclusion = "The bounded Echidna analysis did not produce a clean property or assertion result."
+            status = "unavailable"
+            conclusion = "The bounded Echidna process failed to produce a valid property or assertion result."
 
         return self._result(
             status=status,
@@ -353,6 +396,8 @@ class EchidnaRunner:
                 "failing_tests": failing_tests[:12],
                 "test_status_counts": test_status_counts,
                 "tests": tests[:24],
+                "project_mode": project_mode,
+                "contract_root": str(project_root) if project_root is not None else contract_root,
             },
         )
 
@@ -379,14 +424,40 @@ class EchidnaRunner:
             return configured_solc
         return None
 
-    def _config_text(self, *, test_mode: str) -> str:
+    def _config_text(self, *, test_mode: str, solc_binary: str) -> str:
+        compiler = json.dumps(solc_binary)
         return (
             f"testMode: {test_mode}\n"
             f"testLimit: {self.test_limit}\n"
             f"seqLen: {self.seq_len}\n"
+            f"seed: {self.seed}\n"
+            "workers: 1\n"
+            "allowFFI: false\n"
+            f"cryticArgs: [\"--solc\", {compiler}]\n"
             "format: json\n"
             "coverage: false\n"
         )
+
+    def _resolve_project_source(
+        self,
+        *,
+        contract_root: str | None,
+        source_label: str | None,
+    ) -> tuple[Path | None, Path | None]:
+        if not contract_root or not source_label:
+            return None, None
+        try:
+            root = Path(contract_root).expanduser().resolve()
+            source = Path(source_label).expanduser()
+            if not source.is_absolute():
+                source = root / source
+            source = source.resolve()
+            source.relative_to(root)
+        except (OSError, ValueError):
+            return None, None
+        if not root.is_dir() or not source.is_file() or source.is_symlink():
+            return None, None
+        return root, source
 
     def _source_name(self, source_label: str | None) -> str:
         if source_label:
@@ -398,7 +469,7 @@ class EchidnaRunner:
         return "Contract.sol"
 
     def _workspace_temp_root(self) -> Path:
-        temp_root = Path(".ellipticzero") / "tmp"
+        temp_root = (Path(".ellipticzero") / "tmp").resolve()
         temp_root.mkdir(parents=True, exist_ok=True)
         return temp_root
 
@@ -484,6 +555,36 @@ class EchidnaRunner:
             return "failing"
         return "unknown"
 
+    def _recover_test_names(
+        self,
+        tests: list[dict[str, str]],
+        *,
+        stdout: str,
+        property_function_names: list[str],
+    ) -> list[dict[str, str]]:
+        log_names = list(
+            dict.fromkeys(
+                re.findall(
+                    r"\bTest\s+([A-Za-z_][A-Za-z0-9_.$:-]*)\s+"
+                    r"(?:falsified|failed|passed|solved)\b",
+                    stdout,
+                    flags=re.IGNORECASE,
+                )
+            )
+        )
+        candidates = list(dict.fromkeys([*property_function_names, *log_names]))
+        placeholders = {"", "name", "property", "test", "unknown"}
+        recovered: list[dict[str, str]] = []
+        for index, item in enumerate(tests):
+            copy = dict(item)
+            if copy.get("name", "").strip().lower() in placeholders:
+                if index < len(candidates):
+                    copy["name"] = candidates[index]
+                elif log_names:
+                    copy["name"] = log_names[min(index, len(log_names) - 1)]
+            recovered.append(copy)
+        return recovered
+
     def _select_target_contract_name(
         self,
         *,
@@ -553,6 +654,9 @@ class EchidnaRunner:
             "property_function_names": property_function_names,
             "property_count": len(property_function_names),
             "assertion_surface_present": assertion_surface_present,
+            "seed": self.seed,
+            "workers": 1,
+            "allow_ffi": False,
         }
 
     def _result(

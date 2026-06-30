@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from app.agents.base import BaseAgent
@@ -29,22 +34,19 @@ class HypothesisAgent(BaseAgent):
         follow_up_context: str | None = None,
     ) -> HypothesisAgentResult:
         branches: list[HypothesisBranch] = []
-        user_prompt = self.seed_prompt(seed)
-        guidance_parts: list[str] = []
-        if cryptography_profile is not None:
-            guidance_parts.append(
-                f"Cryptography surface summary: {cryptography_profile.surface_summary}"
-            )
-        if strategy_profile is not None:
-            guidance_parts.append(
-                f"Strategy summary: {strategy_profile.strategy_summary}"
-            )
-        if follow_up_context:
-            guidance_parts.append(
-                f"Follow-up context for exploratory round {round_index}: {follow_up_context}"
-            )
-        if guidance_parts:
-            user_prompt = f"{self.seed_prompt(seed)}\n\n" + "\n".join(guidance_parts)
+        user_prompt = self.context_prompt(
+            seed,
+            ("Math formalization", math_formalization.formalization_summary),
+            (
+                "Cryptography or contract surface",
+                cryptography_profile.surface_summary if cryptography_profile is not None else None,
+            ),
+            (
+                "Research strategy",
+                strategy_profile.strategy_summary if strategy_profile is not None else None,
+            ),
+            (f"Follow-up context for exploratory round {round_index}", follow_up_context),
+        )
 
         for variant_index in range(1, max_hypotheses + 1):
             response = self.gateway.generate(
@@ -72,10 +74,11 @@ class HypothesisAgent(BaseAgent):
                 },
             )
             sections = self.parse_labeled_sections(response)
-            branch_type = BranchType(
-                sections.get("branch type", BranchType.EXPLORATORY.value).strip().lower()
+            branch_type = self._parse_branch_type(sections.get("branch type", ""))
+            priority = self._parse_priority(
+                sections.get("priority", ""),
+                default=variant_index,
             )
-            priority = int(sections.get("priority", str(variant_index)).strip())
             branch = HypothesisBranch(
                 summary=sections.get("summary", "Hypothesis unavailable."),
                 rationale=sections.get("rationale", "No rationale provided."),
@@ -86,3 +89,15 @@ class HypothesisAgent(BaseAgent):
             branches.append(branch)
 
         return HypothesisAgentResult(branches=branches)
+
+    def _parse_branch_type(self, value: str) -> BranchType:
+        try:
+            return BranchType(value.strip().lower())
+        except ValueError:
+            return BranchType.EXPLORATORY
+
+    def _parse_priority(self, value: str, *, default: int) -> int:
+        try:
+            return max(1, int(value.strip()))
+        except (TypeError, ValueError):
+            return max(1, default)

@@ -1,12 +1,60 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from pathlib import Path
 
 from packaging.version import InvalidVersion, Version
+
+from app.platform_paths import expand_platform_path
+
+_SAFE_TOOL_ENV_KEYS = {
+    "APPDATA",
+    "COMSPEC",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "LOCALAPPDATA",
+    "PATH",
+    "PATHEXT",
+    "PROGRAMDATA",
+    "SYSTEMROOT",
+    "TEMP",
+    "TERM",
+    "TMP",
+    "TMPDIR",
+    "USERPROFILE",
+    "WINDIR",
+}
+
+
+def sanitized_tool_environment(
+    overrides: Mapping[str, str] | None = None,
+) -> dict[str, str]:
+    """Build a minimal environment for analyzers that may inspect untrusted projects."""
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if key.upper() in _SAFE_TOOL_ENV_KEYS
+    }
+    environment["NO_COLOR"] = "1"
+    script_dir = str(Path(sys.executable).parent)
+    inherited_path = environment.get("PATH", "")
+    path_entries = [script_dir, *inherited_path.split(os.pathsep)]
+    environment["PATH"] = os.pathsep.join(
+        dict.fromkeys(entry for entry in path_entries if entry)
+    )
+    if overrides:
+        environment.update({str(key): str(value) for key, value in overrides.items()})
+    return environment
 
 
 def resolve_local_binary(binary_name: str) -> str | None:
@@ -28,7 +76,9 @@ def python_environment_binary(binary_name: str) -> Path | None:
         return None
     if resolve_explicit_binary_path(binary_name) is not None:
         return None
-    scripts_dir = Path(sys.executable).resolve().parent
+    # Virtual environments commonly symlink their Python executable to the
+    # system interpreter. Keep the venv path so its console scripts remain visible.
+    scripts_dir = Path(sys.executable).parent
     names = [binary_name]
     if not binary_name.lower().endswith(".exe"):
         names.append(f"{binary_name}.exe")
@@ -139,7 +189,7 @@ def resolve_explicit_binary_path(binary_name: str) -> str | None:
 def _normalize_directory(managed_dir: str | None) -> Path | None:
     if not managed_dir:
         return None
-    candidate = Path(managed_dir).expanduser()
+    candidate = Path(expand_platform_path(managed_dir)).expanduser()
     try:
         return candidate.resolve()
     except OSError:

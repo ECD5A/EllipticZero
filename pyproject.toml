@@ -1,14 +1,18 @@
 [build-system]
-requires = ["hatchling>=1.25.0"]
+requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
 name = "ellipticzero"
-version = "0.1.7"
+version = "0.1.8"
 description = "An independent source-available research lab by ECD5A for scoped smart-contract security review, defensive ECC analysis, and reproducible evidence-driven computation."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
+license = "LicenseRef-FSL-1.1-ALv2"
+license-files = [
+    "LICENSE",
+    "NOTICE",
+]
 dependencies = [
     "pydantic>=2.7,<3.0",
     "packaging>=24.0,<26.0",
@@ -19,6 +23,10 @@ dependencies = [
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
     "Topic :: Security",
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
@@ -35,33 +43,37 @@ research = [
     "z3-solver>=4.13,<5.0",
 ]
 smart_contract_basic = [
-    "pytest>=8.0,<9.0",
-    "ruff>=0.11,<0.12",
+    "pytest>=8.0,<10.0",
+    "ruff>=0.11,<0.16",
     "hypothesis>=6.112,<7.0",
     "z3-solver>=4.13,<5.0",
     "py-solc-x>=2.0,<3.0",
 ]
 smart_contract_static = [
-    "pytest>=8.0,<9.0",
-    "ruff>=0.11,<0.12",
+    "pytest>=8.0,<10.0",
+    "ruff>=0.11,<0.16",
     "hypothesis>=6.112,<7.0",
     "z3-solver>=4.13,<5.0",
     "py-solc-x>=2.0,<3.0",
     "slither-analyzer>=0.11,<0.12",
 ]
 test = [
-    "pytest>=8.0,<9.0",
-    "ruff>=0.11,<0.12",
+    "pytest>=8.0,<10.0",
+    "ruff>=0.11,<0.16",
     "hypothesis>=6.112,<7.0",
     "z3-solver>=4.13,<5.0",
 ]
 lab = [
-    "pytest>=8.0,<9.0",
-    "ruff>=0.11,<0.12",
+    "pytest>=8.0,<10.0",
+    "ruff>=0.11,<0.16",
     "hypothesis>=6.112,<7.0",
     "z3-solver>=4.13,<5.0",
     "py-solc-x>=2.0,<3.0",
     "slither-analyzer>=0.11,<0.12",
+]
+release = [
+    "build>=1.5,<2.0",
+    "twine>=6.2,<7.0",
 ]
 
 [project.scripts]
@@ -69,6 +81,9 @@ ellipticzero = "app.main:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"examples/golden_cases" = "examples/golden_cases"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -58,7 +58,10 @@ The EllipticZero pipeline is a constrained research workflow:
    The Critic Agent challenges unsupported jumps, ambiguous definitions, invalid inference chains, and directions that are not testable or not aligned with the seed.
 
 8. Compute Planning  
-   The Orchestrator selects approved tasks and converts them into controlled compute jobs through the Tool Registry.
+   Cryptography and Strategy roles may request exact tool names from the
+   provider-visible allowlist. The Orchestrator normalizes each request,
+   rejects names outside the local registry, and converts only approved tasks
+   into controlled compute jobs.
 
 9. Local Computation  
    The Local Compute Layer executes approved jobs on local resources using predefined tools and recorded parameters.

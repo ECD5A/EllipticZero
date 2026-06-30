@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import os
@@ -9,6 +14,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.sandbox import ExplorationProfile, ResearchMode
+from app.platform_paths import MANAGED_SOLC_DIR_TEMPLATE, expand_platform_path
 
 
 class LLMSettings(BaseModel):
@@ -21,6 +27,17 @@ class LLMSettings(BaseModel):
     timeout_seconds: int = 60
     max_request_tokens: int = 2048
     max_total_requests_per_session: int = 16
+
+    @field_validator(
+        "timeout_seconds",
+        "max_request_tokens",
+        "max_total_requests_per_session",
+    )
+    @classmethod
+    def validate_positive_limits(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("LLM limits must be >= 1.")
+        return value
 
 
 class ProviderAuthSettings(BaseModel):
@@ -126,7 +143,7 @@ class LocalResearchSettings(BaseModel):
 
     sympy_enabled: bool = True
     smart_contract_compile_enabled: bool = True
-    managed_solc_dir: str = ".ellipticzero/tooling/solcx"
+    managed_solc_dir: str = MANAGED_SOLC_DIR_TEMPLATE
     managed_solc_version: str = "0.8.20"
     solc_binary: str = "solc"
     solcjs_binary: str = "solcjs"
@@ -185,7 +202,7 @@ class LocalResearchSettings(BaseModel):
         stripped = value.strip()
         if not stripped:
             raise ValueError("Managed smart-contract toolchain settings must not be empty.")
-        return stripped
+        return expand_platform_path(stripped)
 
 
 class AppConfig(BaseModel):

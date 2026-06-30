@@ -34,6 +34,7 @@ Useful commands:
 python -m app.main --doctor
 python -m app.main --interactive
 python -m app.main --list-packs
+python -m app.main --benchmark-scorecard
 ```
 
 ### `hosted-agent`
@@ -66,7 +67,8 @@ What it gives you:
 
 - Solidity/Vyper file or inline-code input
 - parser and surface summaries
-- managed Solidity compiler provisioning under `.ellipticzero/tooling/solcx`
+- managed Solidity compiler provisioning under the platform-specific
+  `.ellipticzero/tooling/solcx/<platform>` cache
 - optional Slither, Foundry, and Echidna adapters when installed locally
 - benchmark-pack summaries and review queues
 
@@ -144,6 +146,18 @@ python -m ruff check .
 python -m compileall app tests scripts
 pytest -q
 ```
+
+## Linux, macOS, And WSL
+
+Use the shell setup script on Linux and macOS:
+
+```bash
+bash scripts/setup_local_lab.sh --profile lab
+```
+
+Use `--venv-dir .venv-wsl` under WSL so Linux never reuses the Windows virtual
+environment. Foundry, Echidna, Slither, and Sage remain optional OS-level tools;
+`--doctor` reports their effective readiness.
 
 ## Optional Local Tools
 

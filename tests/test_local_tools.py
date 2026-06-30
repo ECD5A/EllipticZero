@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
+from pathlib import Path
 
 import app.compute.runners.contract_compile_runner as compile_runner_module
 import app.compute.runners.echidna_runner as echidna_runner_module
 import app.compute.runners.foundry_runner as foundry_runner_module
 import app.compute.runners.slither_runner as slither_runner_module
+import app.compute.runners.toolchain_utils as toolchain_utils_module
 from app.compute.runners import (
     ContractCompileRunner,
     ContractTestbedRunner,
@@ -20,7 +23,11 @@ from app.compute.runners import (
     SlitherRunner,
     SympyRunner,
 )
-from app.compute.runners.toolchain_utils import select_best_solc_version
+from app.compute.runners.toolchain_utils import (
+    python_environment_binary,
+    sanitized_tool_environment,
+    select_best_solc_version,
+)
 from app.config import AppConfig
 from app.main import build_orchestrator
 from app.tools.builtin import (
@@ -51,6 +58,23 @@ from app.tools.builtin import (
 from app.tools.curve_registry import CURVE_REGISTRY
 from app.tools.registry import ToolRegistry
 from app.types import make_id
+
+
+def test_python_environment_binary_preserves_virtualenv_script_path(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    scripts_dir = tmp_path / "venv" / "bin"
+    scripts_dir.mkdir(parents=True)
+    python_path = scripts_dir / "python"
+    tool_path = scripts_dir / "slither"
+    python_path.write_text("", encoding="utf-8")
+    tool_path.write_text("", encoding="utf-8")
+    monkeypatch.setattr(toolchain_utils_module.sys, "executable", str(python_path))
+
+    resolved = python_environment_binary("slither")
+
+    assert resolved == tool_path
 
 
 def test_curve_registry_lookup_and_alias_resolution() -> None:
@@ -205,6 +229,75 @@ def test_contract_compile_tool_reports_success_with_fake_local_compiler(monkeypa
     assert result["result_data"]["compiler_binary"] == "solc"
 
 
+def test_contract_compile_tool_builds_bounded_repo_source_map(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "contracts"
+    root.mkdir()
+    main_code = (
+        'pragma solidity ^0.8.20; import "./Helper.sol"; '
+        "contract Main is Helper {}"
+    )
+    main_path = root / "Main.sol"
+    main_path.write_text(main_code, encoding="utf-8")
+    (root / "Helper.sol").write_text(
+        "pragma solidity ^0.8.20; contract Helper {}",
+        encoding="utf-8",
+    )
+    captured: dict[str, object] = {}
+
+    def fake_run(args, **kwargs):
+        if "--version" in args:
+            return subprocess.CompletedProcess(
+                args=args,
+                returncode=0,
+                stdout="solc, the solidity compiler commandline interface\nVersion: 0.8.20",
+                stderr="",
+            )
+        standard_input = json.loads(str(kwargs["input"]))
+        captured["sources"] = standard_input["sources"]
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout=json.dumps(
+                {
+                    "contracts": {
+                        "Main.sol": {"Main": {"abi": []}},
+                        "Helper.sol": {"Helper": {"abi": []}},
+                    },
+                    "sources": {
+                        "Main.sol": {"ast": {"nodeType": "SourceUnit"}},
+                        "Helper.sol": {"ast": {"nodeType": "SourceUnit"}},
+                    },
+                    "errors": [],
+                }
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr(compile_runner_module, "resolve_local_binary", lambda _: "solc")
+    monkeypatch.setattr(
+        compile_runner_module,
+        "resolve_managed_solc_binary",
+        lambda **_: (None, None),
+    )
+    monkeypatch.setattr(compile_runner_module.subprocess, "run", fake_run)
+
+    runner = ContractCompileRunner(enabled=True)
+    result = runner.run_compile(
+        contract_code=main_code,
+        language="solidity",
+        source_label=str(main_path),
+        contract_root=str(root),
+    )
+
+    assert result["status"] == "ok"
+    assert result["result_data"]["compilation_mode"] == "repo_sources"
+    assert result["result_data"]["source_count"] == 2
+    assert set(captured["sources"]) == {"Main.sol", "Helper.sol"}
+
+
 def test_slither_audit_tool_reports_unavailable_without_local_binaries(monkeypatch) -> None:
     monkeypatch.setattr(slither_runner_module, "resolve_local_binary", lambda _: None)
     monkeypatch.setattr(slither_runner_module, "resolve_managed_solc_binary", lambda **_: (None, None))
@@ -276,6 +369,7 @@ def test_slither_audit_tool_reports_findings_with_fake_local_analyzer(monkeypatc
         timeout,
         check,
         input=None,
+        env=None,
     ):
         if "--version" in args:
             if args[0] == "solc":
@@ -341,6 +435,74 @@ def test_slither_audit_tool_reports_findings_with_fake_local_analyzer(monkeypatc
     assert result["result_data"]["high_severity_present"] is True
 
 
+def test_slither_audit_tool_does_not_treat_process_failure_as_a_finding(monkeypatch) -> None:
+    runner = SlitherRunner(enabled=True)
+    monkeypatch.setattr(runner, "_resolve_binary", lambda: "slither")
+    monkeypatch.setattr(runner, "_resolve_solc_binary", lambda **_: "solc")
+    monkeypatch.setattr(runner, "analyzer_version_for_binary", lambda _: "0.11.5")
+    monkeypatch.setattr(
+        slither_runner_module.subprocess,
+        "run",
+        lambda *args, **kwargs: slither_runner_module.subprocess.CompletedProcess(
+            args=args[0],
+            returncode=1,
+            stdout="",
+            stderr="launcher failed",
+        ),
+    )
+
+    result = runner.run_audit(
+        contract_code="pragma solidity ^0.8.20; contract Vault {}",
+        language="solidity",
+    )
+
+    assert result["status"] == "unavailable"
+    assert result["result_data"]["analysis_succeeded"] is False
+    assert result["result_data"]["finding_count"] == 0
+    assert "slither_return_code=1" in result["notes"]
+
+
+def test_slither_audit_uses_supported_project_root_when_available(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "project"
+    source_dir = project_root / "src"
+    source_dir.mkdir(parents=True)
+    (project_root / "foundry.toml").write_text("[profile.default]\n", encoding="utf-8")
+    contract_code = "pragma solidity ^0.8.20; contract Vault {}"
+    source_path = source_dir / "Vault.sol"
+    source_path.write_text(contract_code, encoding="utf-8")
+
+    runner = SlitherRunner(enabled=True)
+    monkeypatch.setattr(runner, "_resolve_binary", lambda: "slither")
+    monkeypatch.setattr(runner, "_resolve_solc_binary", lambda **_: "solc")
+    monkeypatch.setattr(runner, "analyzer_version_for_binary", lambda _: "0.11.5")
+    captured: dict[str, object] = {}
+
+    def fake_run(args, **kwargs):
+        captured["args"] = args
+        return slither_runner_module.subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout=json.dumps({"success": True, "error": None, "results": {"detectors": []}}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(slither_runner_module.subprocess, "run", fake_run)
+    result = runner.run_audit(
+        contract_code=contract_code,
+        language="solidity",
+        source_label=str(source_path),
+        contract_root=str(project_root),
+    )
+
+    assert result["status"] == "ok"
+    assert result["result_data"]["analysis_mode"] == "project"
+    assert result["result_data"]["analysis_target"] == str(project_root.resolve())
+    assert captured["args"][1] == str(project_root.resolve())
+
+
 def test_foundry_audit_tool_reports_success_with_fake_local_analyzer(monkeypatch) -> None:
     def fake_resolve_local_binary(binary: str) -> str | None:
         if binary == "forge":
@@ -358,6 +520,7 @@ def test_foundry_audit_tool_reports_success_with_fake_local_analyzer(monkeypatch
         timeout,
         check,
         input=None,
+        env=None,
     ):
         if "--version" in args:
             if args[0] == "forge":
@@ -381,6 +544,7 @@ def test_foundry_audit_tool_reports_success_with_fake_local_analyzer(monkeypatch
                 stderr="",
             )
         if len(args) >= 4 and args[1] == "inspect" and args[3] == "methodIdentifiers":
+            assert "--json" in args
             return subprocess.CompletedProcess(
                 args=args,
                 returncode=0,
@@ -388,6 +552,7 @@ def test_foundry_audit_tool_reports_success_with_fake_local_analyzer(monkeypatch
                 stderr="",
             )
         if len(args) >= 4 and args[1] == "inspect" and args[3] == "storageLayout":
+            assert "--json" in args
             return subprocess.CompletedProcess(
                 args=args,
                 returncode=0,
@@ -435,6 +600,8 @@ def test_echidna_audit_tool_reports_failing_checks_with_fake_local_analyzer(monk
         timeout,
         check,
         input=None,
+        cwd=None,
+        env=None,
     ):
         if "--version" in args:
             if args[0] == "echidna":
@@ -488,6 +655,20 @@ def test_echidna_audit_tool_reports_failing_checks_with_fake_local_analyzer(monk
     assert result["result_data"]["analysis_applicable"] is True
     assert result["result_data"]["failing_test_count"] == 1
     assert result["result_data"]["failing_tests"] == ["echidna_only_owner_can_set"]
+
+
+def test_echidna_recovers_placeholder_property_name_from_live_output() -> None:
+    runner = EchidnaRunner(enabled=True)
+    tests = runner._normalize_tests([{"name": "name", "status": "solved"}])
+
+    recovered = runner._recover_test_names(
+        tests,
+        stdout="[Worker 0] Test echidna_owner_nonzero falsified!",
+        property_function_names=["echidna_owner_nonzero"],
+    )
+
+    assert recovered[0]["name"] == "echidna_owner_nonzero"
+    assert recovered[0]["classification"] == "failing"
 
 
 def test_contract_compile_tool_uses_managed_solc_when_path_binary_is_unavailable(monkeypatch) -> None:
@@ -1014,3 +1195,58 @@ def test_orchestrator_planning_and_payload_validation() -> None:
         for item in session.report.local_experiment_summary
     )
     assert evidence.target_kind == "curve"
+    assert session.trace_file_path is not None
+    trace_text = Path(session.trace_file_path).read_text(encoding="utf-8")
+    assert "agent_tool_requests_reviewed" in trace_text
+    assert "curve_metadata_tool" in trace_text
+
+
+def test_external_tool_environment_does_not_inherit_provider_secrets(monkeypatch) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "secret-value")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "secret-value")
+    monkeypatch.setenv("PATH", "bounded-path")
+
+    environment = sanitized_tool_environment({"FOUNDRY_FFI": "false"})
+
+    path_entries = environment["PATH"].split(os.pathsep)
+    assert path_entries[0] == str(Path(toolchain_utils_module.sys.executable).parent)
+    assert "bounded-path" in path_entries
+    assert environment["FOUNDRY_FFI"] == "false"
+    assert "OPENAI_API_KEY" not in environment
+    assert "AWS_SECRET_ACCESS_KEY" not in environment
+
+
+def test_foundry_project_test_safety_detects_external_access(tmp_path: Path) -> None:
+    project_root = tmp_path / "foundry-project"
+    (project_root / "test").mkdir(parents=True)
+    (project_root / "foundry.toml").write_text(
+        (
+            '[profile.default]\nffi = true\nfs_permissions = [{ access = "read", path = "./" }]\n'
+            '[rpc_endpoints]\nmainnet = "https://example.invalid"\n'
+        ),
+        encoding="utf-8",
+    )
+    (project_root / "test" / "Unsafe.t.sol").write_text(
+        "contract UnsafeTest { function testUnsafe() external { vm.envString(\"TOKEN\"); } }",
+        encoding="utf-8",
+    )
+
+    reasons = FoundryRunner()._project_test_safety_reasons(project_root)
+
+    assert "foundry_ffi_enabled" in reasons
+    assert "foundry_fs_permissions" in reasons
+    assert "foundry_rpc_configuration" in reasons
+    assert "external_access_cheatcode_surface" in reasons
+
+
+def test_echidna_configuration_is_bounded_and_reproducible() -> None:
+    runner = EchidnaRunner(seed=2026, test_limit=64, seq_len=8)
+
+    config_text = runner._config_text(test_mode="property", solc_binary="solc")
+
+    assert "testLimit: 64" in config_text
+    assert "seqLen: 8" in config_text
+    assert "seed: 2026" in config_text
+    assert "workers: 1" in config_text
+    assert "allowFFI: false" in config_text
+    assert 'cryticArgs: ["--solc", "solc"]' in config_text

@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import json
@@ -14,16 +19,21 @@ from app.compute.runners.toolchain_utils import (
     resolve_managed_solc_binary,
     select_best_solc_version,
 )
+from app.platform_paths import MANAGED_SOLC_DIR_TEMPLATE
 
 
 class ContractCompileRunner:
     """Run a bounded local Solidity compile check through solc or solcjs."""
 
+    max_repo_source_files = 64
+    max_repo_source_chars = 1_000_000
+    max_repo_depth = 6
+
     def __init__(
         self,
         *,
         enabled: bool = True,
-        managed_solc_dir: str = ".ellipticzero/tooling/solcx",
+        managed_solc_dir: str = MANAGED_SOLC_DIR_TEMPLATE,
         managed_solc_version: str = "0.8.20",
         solc_binary: str = "solc",
         solcjs_binary: str = "solcjs",
@@ -95,6 +105,7 @@ class ContractCompileRunner:
         contract_code: str,
         language: str = "solidity",
         source_label: str | None = None,
+        contract_root: str | None = None,
     ) -> dict[str, Any]:
         if not self.enabled:
             return self._result(
@@ -152,14 +163,14 @@ class ContractCompileRunner:
                 ),
             )
 
-        source_name = self._source_name(source_label)
+        sources, source_notes = self._build_source_map(
+            contract_code=contract_code,
+            source_label=source_label,
+            contract_root=contract_root,
+        )
         standard_json = {
             "language": "Solidity",
-            "sources": {
-                source_name: {
-                    "content": contract_code,
-                }
-            },
+            "sources": sources,
             "settings": {
                 "optimizer": {"enabled": False, "runs": 0},
                 "outputSelection": {
@@ -230,7 +241,7 @@ class ContractCompileRunner:
 
         error_count = sum(1 for item in diagnostics if item["severity"] == "error")
         warning_count = sum(1 for item in diagnostics if item["severity"] == "warning")
-        notes: list[str] = []
+        notes: list[str] = list(source_notes)
         if completed.stderr.strip():
             notes.append(completed.stderr.strip())
         if parse_error:
@@ -264,8 +275,100 @@ class ContractCompileRunner:
                 "compiled_contract_names": sorted(set(contract_names)),
                 "compiled_contract_count": len(set(contract_names)),
                 "ast_present": ast_present,
+                "source_count": len(sources),
+                "source_files": sorted(sources),
+                "compilation_mode": "repo_sources" if len(sources) > 1 else "single_source",
+                "contract_root": contract_root,
             },
         )
+
+    def _build_source_map(
+        self,
+        *,
+        contract_code: str,
+        source_label: str | None,
+        contract_root: str | None,
+    ) -> tuple[dict[str, dict[str, str]], list[str]]:
+        source_name = self._source_name(source_label)
+        fallback = {source_name: {"content": contract_code}}
+        if not contract_root:
+            return fallback, []
+
+        try:
+            root = Path(contract_root).expanduser().resolve()
+        except OSError:
+            return fallback, ["contract_root_unresolvable"]
+        if not root.is_dir():
+            return fallback, ["contract_root_not_directory"]
+
+        selected_path: Path | None = None
+        if source_label:
+            try:
+                candidate = Path(source_label).expanduser().resolve()
+                candidate.relative_to(root)
+                selected_path = candidate
+            except (OSError, ValueError):
+                selected_path = None
+
+        excluded_parts = {
+            ".git",
+            ".venv",
+            ".ellipticzero",
+            "artifacts",
+            "cache",
+            "node_modules",
+            "out",
+        }
+        sources: dict[str, dict[str, str]] = {}
+        total_chars = 0
+        skipped = 0
+        for path in sorted(root.rglob("*.sol")):
+            try:
+                relative = path.relative_to(root)
+                if len(relative.parts) > self.max_repo_depth:
+                    skipped += 1
+                    continue
+                if any(part.lower() in excluded_parts for part in relative.parts[:-1]):
+                    skipped += 1
+                    continue
+                if path.is_symlink() or not path.is_file():
+                    skipped += 1
+                    continue
+                resolved = path.resolve()
+                resolved.relative_to(root)
+                content = (
+                    contract_code
+                    if selected_path is not None and resolved == selected_path
+                    else path.read_text(encoding="utf-8", errors="replace")
+                )
+            except (OSError, ValueError):
+                skipped += 1
+                continue
+            if len(sources) >= self.max_repo_source_files:
+                skipped += 1
+                continue
+            if total_chars + len(content) > self.max_repo_source_chars:
+                skipped += 1
+                continue
+            sources[relative.as_posix()] = {"content": content}
+            total_chars += len(content)
+
+        selected_key: str | None = None
+        if selected_path is not None:
+            try:
+                selected_key = selected_path.relative_to(root).as_posix()
+            except ValueError:
+                selected_key = None
+        if selected_key is None or selected_key not in sources:
+            sources.setdefault(source_name, {"content": contract_code})
+
+        notes = [
+            f"bounded_repo_sources={len(sources)}",
+            f"bounded_repo_source_chars={total_chars}",
+        ]
+        if skipped:
+            notes.append(f"bounded_repo_sources_skipped={skipped}")
+        return sources, notes
 
     def _resolve_binary(self, *, pragma_spec: str | None = None, require_pragma_match: bool = False) -> str | None:
         explicit_solc = resolve_explicit_binary_path(self.solc_binary)

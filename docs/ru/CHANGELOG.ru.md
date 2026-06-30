@@ -3,7 +3,37 @@
 Здесь кратко фиксируются заметные публичные изменения EllipticZero.
 
 Проект идёт по source-available release track под `FSL-1.1-ALv2`.
-Версия пакета: `0.1.7`.
+Версия пакета: `0.1.8`.
+
+## 0.1.8 - 2026-06-30
+
+### Добавлено
+
+- Детерминированная benchmark-сводка с проблемными smart-contract фикстурами,
+  ECC golden cases и чистым контрольным контрактом.
+- Кроссплатформенный production release gate для тестов, benchmark-регрессий,
+  метаданных пакета и smoke-проверки установленного wheel.
+- Явная проверка запросов агентов к инструментам по разрешённому локальному
+  реестру.
+- Валидатор зафиксированного subset SmartBugs Curated: пять размеченных
+  vulnerability-family кейсов и один чистый контрольный пример.
+- Заголовки с репозиторием, copyright и SPDX-лицензией во всех production
+  source-файлах; их наличие проверяет release gate.
+
+### Изменено
+
+- Repo-scale компиляция Solidity поддерживает ограниченную multi-file source map,
+  а Slither умеет работать в project mode.
+- Foundry и Echidna запускаются с изолированными outputs и очищенным environment;
+  Echidna получила детерминированные параметры, а Forge tests проходят safety gate.
+- Ограничены размеры hosted-provider запросов и ответов, уточнена логика fallback
+  budget и отображение передачи evidence summary в provider context preview.
+- CI покрывает Linux, Windows, macOS, Python 3.11 и Python 3.14.
+- Кэши управляемых Solidity-компиляторов разделены по операционным системам,
+  поэтому Windows-, WSL/Linux- и macOS-бинарники не перекрывают друг друга.
+- По результатам live-проверки в WSL исправлены JSON inspection Foundry,
+  восстановление имени property Echidna, поиск console scripts в virtualenv и
+  legacy-пути `.call.value(...)` / `.send(...)`.
 
 ## 0.1.7 - 2026-04-30
 

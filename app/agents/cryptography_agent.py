@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from app.agents.base import BaseAgent
@@ -15,15 +20,24 @@ class CryptographyAgent(BaseAgent):
         *,
         seed: ResearchSeed,
         math_formalization: MathAgentResult,
+        approved_local_tools: list[str] | None = None,
         round_index: int = 1,
         follow_up_context: str | None = None,
     ) -> CryptographyAgentResult:
-        user_prompt = self.seed_prompt(seed)
-        if follow_up_context:
-            user_prompt = (
-                f"{self.seed_prompt(seed)}\n\nFollow-up context for exploratory round {round_index}:\n"
-                f"{follow_up_context}"
-            )
+        user_prompt = self.context_prompt(
+            seed,
+            ("Math formalization", math_formalization.formalization_summary),
+            ("Math key objects", "\n".join(f"- {item}" for item in math_formalization.key_objects)),
+            (
+                "Math testable elements",
+                "\n".join(f"- {item}" for item in math_formalization.testable_elements),
+            ),
+            (
+                "Approved local tool names",
+                "\n".join(f"- {item}" for item in (approved_local_tools or [])),
+            ),
+            (f"Follow-up context for exploratory round {round_index}", follow_up_context),
+        )
         response = self.gateway.generate(
             agent_name=self.route_name,
             system_prompt=self.load_prompt(),

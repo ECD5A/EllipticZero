@@ -19,12 +19,19 @@ expected workflow legible:
 - [contracts/SyntheticVault.sol](contracts/SyntheticVault.sol) is a safe vault/permission review fixture.
 - [contracts/SyntheticReentrancyVault.sol](contracts/SyntheticReentrancyVault.sol) is a safe external-call ordering and reentrancy-adjacent review fixture.
 - [contracts/SyntheticGovernanceTimelock.sol](contracts/SyntheticGovernanceTimelock.sol) is a safe governance/timelock and upgrade-control fixture.
+- [contracts/SyntheticSafeLedger.sol](contracts/SyntheticSafeLedger.sol) is a clean control fixture for false-positive regression checks.
 - [protocols/SyntheticLendingProtocol](protocols/SyntheticLendingProtocol) is a safe repo-scale lending protocol fixture.
 - [ecc/secp256k1_metadata_seed.txt](ecc/secp256k1_metadata_seed.txt) is an ECC domain-completeness seed.
 - [ecc/curve25519_subgroup_seed.txt](ecc/curve25519_subgroup_seed.txt) is an ECC subgroup/cofactor hygiene seed.
 - [ecc/secp256k1_point_format_edge_seed.txt](ecc/secp256k1_point_format_edge_seed.txt) is an ECC point-format edge seed.
 
 ## Quick Runs
+
+Run the complete machine-readable scorecard:
+
+```powershell
+python -m app.main --benchmark-scorecard
+```
 
 ECC domain completeness:
 

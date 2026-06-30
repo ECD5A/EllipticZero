@@ -50,6 +50,12 @@ def test_provider_context_preview_flags_hosted_contract_code_risk() -> None:
     assert payload["risk"]["private_code_may_leave_local_machine"] is True
     assert payload["context"]["contract_code_character_count"] > 0
     assert "This is a preview only; no provider call was made." in rendered
+    report_route = next(
+        row for row in payload["routes"]["rows"] if row["agent"] == "report_agent"
+    )
+    assert "bounded summary of local evidence and confidence posture" in report_route[
+        "context_sent_if_called"
+    ]
 
 
 def test_provider_context_preview_stays_low_for_mock_routes() -> None:

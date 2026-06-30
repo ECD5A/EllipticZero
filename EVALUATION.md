@@ -151,12 +151,20 @@ shape a commercial reviewer should expect before testing a private repository.
 Use the benchmark layer as a review checklist, not as a claim that the tool has
 fully audited a target by itself.
 
+```powershell
+python -m app.main --benchmark-scorecard
+```
+
+The command runs every machine-readable golden assertion in deterministic
+`mock` mode and exits non-zero on a detection, control, tool, pack, or report
+regression.
+
 | Area | What To Check | Stronger Signal |
 | --- | --- | --- |
 | Golden cases | Built-in smart-contract and ECC cases run cleanly and produce expected report shapes. | Stable smoke output across repeated local runs. |
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, signature, oracle, upgrade, token-accounting, and residual-risk lanes appear when the input justifies them. | The report separates confirmed local signals from manual-review priorities. |
 | ECC coverage | Point formats, curve metadata, subgroup/cofactor checks, twist hygiene, curve-family transitions, and domain-completeness surfaces are visible in the report. | Local compute evidence and report interpretation agree without overstating confidence. |
-| Local analyzer evidence | Optional Slither output is normalized with severity and source locations; Foundry projects can add local build/test evidence when `foundry.toml` is present. | External analyzer signals are tied to report priorities without being treated as proof by themselves. |
+| Local analyzer evidence | Optional Slither output is normalized with severity and source locations; Foundry projects add isolated build/inspection evidence and run tests only when the safety gate allows it. | External analyzer signals are tied to report priorities without being treated as proof by themselves. |
 | Known-case metadata | `EVALUATION LAB` -> `KNOWN CASES` can update or inspect cached metadata profiles from allowlisted sources. | The report shows known-case matches only as context or local-signal-backed review items, not as automatic exploit claims. |
 | Comparison | A saved baseline can be attached with `--compare-session`, `--compare-manifest`, or `--compare-bundle`. | Before/after lines show cautious deltas and possible regression flags. |
 | Export quality | Session, trace, manifest, bundle, and `report.md` artifacts stay inside approved local export roots. | A reviewer can reproduce the run, inspect the evidence trail, and share a Markdown report. |
@@ -168,6 +176,23 @@ Scorecard misses are useful. If a lane is absent, the reviewer should check
 whether the input did not justify that lane, the local toolchain was not
 installed, the prompt was too narrow, or the project needs deeper coverage in
 that area.
+
+### Targeted SmartBugs Validation
+
+The repository includes a deterministic validator for five annotated
+SmartBugs Curated contracts plus the clean built-in control. It reads a local
+checkout only and does not download or execute remote code:
+
+```powershell
+git clone --depth 1 https://github.com/smartbugs/smartbugs-curated.git .test_runs\smartbugs-curated
+python scripts\validate_smartbugs_subset.py --dataset-root .test_runs\smartbugs-curated --require-pinned-commit
+```
+
+At pinned commit `230e649123477eff332742a59a1c7cc6dc286cab`, the release
+candidate passes `6/6` targeted cases across access control, legacy reentrancy,
+unchecked low-level calls, external calls in loops, bad randomness, and the
+clean control. This is a focused family check, not a complete SmartBugs score,
+an exploitability claim, or a general false-positive rate.
 
 ## Benchmark Evidence Checklist
 
@@ -190,6 +215,7 @@ routing, and evidence boundaries:
 | `contract-reentrancy-review-lane` | Smart contracts | External-call ordering, withdrawal accounting, and reentrancy-adjacent review lanes. |
 | `contract-governance-timelock-lane` | Smart contracts | Governance, timelock, upgrade-control, and emergency-lane review. |
 | `contract-repo-scale-lending-protocol` | Smart contracts | Repo inventory, protocol lanes, liquidation/collateral/accounting review. |
+| `contract-safe-ledger-control` | Smart contracts | Clean control expected to produce no built-in pattern issue family. |
 | `ecc-secp256k1-domain-completeness` | ECC | Curve-domain assumptions, metadata completeness, bounded confidence. |
 | `ecc-25519-subgroup-hygiene` | ECC | Subgroup/cofactor, twist hygiene, encoding caveats. |
 | `ecc-secp256k1-point-format-edge` | ECC | Point-format inspection and parser/encoding boundaries. |

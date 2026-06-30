@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from app.agents.base import BaseAgent
@@ -17,12 +22,10 @@ class MathAgent(BaseAgent):
         round_index: int = 1,
         follow_up_context: str | None = None,
     ) -> MathAgentResult:
-        user_prompt = self.seed_prompt(seed)
-        if follow_up_context:
-            user_prompt = (
-                f"{self.seed_prompt(seed)}\n\nFollow-up context for exploratory round {round_index}:\n"
-                f"{follow_up_context}"
-            )
+        user_prompt = self.context_prompt(
+            seed,
+            (f"Follow-up context for exploratory round {round_index}", follow_up_context),
+        )
         response = self.gateway.generate(
             agent_name=self.route_name,
             system_prompt=self.load_prompt(),

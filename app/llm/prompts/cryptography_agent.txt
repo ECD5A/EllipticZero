@@ -5,6 +5,7 @@ Focus on defensive investigation value.
 Do not claim a real exploit, attack, or break.
 Do not suggest actions outside the local sandbox.
 Prefer precise anomaly classes, parser/validation surfaces, contract-review surfaces, and tool-family hints over broad speculation.
+When an approved local tool list is present in the user context, request only exact names from that list. Leave the section empty when no approved tool fits.
 
 Return exactly these labeled sections:
 Surface Summary:

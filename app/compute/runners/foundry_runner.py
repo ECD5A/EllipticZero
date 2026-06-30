@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import json
@@ -14,8 +19,10 @@ from app.compute.runners.toolchain_utils import (
     resolve_explicit_binary_path,
     resolve_local_binary,
     resolve_managed_solc_binary,
+    sanitized_tool_environment,
     select_best_solc_version,
 )
+from app.platform_paths import MANAGED_SOLC_DIR_TEMPLATE
 from app.tools.smart_contract_utils import build_contract_outline
 
 
@@ -26,7 +33,7 @@ class FoundryRunner:
         self,
         *,
         enabled: bool = True,
-        managed_solc_dir: str = ".ellipticzero/tooling/solcx",
+        managed_solc_dir: str = MANAGED_SOLC_DIR_TEMPLATE,
         managed_solc_version: str = "0.8.20",
         forge_binary: str = "forge",
         solc_binary: str = "solc",
@@ -40,7 +47,12 @@ class FoundryRunner:
         self.timeout_seconds = timeout_seconds
 
     def is_available(self) -> bool:
-        return self.enabled and self._resolve_binary() is not None and self._resolve_solc_binary() is not None
+        return (
+            self.enabled
+            and self._resolve_binary() is not None
+            and self.forge_version() is not None
+            and self._resolve_solc_binary() is not None
+        )
 
     def resolved_binary(self) -> str | None:
         return self._resolve_binary()
@@ -62,6 +74,8 @@ class FoundryRunner:
                 check=False,
             )
         except (OSError, subprocess.SubprocessError):
+            return None
+        if completed.returncode != 0:
             return None
         text = (completed.stdout or completed.stderr or "").strip()
         return text.splitlines()[0].strip() if text else None
@@ -107,15 +121,17 @@ class FoundryRunner:
         forge_binary = self._resolve_binary()
         forge_version = self.forge_version()
         solc_binary = self._resolve_solc_binary(pragma_spec=pragma_spec, require_pragma_match=bool(pragma_spec))
-        if forge_binary is None:
+        if forge_binary is None or forge_version is None:
             return self._result(
                 status="unavailable",
-                conclusion="No local Forge binary was found for the bounded Foundry adapter.",
-                notes=["Install Foundry locally and ensure the forge binary is available in the project environment."],
+                conclusion="No runnable local Forge binary was found for the bounded Foundry adapter.",
+                notes=[
+                    "Install or repair Foundry and ensure forge runs in the active project environment."
+                ],
                 result_data=self._base_result_data(
                     language=language,
                     source_label=source_label,
-                    forge_binary=None,
+                    forge_binary=forge_binary,
                     forge_version=forge_version,
                     solc_binary=solc_binary,
                     pragma_spec=pragma_spec,
@@ -151,8 +167,17 @@ class FoundryRunner:
         contract_names = outline.contract_names[:4]
         project_root = self._resolve_project_root(contract_root)
         project_mode = project_root is not None
-        root = project_root or self._create_workspace_temp_dir("ellipticzero_foundry_")
-        temp_root = None if project_mode else root
+        temp_root = self._create_workspace_temp_dir("ellipticzero_foundry_")
+        root = project_root or temp_root
+        process_environment = sanitized_tool_environment(
+            {
+                "FOUNDRY_FFI": "false",
+                "FOUNDRY_OUT": str(temp_root / "out"),
+                "FOUNDRY_CACHE_PATH": str(temp_root / "cache"),
+                "FOUNDRY_BROADCAST": str(temp_root / "broadcast"),
+            }
+        )
+        test_safety_reasons = self._project_test_safety_reasons(root) if project_mode else []
         tests_succeeded: bool | None = None
         test_return_code: int | None = None
         failing_tests: list[str] = []
@@ -180,6 +205,7 @@ class FoundryRunner:
                 encoding="utf-8",
                 timeout=self.timeout_seconds,
                 check=False,
+                env=process_environment,
             )
             if build_completed.returncode != 0:
                 notes = []
@@ -215,6 +241,9 @@ class FoundryRunner:
                         "tests_succeeded": tests_succeeded,
                         "failing_tests": failing_tests,
                         "test_output_summary": test_output_summary,
+                        "tests_skipped_for_safety": bool(test_safety_reasons),
+                        "test_safety_reasons": test_safety_reasons,
+                        "isolated_output": True,
                     },
                 )
 
@@ -223,7 +252,12 @@ class FoundryRunner:
             notes: list[str] = []
             inspect_contracts_succeeded = 0
 
-            if project_mode:
+            if project_mode and test_safety_reasons:
+                notes.append(
+                    "Forge tests were skipped because the project exposes external-access or FFI cheatcode surfaces: "
+                    + ", ".join(test_safety_reasons)
+                )
+            elif project_mode:
                 test_completed = subprocess.run(
                     self._test_command(
                         binary=forge_binary,
@@ -235,6 +269,7 @@ class FoundryRunner:
                     encoding="utf-8",
                     timeout=self.timeout_seconds,
                     check=False,
+                    env=process_environment,
                 )
                 test_return_code = test_completed.returncode
                 tests_succeeded = test_completed.returncode == 0
@@ -253,6 +288,7 @@ class FoundryRunner:
                     solc_binary=solc_binary,
                     contract_name=contract_name,
                     field_name="methodIdentifiers",
+                    process_environment=process_environment,
                 )
                 storage_payload = self._run_inspect(
                     forge_binary=forge_binary,
@@ -260,6 +296,7 @@ class FoundryRunner:
                     solc_binary=solc_binary,
                     contract_name=contract_name,
                     field_name="storageLayout",
+                    process_environment=process_environment,
                 )
                 methods_data = self._extract_json_payload(methods_payload.stdout)
                 storage_data = self._extract_json_payload(storage_payload.stdout)
@@ -306,8 +343,7 @@ class FoundryRunner:
                 ),
             )
         finally:
-            if temp_root is not None:
-                shutil.rmtree(temp_root, ignore_errors=True)
+            shutil.rmtree(temp_root, ignore_errors=True)
 
         storage_layout_present = any(count > 0 for count in storage_entry_counts.values())
         result_data = {
@@ -334,6 +370,9 @@ class FoundryRunner:
             "tests_succeeded": tests_succeeded,
             "failing_tests": failing_tests,
             "test_output_summary": test_output_summary,
+            "tests_skipped_for_safety": bool(test_safety_reasons),
+            "test_safety_reasons": test_safety_reasons,
+            "isolated_output": True,
         }
         if tests_succeeded is False:
             return self._result(
@@ -417,6 +456,52 @@ class FoundryRunner:
             return None
         return root
 
+    def _project_test_safety_reasons(self, root: Path) -> list[str]:
+        reasons: list[str] = []
+        config_path = root / "foundry.toml"
+        try:
+            config_text = config_path.read_text(encoding="utf-8", errors="replace")[:1_000_000]
+        except OSError:
+            config_text = ""
+        if re.search(r"(?im)^\s*ffi\s*=\s*true\b", config_text):
+            reasons.append("foundry_ffi_enabled")
+        if re.search(r"(?im)^\s*fs_permissions\s*=", config_text):
+            reasons.append("foundry_fs_permissions")
+        if re.search(
+            r"(?im)^\s*\[rpc_endpoints(?:\.[^\]]+)?\]\s*$|"
+            r"^\s*rpc_endpoints\s*=|^\s*eth_rpc_url\s*=",
+            config_text,
+        ):
+            reasons.append("foundry_rpc_configuration")
+
+        unsafe_cheatcode = re.compile(
+            r"\bvm\.(?:ffi|tryFfi|readFile|writeFile|removeFile|createDir|removeDir|"
+            r"env[A-Za-z0-9_]*|createFork|selectFork|rpc|broadcast|startBroadcast|"
+            r"sign|deriveKey|rememberKey|prompt[A-Za-z0-9_]*)\b"
+        )
+        scanned_chars = 0
+        scanned_files = 0
+        for path in sorted(root.rglob("*.sol")):
+            if scanned_files >= 128 or scanned_chars >= 2_000_000:
+                break
+            try:
+                relative = path.resolve().relative_to(root)
+                if path.is_symlink() or not path.is_file() or len(relative.parts) > 8:
+                    continue
+                content = path.read_text(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                continue
+            scanned_files += 1
+            scanned_chars += len(content)
+            if unsafe_cheatcode.search(content) or re.search(
+                r"forge-config:.*\bffi\s*=\s*true\b",
+                content,
+                flags=re.IGNORECASE,
+            ):
+                reasons.append("external_access_cheatcode_surface")
+                break
+        return list(dict.fromkeys(reasons))
+
     def _summarize_process_output(self, output: str) -> list[str]:
         lines = [" ".join(line.strip().split()) for line in output.splitlines()]
         meaningful = [line for line in lines if line]
@@ -445,6 +530,7 @@ class FoundryRunner:
         solc_binary: str,
         contract_name: str,
         field_name: str,
+        process_environment: dict[str, str],
     ) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [
@@ -457,12 +543,14 @@ class FoundryRunner:
                 "--offline",
                 "--use",
                 solc_binary,
+                "--json",
             ],
             capture_output=True,
             text=True,
             encoding="utf-8",
             timeout=self.timeout_seconds,
             check=False,
+            env=process_environment,
         )
 
     def _extract_json_payload(self, stdout: str) -> dict[str, Any] | None:
@@ -491,7 +579,7 @@ class FoundryRunner:
         return "Contract.sol"
 
     def _workspace_temp_root(self) -> Path:
-        temp_root = Path(".ellipticzero") / "tmp"
+        temp_root = (Path(".ellipticzero") / "tmp").resolve()
         temp_root.mkdir(parents=True, exist_ok=True)
         return temp_root
 

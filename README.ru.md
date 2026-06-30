@@ -56,7 +56,7 @@
 - воспроизводимые сессии, трассировки, манифесты, bundle-пакеты и replay
 - сводки покрытия доказательной базы, отпечатки toolchain и JSON-экспорт с редактированием секретов
 - SARIF-экспорт с привязкой к строкам, когда локальные подсказки доступны
-- benchmark-пакеты и golden cases для быстрой оценки проекта
+- детерминированная benchmark-сводка с проблемными фикстурами и чистым контрольным кейсом
 - запуск из меню для golden cases, experiment packs, сводок оценки,
   baseline-сравнения и предварительного просмотра контекста провайдера
 - осторожные отчёты с границами ручной проверки и направлением исправлений
@@ -100,7 +100,9 @@ EllipticZero сделан для локальных исследований, г
 - сессии с оркестратором и ролями Math, Cryptography, Strategy, Hypothesis, Critic и Report
 - smart-contract пути для parser, compile, repo inventory, protocol map, review lanes, benchmark, casebook и finding cards
 - семейства проверок в заданных рамках для access control, upgrade/storage, asset-flow, vault/share, oracle, liquidation, token accounting, signatures, rewards, AMM/liquidity, bridge/custody, staking, treasury, insurance и смежных protocol surfaces
-- опциональные локальные адаптеры `Slither`, `Foundry` и `Echidna`; Slither сохраняет severity и source location, Foundry может добавлять build/test evidence для проектов с `foundry.toml`
+- repo-aware компиляция Solidity и опциональные адаптеры `Slither`,
+  `Foundry` и `Echidna`; внешние находки сохраняют source evidence, а
+  небезопасные Forge test surfaces отмечаются в отчёте и не запускаются
 - локальное сопоставление с кэшированными профилями известных кейсов из разрешённых источников метаданных; удалённый код не запускается
 - ECC benchmark-наборы для point anomalies, encoding edges, curve aliases, curve-family transitions, subgroup/cofactor, twist hygiene и bounded domain completeness
 - golden/synthetic примеры с ожидаемой формой отчёта для smart-contract и ECC smoke-checks
@@ -128,6 +130,20 @@ pip install -e .[lab]
 
 ```powershell
 .\scripts\setup_local_lab.ps1
+```
+
+Linux/macOS:
+
+```bash
+bash scripts/setup_local_lab.sh
+.venv/bin/python -m app.main --interactive
+```
+
+В WSL используй отдельное окружение, а не Windows-`.venv`:
+
+```bash
+bash scripts/setup_local_lab.sh --venv-dir .venv-wsl
+.venv-wsl/bin/python -m app.main --interactive
 ```
 
 Локальная установка с упором на аудит смарт-контрактов:
@@ -205,6 +221,7 @@ python -m app.main --show-routing
 ```powershell
 python -m app.main --list-golden-cases
 python -m app.main --golden-case contract-repo-scale-lending-protocol
+python -m app.main --benchmark-scorecard
 ```
 
 Для безопасного кейса из `Быстрого старта` ожидаемые якоря на первом экране:
@@ -241,6 +258,9 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 - Флаги сравнения (`--compare-session`, `--compare-manifest`, `--compare-bundle`) привязывают сохранённый baseline к новому bounded-запуску для осторожных строк до/после и регрессионных заметок.
 - Завершённые запуски могут сохранять session JSON, trace JSONL, пакеты воспроизводимости, `overview.json`, сравнительные отчёты, `report.md` и `review.sarif` в `artifacts/`.
 - Интерактивная консоль выгружает `report.md` и `review.sarif` из меню действий сессии без ручного ввода export-команд.
+- Foundry пишет build outputs в изолированный временный каталог. Project tests
+  с FFI, доступом к файловой системе, RPC, environment, signing или broadcast
+  не запускаются и остаются пунктами ручной проверки в доверенной среде.
 - Политика экспорта удерживает manifest и bundle внутри разрешённых storage roots, маскирует вероятные секреты и считает SARIF/finding cards пунктами проверки, а не доказательством.
 - Небезопасные пути локальных плагинов блокируются до загрузки в реестр. CodeQL и Dependabot поддерживают техническую гигиену репозитория.
 
@@ -256,13 +276,11 @@ python -m app.main --domain smart_contract_audit --contract-file .\contracts\Vau
 ## Проверка
 
 ```powershell
-python -m pip check
-python -m ruff check .
-python -m compileall app tests scripts
-pytest -q
+python scripts\release_gate.py
 ```
 
-Проект проходит тесты в `mock`-режиме.
+Gate запускает lint, тесты, детерминированную benchmark-сводку, проверку
+метаданных дистрибутива и smoke-тест установленного wheel.
 
 ## Как поддержать проект
 

@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -26,7 +31,7 @@ class GeminiProvider(BaseLLMProvider):
         user_prompt: str,
         metadata: Mapping[str, Any] | None = None,
     ) -> str:
-        del max_request_tokens, metadata
+        del metadata
         if not self.api_key:
             raise RuntimeError(
                 "GeminiProvider selected, but the configured Gemini API key is not available."
@@ -39,6 +44,7 @@ class GeminiProvider(BaseLLMProvider):
             payload={
                 "system_instruction": {"parts": [{"text": system_prompt}]},
                 "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+                "generationConfig": {"maxOutputTokens": max(1, max_request_tokens)},
             },
             headers={},
             timeout_seconds=timeout_seconds,

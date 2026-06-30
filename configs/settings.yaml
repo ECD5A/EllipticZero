@@ -83,7 +83,7 @@ local_research:
   ecc_testbeds_enabled: true
   smart_contract_testbeds_enabled: true
   smart_contract_compile_enabled: true
-  managed_solc_dir: .ellipticzero/tooling/solcx
+  managed_solc_dir: .ellipticzero/tooling/solcx/{platform}
   managed_solc_version: "0.8.20"
   solc_binary: solc
   solcjs_binary: solcjs

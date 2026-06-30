@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import argparse
@@ -40,6 +45,10 @@ from app.compute.runners import (
     SympyRunner,
 )
 from app.config import AppConfig
+from app.core.benchmark_scorecard import (
+    render_benchmark_scorecard,
+    run_benchmark_scorecard,
+)
 from app.core.doctor import SystemDoctor
 from app.core.experiment_packs import ExperimentPackRegistry
 from app.core.golden_cases import (
@@ -140,6 +149,7 @@ def build_orchestrator(config: AppConfig) -> ResearchOrchestrator:
         timeout_seconds=config.local_research.echidna_timeout_seconds,
         test_limit=config.local_research.echidna_test_limit,
         seq_len=config.local_research.echidna_seq_len,
+        seed=config.local_research.fuzz_seed,
     )
     foundry_runner = FoundryRunner(
         enabled=config.local_research.foundry_enabled,
@@ -329,6 +339,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--list-golden-cases",
         action="store_true",
         help="List safe built-in golden evaluator cases and exit",
+    )
+    parser.add_argument(
+        "--benchmark-scorecard",
+        action="store_true",
+        help="Run all built-in golden regression cases in deterministic mock mode and exit",
+    )
+    parser.add_argument(
+        "--benchmark-scorecard-format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format for --benchmark-scorecard.",
     )
     parser.add_argument(
         "--evaluation-summary",
@@ -668,8 +689,65 @@ def main() -> int:
     if args.live_provider_smoke and (args.list_golden_cases or args.golden_case):
         parser.exit(status=2, message="Hosted smoke test cannot be combined with golden case arguments.\n")
 
+    if args.benchmark_scorecard:
+        if (
+            args.idea
+            or args.interactive
+            or selected_replay
+            or selected_comparison
+            or args.doctor
+            or args.live_provider_smoke
+            or args.golden_case
+            or args.list_golden_cases
+            or args.list_packs
+            or args.list_synthetic_targets
+            or args.synthetic_target
+            or args.pack
+            or args.contract_file
+            or args.contract_code
+            or args.contract_root
+            or args.contract_language
+            or args.export_sarif
+            or args.export_report_md
+            or args.provider_context_preview
+            or args.evaluation_summary
+        ):
+            parser.exit(
+                status=2,
+                message=(
+                    "Benchmark scorecard is a direct deterministic path and cannot be "
+                    "combined with other run, export, provider, or listing arguments.\n"
+                ),
+            )
+        config.llm.default_provider = "mock"
+        config.llm.default_model = "mock-default"
+        config.llm.fallback_provider = None
+        config.llm.fallback_model = None
+        for role_name in (
+            "math_agent",
+            "cryptography_agent",
+            "strategy_agent",
+            "hypothesis_agent",
+            "critic_agent",
+            "report_agent",
+        ):
+            route = getattr(config.agents, role_name)
+            route.provider = "mock"
+            route.model = "mock-default"
+
     configure_logging(config.log_level)
     orchestrator = build_orchestrator(config)
+
+    if args.benchmark_scorecard:
+        scorecard = run_benchmark_scorecard(orchestrator=orchestrator)
+        print(
+            render_benchmark_scorecard(
+                scorecard,
+                language=language,
+                output_format=args.benchmark_scorecard_format,
+            )
+        )
+        return 0 if scorecard.passed else 1
 
     if args.list_golden_cases:
         print(render_golden_cases(language=language))

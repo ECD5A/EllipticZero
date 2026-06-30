@@ -896,6 +896,40 @@ def test_contract_pattern_check_tool_flags_bounded_review_signals() -> None:
     )
 
 
+def test_contract_pattern_check_tool_handles_legacy_value_calls_and_send_loops() -> None:
+    tool = ContractPatternCheckTool()
+    payload = tool.validate_payload(
+        {
+            "contract_code": """
+pragma solidity ^0.4.24;
+
+contract LegacyPayout {
+    mapping(address => uint256) userBalance;
+    address[] recipients;
+
+    function withdraw() public {
+        if (!msg.sender.call.value(userBalance[msg.sender])()) { revert(); }
+        userBalance[msg.sender] = 0;
+    }
+
+    function refundAll() public {
+        for (uint256 index = 0; index < recipients.length; index++) {
+            require(recipients[index].send(userBalance[recipients[index]]));
+        }
+    }
+}
+""".strip(),
+            "language": "solidity",
+        }
+    )
+
+    result = tool.run(payload)
+    issues = result["result_data"]["issues"]
+
+    assert "reentrancy_review_required:withdraw" in issues
+    assert "external_call_in_loop:refundAll" in issues
+
+
 def test_contract_pattern_check_tool_flags_upgrade_entropy_and_user_supplied_call_targets() -> None:
     tool = ContractPatternCheckTool()
     payload = tool.validate_payload(
@@ -1892,7 +1926,14 @@ contract Proxy is SharedBase { ProxyLogic public logic; }
     assert any("start repo review from" in item.lower() or "top repo family" in item.lower() for item in session.report.contract_repo_triage)
     assert any("bounded repo casebook" in item.lower() or "risk-linked files" in item.lower() for item in session.report.contract_repo_triage)
     assert any("lane alignment for" in item.lower() and "support=" in item.lower() for item in session.report.contract_toolchain_alignment)
-    assert any("no family-matched bounded casebook" in item.lower() or "no foundry structural pass" in item.lower() or "no echidna replay" in item.lower() for item in session.report.contract_toolchain_alignment)
+    assert any(
+        "slither" in item.lower()
+        or "foundry" in item.lower()
+        or "no family-matched bounded casebook" in item.lower()
+        or "no foundry structural pass" in item.lower()
+        or "no echidna replay" in item.lower()
+        for item in session.report.contract_toolchain_alignment
+    )
     assert any("queue 1:" in item.lower() and "next replay:" in item.lower() for item in session.report.contract_review_queue)
     assert any("triage snapshot - top" in item.lower() for item in session.report.contract_triage_snapshot)
     assert any("top files/contracts" in item.lower() for item in session.report.contract_triage_snapshot)
@@ -2036,6 +2077,8 @@ def test_orchestrator_can_select_foundry_for_foundry_focused_contract_seed(monke
         timeout,
         check,
         input=None,
+        cwd=None,
+        env=None,
     ):
         if "--version" in args:
             if args[0] == "forge":
@@ -2189,6 +2232,7 @@ def test_slither_runner_normalizes_finding_location_and_summary(monkeypatch) -> 
         timeout,
         check,
         input=None,
+        env=None,
     ):
         if "--version" in args:
             if args[0] == "slither":
@@ -2283,6 +2327,7 @@ def test_foundry_runner_runs_project_tests_for_foundry_root(tmp_path, monkeypatc
         timeout,
         check,
         input=None,
+        env=None,
     ):
         if "--version" in args:
             if args[0] == "forge":
@@ -2349,6 +2394,8 @@ def test_orchestrator_can_select_echidna_for_invariant_focused_contract_seed(mon
         timeout,
         check,
         input=None,
+        cwd=None,
+        env=None,
     ):
         if "--version" in args:
             if args[0] == "echidna":

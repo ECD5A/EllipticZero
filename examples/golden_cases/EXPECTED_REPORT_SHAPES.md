@@ -108,3 +108,16 @@ Expected useful output:
 Evaluator pass signal:
 
 - the report treats malformed or edge-format evidence as a review signal, not as an exploit
+
+## `contract-safe-ledger-control`
+
+Expected useful output:
+
+- selected pack is `contract_static_benchmark_pack`
+- parser and surface summaries recognize the synthetic ledger
+- built-in pattern review returns no issue family for the control fixture
+- the report keeps normal manual-review boundaries and does not claim proof of safety
+
+Evaluator pass signal:
+
+- the regression scorecard separates a clean control from anomaly-bearing fixtures

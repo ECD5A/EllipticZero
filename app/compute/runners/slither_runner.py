@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import json
@@ -13,8 +18,10 @@ from app.compute.runners.toolchain_utils import (
     resolve_explicit_binary_path,
     resolve_local_binary,
     resolve_managed_solc_binary,
+    sanitized_tool_environment,
     select_best_solc_version,
 )
+from app.platform_paths import MANAGED_SOLC_DIR_TEMPLATE
 
 
 class SlitherRunner:
@@ -38,7 +45,7 @@ class SlitherRunner:
         self,
         *,
         enabled: bool = True,
-        managed_solc_dir: str = ".ellipticzero/tooling/solcx",
+        managed_solc_dir: str = MANAGED_SOLC_DIR_TEMPLATE,
         managed_solc_version: str = "0.8.20",
         slither_binary: str = "slither",
         solc_binary: str = "solc",
@@ -54,7 +61,13 @@ class SlitherRunner:
         self.detectors = detectors or list(self.DEFAULT_DETECTORS)
 
     def is_available(self) -> bool:
-        return self.enabled and self._resolve_binary() is not None and self._resolve_solc_binary() is not None
+        binary = self._resolve_binary()
+        return (
+            self.enabled
+            and binary is not None
+            and self.analyzer_version_for_binary(binary) is not None
+            and self._resolve_solc_binary() is not None
+        )
 
     def resolved_binary(self) -> str | None:
         return self._resolve_binary()
@@ -78,6 +91,8 @@ class SlitherRunner:
                 check=False,
             )
         except (OSError, subprocess.SubprocessError):
+            return None
+        if completed.returncode != 0:
             return None
         text = (completed.stdout or completed.stderr or "").strip()
         return text.splitlines()[0].strip() if text else None
@@ -123,15 +138,17 @@ class SlitherRunner:
         binary = self._resolve_binary()
         version = self.analyzer_version_for_binary(binary)
         solc_binary = self._resolve_solc_binary(pragma_spec=pragma_spec, require_pragma_match=bool(pragma_spec))
-        if binary is None:
+        if binary is None or version is None:
             return self._result(
                 status="unavailable",
-                conclusion="No local Slither binary was found for the bounded static analyzer path.",
-                notes=["Install slither-analyzer locally to enable Slither-based smart-contract analysis."],
+                conclusion="No runnable local Slither analyzer was found for the bounded static-analysis path.",
+                notes=[
+                    "Install or repair slither-analyzer in the active project environment before running external static analysis."
+                ],
                 result_data=self._base_result_data(
                     language=language,
                     source_label=source_label,
-                    analyzer_binary=None,
+                    analyzer_binary=binary,
                     analyzer_version=version,
                     solc_binary=solc_binary,
                     pragma_spec=pragma_spec,
@@ -163,17 +180,24 @@ class SlitherRunner:
                 ),
             )
 
-        source_name = self._source_name(source_label)
         detector_list = ",".join(self.detectors)
-
-        temp_dir = self._create_workspace_temp_dir("ellipticzero_slither_")
+        project_root = self._resolve_project_root(contract_root)
+        analysis_mode = "project" if project_root is not None else "single_source"
+        temp_dir: Path | None = None
+        if project_root is not None:
+            analysis_target = project_root
+            working_dir = project_root
+        else:
+            source_name = self._source_name(source_label)
+            temp_dir = self._create_workspace_temp_dir("ellipticzero_slither_")
+            analysis_target = temp_dir / source_name
+            working_dir = temp_dir
+            analysis_target.write_text(contract_code, encoding="utf-8")
         try:
-            temp_path = temp_dir / source_name
-            temp_path.write_text(contract_code, encoding="utf-8")
             completed = subprocess.run(
                 [
                     binary,
-                    str(temp_path),
+                    str(analysis_target),
                     "--json",
                     "-",
                     "--json-types",
@@ -183,7 +207,7 @@ class SlitherRunner:
                     "--solc",
                     solc_binary,
                     "--solc-working-dir",
-                    str(temp_dir),
+                    str(working_dir),
                     "--detect",
                     detector_list,
                 ],
@@ -192,6 +216,7 @@ class SlitherRunner:
                 encoding="utf-8",
                 timeout=self.timeout_seconds,
                 check=False,
+                env=sanitized_tool_environment(),
             )
         except subprocess.TimeoutExpired:
             return self._result(
@@ -222,7 +247,8 @@ class SlitherRunner:
                 ),
             )
         finally:
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            if temp_dir is not None:
+                shutil.rmtree(temp_dir, ignore_errors=True)
 
         payload = self._extract_json_payload(completed.stdout)
         findings: list[dict[str, str]] = []
@@ -251,10 +277,18 @@ class SlitherRunner:
         notes: list[str] = []
         if completed.stderr.strip():
             notes.append(completed.stderr.strip())
+        if completed.returncode != 0:
+            notes.append(f"slither_return_code={completed.returncode}")
         if analysis_error:
             notes.append(analysis_error)
 
-        analysis_succeeded = payload is not None and analysis_error in {None, ""}
+        payload_success = payload.get("success") if isinstance(payload, dict) else None
+        analysis_succeeded = (
+            payload is not None
+            and analysis_error in {None, ""}
+            and payload_success is not False
+            and completed.returncode == 0
+        )
         finding_count = len(findings)
         if analysis_succeeded and finding_count == 0:
             status = "ok"
@@ -263,8 +297,8 @@ class SlitherRunner:
             status = "observed_issue"
             conclusion = "The bounded Slither analysis surfaced review-worthy detector findings."
         else:
-            status = "observed_issue"
-            conclusion = "The bounded Slither analysis did not produce a clean detector result."
+            status = "unavailable"
+            conclusion = "The bounded Slither process failed to produce a valid detector result."
 
         return self._result(
             status=status,
@@ -291,6 +325,8 @@ class SlitherRunner:
                 "high_severity_present": impact_counts.get("high", 0) > 0,
                 "medium_severity_present": impact_counts.get("medium", 0) > 0,
                 "contract_root": contract_root,
+                "analysis_mode": analysis_mode,
+                "analysis_target": str(analysis_target),
             },
         )
 
@@ -323,8 +359,30 @@ class SlitherRunner:
                     return sanitized if sanitized.endswith(".sol") else f"{sanitized}.sol"
         return "Contract.sol"
 
+    def _resolve_project_root(self, contract_root: str | None) -> Path | None:
+        if not contract_root:
+            return None
+        try:
+            root = Path(contract_root).expanduser().resolve()
+        except OSError:
+            return None
+        if not root.is_dir():
+            return None
+        project_markers = (
+            "foundry.toml",
+            "hardhat.config.js",
+            "hardhat.config.ts",
+            "truffle-config.js",
+            "truffle.js",
+            "brownie-config.yaml",
+            "ape-config.yaml",
+        )
+        if any((root / marker).is_file() for marker in project_markers):
+            return root
+        return None
+
     def _workspace_temp_root(self) -> Path:
-        temp_root = Path(".ellipticzero") / "tmp"
+        temp_root = (Path(".ellipticzero") / "tmp").resolve()
         temp_root.mkdir(parents=True, exist_ok=True)
         return temp_root
 

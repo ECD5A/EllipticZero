@@ -19,12 +19,19 @@
 - [contracts/SyntheticVault.sol](contracts/SyntheticVault.sol) - безопасная тестовая фикстура для vault/permission review.
 - [contracts/SyntheticReentrancyVault.sol](contracts/SyntheticReentrancyVault.sol) - безопасная тестовая фикстура для external-call ordering и reentrancy-adjacent review.
 - [contracts/SyntheticGovernanceTimelock.sol](contracts/SyntheticGovernanceTimelock.sol) - безопасная тестовая фикстура для governance/timelock и upgrade-control review.
+- [contracts/SyntheticSafeLedger.sol](contracts/SyntheticSafeLedger.sol) - чистая контрольная фикстура для проверки false-positive регрессий.
 - [protocols/SyntheticLendingProtocol](protocols/SyntheticLendingProtocol) - безопасная repo-scale фикстура для lending-protocol review.
 - [ecc/secp256k1_metadata_seed.txt](ecc/secp256k1_metadata_seed.txt) - seed-файл для ECC domain-completeness проверки.
 - [ecc/curve25519_subgroup_seed.txt](ecc/curve25519_subgroup_seed.txt) - seed-файл для subgroup/cofactor hygiene проверки.
 - [ecc/secp256k1_point_format_edge_seed.txt](ecc/secp256k1_point_format_edge_seed.txt) - seed-файл для ECC point-format edge проверки.
 
 ## Быстрые запуски
+
+Полная machine-readable benchmark-проверка:
+
+```powershell
+python -m app.main --benchmark-scorecard
+```
 
 ECC domain completeness:
 

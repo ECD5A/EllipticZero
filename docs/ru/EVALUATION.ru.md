@@ -156,12 +156,20 @@ python -m app.main --golden-case contract-vault-permission-lane
 Benchmark-слой стоит воспринимать как проверочный список для оценки, а не как
 обещание, что инструмент сам полностью проаудировал цель.
 
+```powershell
+python -m app.main --benchmark-scorecard
+```
+
+Команда в детерминированном `mock`-режиме проверяет все machine-readable
+ожидания golden cases и возвращает ненулевой код при регрессии detector,
+control-case, tool, pack или report layer.
+
 | Зона | Что проверять | Более сильный сигнал |
 | --- | --- | --- |
 | Golden cases | Встроенные smart-contract и ECC кейсы запускаются чисто и дают ожидаемую форму отчёта. | Smoke-вывод стабилен при повторных локальных запусках. |
 | Smart-contract coverage | Parser, compile, inventory, repo map, casebook, benchmark pack, review queue, signature, oracle, upgrade, token-accounting, residual-risk lanes и компактная сводка триажа появляются, когда входные данные это оправдывают. | Отчёт отделяет подтверждённые локальные сигналы от приоритетов ручной проверки. |
 | ECC coverage | В отчёте видны форматы точек, метаданные кривых, subgroup/cofactor проверки, twist hygiene, переходы между семействами кривых, domain-completeness поверхности и компактная сводка ECC-триажа. | Локальные вычисления и интерпретация отчёта согласованы без завышения уверенности. |
-| Локальные analyzer-сигналы | Опциональный Slither нормализуется по severity и source location; Foundry-проекты могут добавлять локальные build/test-сигналы при наличии `foundry.toml`. | Сигналы внешних анализаторов попадают в приоритеты отчёта, но не считаются доказательством сами по себе. |
+| Локальные analyzer-сигналы | Опциональный Slither нормализуется по severity и source location; Foundry добавляет изолированные build/inspection-сигналы и запускает tests только после safety gate. | Сигналы внешних анализаторов попадают в приоритеты отчёта, но не считаются доказательством сами по себе. |
 | Профили известных кейсов | В `ЛАБОРАТОРИЯ ОЦЕНКИ` -> `ИЗВЕСТНЫЕ КЕЙСЫ` можно обновить или посмотреть кэшированные профили метаданных из разрешённых источников. | Отчёт показывает совпадения как контекст или как пункты для проверки, подкреплённые локальными сигналами, а не как автоматическое доказательство эксплоита. |
 | Comparison | Сохранённую baseline можно подключить через `--compare-session`, `--compare-manifest` или `--compare-bundle`. | Before/after строки и remediation-delta summary показывают осторожные изменения, возможные regression flags и следующий replay-path. |
 | Export quality | Session, trace, manifest, bundle и `report.md` остаются внутри разрешённых локальных export roots. | Проверяющий может воспроизвести запуск, посмотреть evidence trail и передать Markdown-отчёт. |
@@ -173,6 +181,24 @@ Benchmark-слой стоит воспринимать как проверочн
 проверить: входные данные не оправдывали этот путь, локальный toolchain не был
 установлен, prompt был слишком узким или проекту нужна более глубокая coverage
 в этой зоне.
+
+### Целевая проверка на SmartBugs
+
+В репозитории есть детерминированный валидатор для пяти размеченных контрактов
+SmartBugs Curated и чистого встроенного контрольного кейса. Он только читает
+локальную копию датасета и сам не скачивает и не запускает удалённый код:
+
+```powershell
+git clone --depth 1 https://github.com/smartbugs/smartbugs-curated.git .test_runs\smartbugs-curated
+python scripts\validate_smartbugs_subset.py --dataset-root .test_runs\smartbugs-curated --require-pinned-commit
+```
+
+На зафиксированном commit `230e649123477eff332742a59a1c7cc6dc286cab`
+release candidate проходит `6/6` целевых кейсов: access control, legacy
+reentrancy, unchecked low-level calls, внешние вызовы в цикле, bad randomness
+и чистый контрольный пример. Это проверка конкретных семейств, а не полный
+результат SmartBugs, доказательство эксплуатируемости или общий false-positive
+rate.
 
 ## Чеклист benchmark evidence
 
@@ -195,6 +221,7 @@ Benchmark-слой стоит воспринимать как проверочн
 | `contract-reentrancy-review-lane` | Smart contracts | External-call ordering, withdrawal accounting и reentrancy-adjacent review lanes. |
 | `contract-governance-timelock-lane` | Smart contracts | Управление, timelock, контроль upgrade и emergency-lane review. |
 | `contract-repo-scale-lending-protocol` | Smart contracts | Инвентаризация репозитория, protocol lanes, liquidation/collateral/accounting review. |
+| `contract-safe-ledger-control` | Smart contracts | Чистый контрольный пример без ожидаемых built-in pattern issue families. |
 | `ecc-secp256k1-domain-completeness` | ECC | Предположения по домену кривой, полнота метаданных, ограниченная уверенность. |
 | `ecc-25519-subgroup-hygiene` | ECC | Subgroup/cofactor, twist hygiene, оговорки по encoding. |
 | `ecc-secp256k1-point-format-edge` | ECC | Проверка формата точек и границ parser/encoding. |

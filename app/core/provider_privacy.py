@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import json
@@ -43,6 +48,15 @@ def build_provider_context_preview(
         fallback_hosted = decision.fallback_provider in HOSTED_PROVIDER_NAMES
         if primary_hosted or fallback_hosted:
             hosted_route_count += 1
+        context_sent_if_called = [
+            "agent system prompt",
+            "user seed / prepared run context",
+            "bounded agent guidance from earlier roles when applicable",
+        ]
+        if agent_name == "report_agent":
+            context_sent_if_called.append(
+                "bounded summary of local evidence and confidence posture"
+            )
         routes.append(
             {
                 "agent": agent_name,
@@ -52,11 +66,7 @@ def build_provider_context_preview(
                 "fallback_provider": decision.fallback_provider,
                 "fallback_model": decision.fallback_model,
                 "fallback_hosted": fallback_hosted,
-                "context_sent_if_called": [
-                    "agent system prompt",
-                    "user seed / prepared run context",
-                    "bounded agent guidance from earlier roles when applicable",
-                ],
+                "context_sent_if_called": context_sent_if_called,
             }
         )
 

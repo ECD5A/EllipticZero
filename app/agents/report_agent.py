@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 from app.agents.base import BaseAgent
@@ -19,10 +24,15 @@ class ReportAgent(BaseAgent):
         evidence_summary: str,
         confidence: ConfidenceLevel,
     ) -> tuple[ReportAgentResult, ResearchReport]:
+        user_prompt = self.context_prompt(
+            session.seed,
+            ("Locally derived evidence summary", evidence_summary),
+            ("Evidence-derived confidence", confidence.value),
+        )
         response = self.gateway.generate(
             agent_name=self.route_name,
             system_prompt=self.load_prompt(),
-            user_prompt=self.seed_prompt(session.seed),
+            user_prompt=user_prompt,
             metadata={
                 "agent": "report",
                 "seed": session.seed.raw_text,
@@ -78,9 +88,12 @@ class ReportAgent(BaseAgent):
             elif stripped.startswith("Recommendation:"):
                 recommendations.append(stripped.removeprefix("Recommendation:").strip())
             elif stripped.startswith("Confidence Hint:"):
-                confidence_hint = ConfidenceLevel(
-                    stripped.removeprefix("Confidence Hint:").strip().lower()
-                )
+                try:
+                    confidence_hint = ConfidenceLevel(
+                        stripped.removeprefix("Confidence Hint:").strip().lower()
+                    )
+                except ValueError:
+                    confidence_hint = confidence
 
         summary = " ".join(summary_lines).strip() or evidence_summary
 

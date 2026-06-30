@@ -1,9 +1,18 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import argparse
 import os
 import sys
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -20,7 +29,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--managed-dir",
         default=None,
-        help="Override the managed solc cache directory. Defaults to .ellipticzero/tooling/solcx.",
+        help=(
+            "Override the managed solc cache directory. The default uses a "
+            "platform-specific project cache."
+        ),
     )
     parser.add_argument(
         "--skip-solc",
@@ -31,11 +43,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from app.platform_paths import default_managed_solc_dir, expand_platform_path
+
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    root = Path(__file__).resolve().parents[1]
-    managed_dir = Path(args.managed_dir) if args.managed_dir else root / ".ellipticzero" / "tooling" / "solcx"
+    managed_dir = (
+        Path(expand_platform_path(args.managed_dir))
+        if args.managed_dir
+        else PROJECT_ROOT / default_managed_solc_dir()
+    )
     managed_dir.mkdir(parents=True, exist_ok=True)
 
     try:

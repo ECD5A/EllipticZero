@@ -1,3 +1,8 @@
+# EllipticZero: https://github.com/ECD5A/EllipticZero
+# Copyright (c) 2026 ECD5A
+# SPDX-License-Identifier: LicenseRef-FSL-1.1-ALv2
+# License terms: see LICENSE in the project root.
+
 from __future__ import annotations
 
 import re
@@ -1384,28 +1389,70 @@ def _issue_line_hint_tokens(family: str) -> tuple[str, ...]:
         "proxy_storage_collision_review_required": (".delegatecall(", ".delegatecall{"),
         "user_supplied_delegatecall_target": (".delegatecall(", ".delegatecall{"),
         "unguarded_delegatecall_surface": (".delegatecall(", ".delegatecall{"),
-        "unchecked_external_call_surface": (".call{", ".call(", ".staticcall{", ".staticcall("),
-        "user_supplied_call_target": (".call{", ".call(", ".staticcall{", ".staticcall("),
-        "external_call_in_loop": (".call{", ".call(", ".delegatecall(", ".staticcall(", "send(", "transfer("),
+        "unchecked_external_call_surface": (
+            ".call{",
+            ".call(",
+            ".call.value(",
+            ".call.gas(",
+            ".staticcall{",
+            ".staticcall(",
+            ".send(",
+        ),
+        "user_supplied_call_target": (
+            ".call{",
+            ".call(",
+            ".call.value(",
+            ".call.gas(",
+            ".staticcall{",
+            ".staticcall(",
+        ),
+        "external_call_in_loop": (
+            ".call{",
+            ".call(",
+            ".call.value(",
+            ".call.gas(",
+            ".delegatecall(",
+            ".staticcall(",
+            ".send(",
+            ".transfer(",
+        ),
         "state_transition_after_external_call": (
             ".call{",
             ".call(",
+            ".call.value(",
+            ".call.gas(",
             ".delegatecall(",
             ".staticcall(",
-            "send(",
-            "transfer(",
+            ".send(",
+            ".transfer(",
         ),
         "accounting_update_after_external_call": (
             ".call{",
             ".call(",
+            ".call.value(",
+            ".call.gas(",
             ".delegatecall(",
             ".staticcall(",
-            "send(",
-            "transfer(",
+            ".send(",
+            ".transfer(",
             "transferfrom(",
         ),
-        "withdrawal_without_balance_validation": (".call{", ".call(", "transfer(", "transferfrom("),
-        "reentrancy_review_required": (".call{", ".call(", ".delegatecall(", "send(", "transfer("),
+        "withdrawal_without_balance_validation": (
+            ".call{",
+            ".call(",
+            ".call.value(",
+            ".transfer(",
+            "transferfrom(",
+        ),
+        "reentrancy_review_required": (
+            ".call{",
+            ".call(",
+            ".call.value(",
+            ".call.gas(",
+            ".delegatecall(",
+            ".send(",
+            ".transfer(",
+        ),
         "unchecked_token_transfer_surface": (".transfer(",),
         "unchecked_token_transfer_from_surface": (".transferfrom(",),
         "arbitrary_from_transfer_surface": (".transferfrom(",),
@@ -1588,10 +1635,13 @@ def _contains_low_level_call(body: str) -> bool:
         for token in (
             ".call(",
             ".call{",
+            ".call.value(",
+            ".call.gas(",
             ".delegatecall(",
             ".delegatecall{",
             ".staticcall(",
             ".staticcall{",
+            ".send(",
         )
     )
 
@@ -1603,6 +1653,7 @@ def _contains_call_with_value(body: str) -> bool:
         for token in (
             ".call{value:",
             ".call{ value:",
+            ".call.value(",
         )
     )
 
@@ -2593,6 +2644,8 @@ def _contains_state_transition_after_external_call(body: str) -> bool:
         for token in (
             ".call(",
             ".call{",
+            ".call.value(",
+            ".call.gas(",
             ".delegatecall(",
             ".delegatecall{",
             ".staticcall(",
@@ -2615,6 +2668,8 @@ def _contains_accounting_update_after_external_call(body: str) -> bool:
         for token in (
             ".call(",
             ".call{",
+            ".call.value(",
+            ".call.gas(",
             ".delegatecall(",
             ".delegatecall{",
             ".staticcall(",
@@ -2641,6 +2696,8 @@ def _looks_reentrancy_review(body: str) -> bool:
             for token in (
                 ".call(",
                 ".call{",
+                ".call.value(",
+                ".call.gas(",
                 ".delegatecall(",
                 ".delegatecall{",
                 ".staticcall(",
@@ -2656,8 +2713,15 @@ def _looks_reentrancy_review(body: str) -> bool:
         return False
     trailing = lowered[external_call_index:]
     return bool(
-        re.search(r"\b(balance|balances|owner|amount|total|supply|status|locked|mapping)\b", trailing)
-        or re.search(r"\b[a-zA-Z_][a-zA-Z0-9_]*\s*[\+\-\*\/%]?=", trailing)
+        re.search(
+            r"\b[a-zA-Z0-9_]*(?:balance|balances|owner|amount|total|supply|status|locked|mapping)"
+            r"[a-zA-Z0-9_]*\b",
+            trailing,
+        )
+        or re.search(
+            r"\b[a-zA-Z_][a-zA-Z0-9_]*(?:\s*\[[^\]]+\])?\s*[\+\-\*\/%]?=",
+            trailing,
+        )
     )
 
 
