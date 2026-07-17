@@ -40,20 +40,20 @@ Commercial = "https://github.com/ECD5A/EllipticZero/blob/main/COMMERCIAL_LICENSE
 [project.optional-dependencies]
 research = [
     "hypothesis>=6.112,<7.0",
-    "z3-solver>=4.13,<5.0",
+    "z3-solver>=4.13,<6.0",
 ]
 smart_contract_basic = [
     "pytest>=8.0,<10.0",
     "ruff>=0.11,<0.16",
     "hypothesis>=6.112,<7.0",
-    "z3-solver>=4.13,<5.0",
+    "z3-solver>=4.13,<6.0",
     "py-solc-x>=2.0,<3.0",
 ]
 smart_contract_static = [
     "pytest>=8.0,<10.0",
     "ruff>=0.11,<0.16",
     "hypothesis>=6.112,<7.0",
-    "z3-solver>=4.13,<5.0",
+    "z3-solver>=4.13,<6.0",
     "py-solc-x>=2.0,<3.0",
     "slither-analyzer>=0.11,<0.12",
 ]
@@ -61,13 +61,13 @@ test = [
     "pytest>=8.0,<10.0",
     "ruff>=0.11,<0.16",
     "hypothesis>=6.112,<7.0",
-    "z3-solver>=4.13,<5.0",
+    "z3-solver>=4.13,<6.0",
 ]
 lab = [
     "pytest>=8.0,<10.0",
     "ruff>=0.11,<0.16",
     "hypothesis>=6.112,<7.0",
-    "z3-solver>=4.13,<5.0",
+    "z3-solver>=4.13,<6.0",
     "py-solc-x>=2.0,<3.0",
     "slither-analyzer>=0.11,<0.12",
 ]
